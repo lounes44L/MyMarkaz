@@ -1,0 +1,110 @@
+{% extends "ecole_app/base_auth.html" %}
+{% load static %}
+
+{% block title %}Inscription d'une nouvelle école{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-lg mt-5 mb-5">
+                <div class="card-header">
+                    <h3 class="text-center font-weight-light my-4">Inscription d'une nouvelle école</h3>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5>Informations de l'école</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group mb-3">
+                                    <label for="nom_ecole">Nom de l'école *</label>
+                                    <input class="form-control" id="nom_ecole" name="nom_ecole" type="text" required />
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    <label for="adresse">Adresse</label>
+                                    <textarea class="form-control" id="adresse" name="adresse" rows="3"></textarea>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="telephone">Téléphone</label>
+                                            <input class="form-control" id="telephone" name="telephone" type="tel" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="email">Email de contact</label>
+                                            <input class="form-control" id="email" name="email" type="email" />
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="site_web">Site web</label>
+                                    <input class="form-control" id="site_web" name="site_web" type="url" placeholder="https://" />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5>Informations de l'administrateur</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group mb-3">
+                                    <label for="nom_admin">Nom complet *</label>
+                                    <input class="form-control" id="nom_admin" name="nom_admin" type="text" required />
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    <label for="email_admin">Email *</label>
+                                    <input class="form-control" id="email_admin" name="email_admin" type="email" required />
+                                    <small class="form-text text-muted">Cet email sera utilisé pour vous connecter à l'application.</small>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="password">Mot de passe *</label>
+                                            <input class="form-control" id="password" name="password" type="password" required />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="password_confirm">Confirmer le mot de passe *</label>
+                                            <input class="form-control" id="password_confirm" name="password_confirm" type="password" required />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 mb-0">
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-block">Créer mon école</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center py-3">
+                    <div class="small">
+                        <a href="{% url 'login' %}">Vous avez déjà un compte ? Connectez-vous</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

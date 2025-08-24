@@ -1,0 +1,40 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Convertir Quiz en Note{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Convertir le quiz en note d'examen</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-title">Quiz: {{ tentative.quiz.titre }}</h6>
+                    <p>Élève: <strong>{{ tentative.eleve }}</strong></p>
+                    <p>Date de réalisation: <strong>{{ tentative.date_fin|date:"d/m/Y H:i" }}</strong></p>
+                    <p>Score obtenu: <strong>{{ score|floatformat:2 }}%</strong></p>
+                    <p>Note équivalente: <strong>{{ note_sur_20|floatformat:2 }}/20</strong></p>
+                    
+                    <div class="alert alert-info">
+                        <p><i class="fas fa-info-circle"></i> Cette action va créer une note d'examen de type "quiz" pour cet élève.</p>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check"></i> Confirmer la création de la note
+                            </button>
+                            <a href="{% url 'resultats_quiz_classe' quiz_id=tentative.quiz.id %}" class="btn btn-secondary ml-2">
+                                <i class="fas fa-arrow-left"></i> Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

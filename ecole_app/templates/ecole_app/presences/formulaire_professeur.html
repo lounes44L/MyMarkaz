@@ -1,0 +1,105 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}{{ titre }} | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">{{ titre }}</h6>
+                    <a href="{% url 'liste_presences_professeurs' %}" class="btn btn-secondary btn-sm" title="Retour à la liste" aria-label="Retour à la liste">
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i> Retour
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="form-group">
+                            <label for="{{ form.professeur.id_for_label }}">Professeur</label>
+                            {{ form.professeur }}
+                            {% if form.professeur.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.professeur.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.date.id_for_label }}">Date</label>
+                            {{ form.date }}
+                            {% if form.date.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.date.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-check">
+                                {{ form.present }}
+                                <label class="form-check-label" for="{{ form.present.id_for_label }}">
+                                    Présent
+                                </label>
+                            </div>
+                            {% if form.present.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.present.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.commentaire.id_for_label }}">Commentaire</label>
+                            {{ form.commentaire }}
+                            {% if form.commentaire.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.commentaire.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group text-center mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save" aria-hidden="true"></i> {{ submit_text|default:"Enregistrer" }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialisation du datepicker
+        $('#{{ form.date.id_for_label }}').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            language: 'fr',
+            todayHighlight: true
+        });
+    });
+</script>
+{% endblock %}

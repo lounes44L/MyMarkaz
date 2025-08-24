@@ -1,0 +1,73 @@
+{% extends 'ecole_app/base_admin.html' %}
+
+{% block title %}Sélection de classe pour objectifs | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Objectifs des élèves - Sélection de classe</h1>
+        <div>
+            <a href="{% url 'dashboard' %}" class="btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-home fa-sm text-white-50"></i> Tableau de bord
+            </a>
+        </div>
+    </div>
+
+    <!-- Liste des classes -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Sélectionnez une classe pour voir les objectifs des élèves</h6>
+        </div>
+        <div class="card-body">
+            {% if classes %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Composante</th>
+                            <th>Nom de la classe</th>
+                            <th>Professeur</th>
+                            <th>Nombre d'élèves</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for classe in classes %}
+                        <tr>
+                            <td>{{ classe.composante.nom }}</td>
+                            <td>{{ classe.nom }}</td>
+                            <td>{{ classe.professeur.nom }} {{ classe.professeur.prenom }}</td>
+                            <td>{{ classe.get_total_eleves }}</td>
+                            <td class="text-center">
+                                <a href="{% url 'admin_liste_eleves_objectifs' classe.id %}" class="btn btn-primary btn-sm rounded-pill shadow-sm">
+                                    <i class="fas fa-list me-1"></i> Voir les objectifs
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <p class="text-muted">Aucune classe disponible.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            },
+            "order": [[0, "asc"], [1, "asc"]]
+        });
+    });
+</script>
+{% endblock %}

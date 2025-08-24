@@ -1,0 +1,19 @@
+/* Style pour l'affichage du texte coranique */
+.coran-texte-arabe {
+    direction: rtl;
+    font-size: 1.6em;
+    line-height: 2;
+    font-family: 'Amiri', serif;
+    background: #f7f7f7;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-bottom: 1rem;
+}
+.coran-texte-arabe .badge {
+    background: #e9ecef;
+    color: #333;
+    font-size: 0.7em;
+    margin-left: 0.5em;
+    margin-right: 0.2em;
+}

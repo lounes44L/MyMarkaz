@@ -1,0 +1,330 @@
+{% extends 'ecole_app/base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-4">
+    <img src="https://ui-avatars.com/api/?name={{ eleve.prenom|default:eleve.nom }}&background=0D8ABC&color=fff&size=96" class="rounded-circle shadow-sm mb-2" alt="Avatar élève" style="width: 96px; height: 96px;">
+    <h2 class="fw-bold">Assalam aleykoum {{ eleve.prenom|default:eleve.nom }}</h2>
+    <span class="badge bg-primary fs-6 mb-2">Espace élève personnalisé</span>
+    <p class="lead">Bienvenue sur ton espace élève ! Nous te souhaitons beaucoup de réussite dans ton apprentissage du Coran.</p>
+</div>
+        
+        <!-- Onglets de navigation -->
+        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="memorisation-tab" data-bs-toggle="tab" data-bs-target="#memorisation" 
+                    type="button" role="tab" aria-controls="memorisation" aria-selected="true">
+                    <i class="fas fa-brain me-2"></i>Mémorisation
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="revision-tab" data-bs-toggle="tab" data-bs-target="#revision" 
+                    type="button" role="tab" aria-controls="revision" aria-selected="false">
+                    <i class="fas fa-book-open me-2"></i>Révision
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tikrar-tab" data-bs-toggle="tab" data-bs-target="#tikrar" 
+                    type="button" role="tab" aria-controls="tikrar" aria-selected="false">
+                    <i class="fas fa-sync-alt me-2"></i>Tikrar
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes" 
+                    type="button" role="tab" aria-controls="notes" aria-selected="false">
+                    <i class="fas fa-graduation-cap me-2"></i>Mes Notes
+                    {% if nb_notes > 0 %}
+                        <span class="badge bg-info ms-1">{{ nb_notes }}</span>
+                    {% endif %}
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="profil-tab" data-bs-toggle="tab" data-bs-target="#profil" 
+                    type="button" role="tab" aria-controls="profil" aria-selected="false">
+                    <i class="fas fa-user me-2"></i>Mon Profil
+                </button>
+            </li>
+        </ul>
+        
+        <!-- Contenu des onglets -->
+        <div class="tab-content" id="myTabContent">
+            <!-- Onglet Mémorisation -->
+            <div class="tab-pane fade show active" id="memorisation" role="tabpanel" aria-labelledby="memorisation-tab">
+                <div class="p-3">
+                    <h4 class="mb-3">Programme de mémorisation</h4>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> Voici ton programme de mémorisation actuel.
+                    </div>
+                    
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">Sourate en cours</div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ eleve.sourate_en_cours|default:"Non définie" }}</h5>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-gradient 
+    {% if eleve.pourcentage_memorisation >= 80 %}bg-success
+    {% elif eleve.pourcentage_memorisation >= 50 %}bg-warning
+    {% else %}bg-danger
+    {% endif %} progress-width-dynamic" 
+    role="progressbar" 
+    style="width: {{ eleve.pourcentage_memorisation|default:25 }}%;" 
+    aria-valuenow="{% if eleve.pourcentage_memorisation %}{{ eleve.pourcentage_memorisation }}{% else %}25{% endif %}" 
+    aria-valuemin="0" aria-valuemax="100" 
+    title="Progression: {{ eleve.pourcentage_memorisation|default:25 }}%">
+    {{ eleve.pourcentage_memorisation|default:25 }}%
+</div>
+                            </div>
+                            <p class="card-text">Objectif: {{ eleve.objectif_memorisation|default:"Non défini" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-download me-2"></i>Télécharger l'audio
+                        </button>
+                        <button class="btn btn-success">
+                            <i class="fas fa-check me-2"></i>Marquer comme mémorisé
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Onglet Révision -->
+            <div class="tab-pane fade" id="revision" role="tabpanel" aria-labelledby="revision-tab">
+                <div class="p-3">
+                    <h4 class="mb-3">Programme de révision</h4>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i> N'oublie pas de réviser régulièrement !
+                    </div>
+                    
+                    <div class="list-group mb-4">
+                        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            Sourate Al-Fatiha
+                            <span class="badge bg-success rounded-pill">Révisée</span>
+                        </div>
+                        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            Sourate Al-Baqarah (1-5)
+                            <span class="badge bg-warning rounded-pill">À réviser</span>
+                        </div>
+                        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            Sourate Al-Ikhlas
+                            <span class="badge bg-danger rounded-pill">Urgente</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary">
+                        <i class="fas fa-calendar-check me-2"></i>Planifier mes révisions
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Onglet Tikrar -->
+            <div class="tab-pane fade" id="tikrar" role="tabpanel" aria-labelledby="tikrar-tab">
+                <div class="p-3">
+                    <h4 class="mb-3">Tikrar (Répétition)</h4>
+                    <div class="alert alert-primary">
+                        <i class="fas fa-sync-alt me-2"></i> La répétition est la clé de la mémorisation.
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">Programme de répétition quotidien</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="repetitions" class="form-label">Nombre de répétitions recommandées</label>
+                                <input type="range" class="form-range" min="5" max="20" value="10" id="repetitions">
+                                <div class="text-center"><span id="repetitionsValue">10</span> répétitions</div>
+                            </div>
+                            
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="rep1">
+                                <label class="form-check-label" for="rep1">Répétition du matin</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="rep2">
+                                <label class="form-check-label" for="rep2">Répétition de l'après-midi</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="rep3">
+                                <label class="form-check-label" for="rep3">Répétition du soir</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-outline-success">
+                        <i class="fas fa-save me-2"></i>Enregistrer mon programme
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Onglet Mes Notes -->
+            <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
+                <div class="p-3">
+                    <h4 class="mb-3">Mes Notes d'Examen</h4>
+                    
+                    <!-- Statistiques des notes -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card border-primary">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-primary">Moyenne Générale</h5>
+                                    <h2 class="display-4 {% if moyenne_generale >= 16 %}text-success{% elif moyenne_generale >= 12 %}text-warning{% else %}text-danger{% endif %}">
+                                        {{ moyenne_generale|default:"--" }}%
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-info">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-info">Nombre d'Examens</h5>
+                                    <h2 class="display-4 text-info">{{ nb_notes }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-success">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-success">Dernière Note</h5>
+                                    {% if derniere_note %}
+                                        <h2 class="display-4 text-{{ derniere_note.couleur_badge }}">{{ derniere_note.note }}/{{ derniere_note.note_max }}</h2>
+                                        <small class="text-muted">{{ derniere_note.date_examen|date:"d/m/Y" }}</small>
+                                    {% else %}
+                                        <h2 class="display-4 text-muted">--</h2>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Liste des notes -->
+                    {% if notes_examens %}
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Historique de mes notes</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Examen</th>
+                                                <th>Type</th>
+                                                <th>Note</th>
+                                                <th>Mention</th>
+                                                <th>Professeur</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for note in notes_examens %}
+                                            <tr>
+                                                <td>{{ note.date_examen|date:"d/m/Y" }}</td>
+                                                <td>
+                                                    <strong>{{ note.titre }}</strong>
+                                                    {% if note.sourate_concernee %}
+                                                        <br><small class="text-muted">{{ note.sourate_concernee }}</small>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-secondary">{{ note.get_type_examen_display }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="fs-5 fw-bold text-{{ note.couleur_badge }}">
+                                                        {{ note.note }}/{{ note.note_max }}
+                                                    </span>
+                                                    <br>
+                                                    <small class="text-muted">{{ note.pourcentage }}%</small>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-{{ note.couleur_badge }}">{{ note.mention }}</span>
+                                                </td>
+                                                <td>{{ note.professeur.nom }}</td>
+                                            </tr>
+                                            {% if note.commentaire %}
+                                            <tr>
+                                                <td colspan="6" class="bg-light">
+                                                    <small><strong>Commentaire :</strong> {{ note.commentaire }}</small>
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-info-circle fa-3x mb-3"></i>
+                            <h5>Aucune note disponible</h5>
+                            <p>Tes notes d'examen apparaîtront ici une fois que ton professeur les aura saisies.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Onglet Profil -->
+            <div class="tab-pane fade" id="profil" role="tabpanel" aria-labelledby="profil-tab">
+                <div class="p-3">
+                    <h4 class="mb-3">Mon profil</h4>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">Informations personnelles</div>
+                                <div class="card-body">
+                                    <p><strong>Nom:</strong> {{ eleve.nom }}</p>
+                                    <p><strong>Prénom:</strong> {{ eleve.prenom }}</p>
+                                    <p><strong>Classes :</strong>
+    {% if eleve.classes.all %}
+        {% for classe in eleve.classes.all %}
+            <span class="badge bg-primary me-1">{{ classe.nom }}</span>
+        {% empty %}
+            <span class="text-muted">Aucune classe</span>
+        {% endfor %}
+    {% endif %}
+</p>
+                                    <p><strong>Email:</strong> {{ eleve.email|default:"Non renseigné" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-light">Progression globale</div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Niveau: Intermédiaire</h5>
+                                    <div class="progress mb-3">
+                                        <div class="progress-bar bg-info progress-width-dynamic" role="progressbar" data-width="65" data-value="65" aria-valuemin="0" aria-valuemax="100" title="Progression globale: 65%">
+                                            65%
+                                        </div>
+                                    </div>
+                                    <p class="card-text">Sourates mémorisées: 5/10</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-outline-primary">
+                        <i class="fas fa-edit me-2"></i>Modifier mon profil
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script pour le slider de répétitions -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const slider = document.getElementById('repetitions');
+        const output = document.getElementById('repetitionsValue');
+        
+        if (slider && output) {
+            output.innerHTML = slider.value;
+            
+            slider.oninput = function() {
+                output.innerHTML = this.value;
+            }
+        }
+    });
+</script>
+{% endblock %}

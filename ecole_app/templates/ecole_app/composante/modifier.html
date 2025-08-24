@@ -1,0 +1,90 @@
+{% extends 'ecole_app/base_admin.html' %}
+{% load static %}
+
+{% block title %}Modifier Composante{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-edit me-2"></i>Modifier Composante</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'modifier_composante' composante.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="nom" class="form-label">Nom de la composante *</label>
+                            <input type="text" class="form-control" id="nom" name="nom" value="{{ composante.nom }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ composante.description }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="active" name="active" {% if composante.active %}checked{% endif %}>
+                            <label class="form-check-label" for="active">Composante active</label>
+                            <small class="form-text text-muted d-block">Les composantes inactives ne sont pas visibles dans la sélection.</small>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'gestion_composantes' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Retour
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Statistiques</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="text-primary">
+                                <i class="fas fa-users fa-2x"></i>
+                                <div class="mt-1">
+                                    <strong>{{ composante.eleves.count }}</strong>
+                                    <small class="d-block text-muted">Élèves</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-success">
+                                <i class="fas fa-chalkboard-teacher fa-2x"></i>
+                                <div class="mt-1">
+                                    <strong>{{ composante.professeurs.count }}</strong>
+                                    <small class="d-block text-muted">Professeurs</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-info">
+                                <i class="fas fa-door-open fa-2x"></i>
+                                <div class="mt-1">
+                                    <strong>{{ composante.classes.count }}</strong>
+                                    <small class="d-block text-muted">Classes</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{% url 'statistiques_composante' composante.id %}" class="btn btn-sm btn-outline-info">
+                            <i class="fas fa-chart-bar me-2"></i>Voir statistiques détaillées
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,192 @@
+# Documentation exhaustive pour reconstruire l’application Gestion Markaz sur base44.com
+
+---
+
+## 1. Structure générale
+- Application de gestion scolaire avec 3 rôles principaux : Administrateur, Professeur, Élève.
+- Navigation par dashboards adaptés à chaque rôle.
+- Authentification centralisée, gestion des droits d’accès dans chaque vue.
+- Données multi-composantes (plusieurs branches d’école possibles).
+
+---
+
+## 2. Modèles principaux (Django Models)
+### Utilisateur (User)
+- Champs : username, mot de passe, email, is_active, is_staff, is_superuser
+- Lié à : Professeur OU Élève (OneToOne)
+
+### Professeur
+- Champs : nom, prénom, email
+- Lié à : User, Classe(s)
+
+### Élève
+- Champs : nom, prénom, email, téléphone, date_naissance, adresse, archive (bool), montant_total, remarque
+- Lié à : User, Classe, Creneaux (ManyToMany), AnneeScolaire
+
+### Classe
+- Champs : nom, professeur, composante
+- Lié à : Élèves, Professeur
+
+### AnneeScolaire
+- Champs : nom (ex : 2025-2026), date_debut, date_fin, active (bool), composante
+
+### Creneau
+- Champs : nom, horaire
+
+### Paiement
+- Champs : élève, montant, date, annee_scolaire
+
+### PresenceEleve
+- Champs : élève, date, present (bool), justifie (bool), commentaire, classe, creneau, composante, date_creation
+
+### CarnetPedagogique
+- Champs : élève, professeur, date, contenu (texte structuré)
+
+---
+
+## 3. Fonctionnement des Dashboards
+
+### Dashboard Élève
+- **Header** : Année scolaire active, nom/prénom, classe, créneau
+- **Carte Mon Profil** :
+    - Affiche toutes les infos élève (nom, prénom, email, téléphone, date de naissance)
+    - Bouton "Changer de mot de passe"
+    - Bouton "Voir mon profil" (accès à la fiche complète)
+- **Carte Ma Classe** :
+    - Nom de la classe, professeur principal
+    - Liste des camarades (optionnel)
+- **Carte Créneau** :
+    - Nom du créneau (groupe horaire)
+- **Mon carnet pédagogique** :
+    - Affiche les entrées du carnet (voir section Carnet)
+    - Bouton "Voir mon carnet pédagogique" pour détail
+- **Mes paiements** :
+    - Liste des paiements effectués (date, montant)
+    - Barre de progression colorée selon pourcentage payé (bg-success, bg-warning, bg-danger)
+    - Montant total, montant payé, montant restant
+- **Mes présences** :
+    - Tableau des présences (date, classe, présent/absent/justifié, commentaire)
+    - Bouton "Voir mes présences" (accès à l’historique complet)
+
+### Dashboard Professeur
+- **Header** : Nom/prénom, classes assignées
+- **Carte Classes** :
+    - Liste des classes avec accès direct à la gestion des présences
+    - Accès au carnet pédagogique de chaque élève
+- **Statistiques** :
+    - Présences par classe, taux de présence global
+- **Gestion des carnets** :
+    - Ajout, modification, consultation des carnets pédagogiques des élèves
+
+### Dashboard Admin
+- **Gestion des utilisateurs** : création, modification, suppression
+- **Gestion des classes** : création, modification, suppression
+- **Gestion des composantes** : multi-branche
+- **Gestion des années scolaires** : activation/désactivation, historique
+
+---
+
+## 4. Carnet pédagogique (contenu et fonctionnement)
+- **Structure du carnet** :
+    - Chaque entrée = date, type (écoute, mémorisation, répétition, révision), contenu, professeur
+    - Contenu détaillé :
+        - Sourate(s) étudiée(s), versets, remarques
+        - Pour la mémorisation : statut (acquis, en cours, à revoir)
+        - Pour l’écoute : pages/sourates écoutées
+        - Pour la répétition : passages revus
+    - Historique chronologique, modifiable par le professeur
+- **Ajout d’une entrée** :
+    - Sélection type (écoute, mémorisation, répétition, révision)
+    - Sélection sourate(s), verset(s) ou page(s)
+    - Champ remarque libre
+- **Consultation** :
+    - Élève : lecture seule
+    - Professeur : édition, suppression, ajout
+- **Navigation** :
+    - Par date, par type, par sourate
+    - Recherche possible par mot-clé
+
+---
+
+## 5. Présences (fonctionnement complet)
+- **Enregistrement** :
+    - Par classe (professeur), ou par élève (admin)
+    - Statut : présent / absent / justifié
+    - Commentaire optionnel
+    - Date, classe et créneau associés
+- **Consultation** :
+    - Élève : accès à son historique
+    - Professeur : accès à la classe
+    - Admin : accès global
+- **Statistiques** :
+    - Calcul du taux de présence
+    - Affichage graphique (barre, ratio, couleur)
+
+---
+
+## 6. Paiements
+- **Enregistrement** :
+    - Par admin/comptabilité
+    - Montant, date, élève, année scolaire
+- **Affichage** :
+    - Liste des paiements
+    - Barre de progression dynamique (vert, orange, rouge)
+    - Calcul automatique du reste à payer
+
+---
+
+## 7. Authentification & sécurité
+- Utilisation du système User Django
+- Redirection après login selon rôle (admin, professeur, élève)
+- Middleware pour forcer la sélection d’une composante (hors élève)
+- Protection CSRF sur tous les formulaires
+- Permissions vérifiées dans chaque vue
+
+---
+
+## 8. Intégration du Coran (onglet élève)
+- **JSON complet** du texte du Coran (arabe)
+- Liste des 114 sourates (nom arabe et français)
+- Navigation par sourate ou page
+- Affichage multilingue (arabe/français)
+- Expérience fluide et rapide, sans commentaires dans le JSON
+- CSS dédié pour l’affichage du texte coranique
+
+---
+
+## 9. Templates principaux (structure et contenu)
+- **login.html** : formulaire de connexion sécurisé, logo, champs username/password, messages d’erreur
+- **dashboard_eleve.html** : toutes les cartes listées plus haut, boutons d’action, navigation claire
+- **profile.html** : fiche complète de l’utilisateur, boutons dashboard/changer mot de passe
+- **presences/eleve.html** : tableau historique, filtres, stats
+- **carnet/index.html** : affichage chronologique du carnet, filtres par type/date, accès détail entrée
+- **carnet/ajouter_*.html** : formulaires pour chaque type d’entrée (écoute, mémorisation, etc.)
+- **anneescolaire/liste.html** : tableau années scolaires, bouton activation, modals suppression
+- **paiements/** : affichage liste paiements, progression, formulaire ajout
+- **composante/** : gestion multi-branche
+
+---
+
+## 10. Navigation et expérience utilisateur
+- Menus latéraux ou barres de navigation selon rôle
+- Breadcrumbs pour savoir où on est
+- Boutons d’action toujours visibles (profil, retour dashboard, logout)
+- Responsive/mobile friendly
+- Messages de succès/erreur clairs
+- Aide contextuelle (tooltips, info-bulles)
+
+---
+
+## 11. Conseils pour migration base44.com
+- Créer d’abord les modèles et relations (OneToOne, ForeignKey, ManyToMany)
+- Recréer tous les templates principaux avec leur logique de navigation
+- Adapter la gestion des droits (permissions, redirections)
+- Tester chaque fonctionnalité après migration (login, accès profil, carnet, paiements, présences…)
+- Déplacer tout CSS inline vers des fichiers dédiés
+- Prévoir une page de préférences utilisateur (thème, année scolaire active)
+- Ajouter la gestion des justificatifs d’absence
+- Optimiser l’affichage mobile
+
+---
+
+**Ce document est un guide exhaustif pour reconstruire l’application sur base44.com. Il détaille la structure, la logique, le contenu, les écrans, les modèles, et le fonctionnement de chaque module.**

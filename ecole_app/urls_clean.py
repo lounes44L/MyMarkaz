@@ -1,0 +1,185 @@
+from django.urls import path, include
+from . import main_views, views_anneescolaire, views_auth, views_presence, views_comptabilite, views_presence_professeur, views_presence_eleve, views_carnet, views_composante, views_bilan_financier, views_objectifs, views_cours_quiz, views_appel_rapide, views_notes, views_notes_quiz
+from . import views_carnet_pedagogique, views_api
+from .views import api, views_carnet_edit
+from . import views_site
+from .views.api import get_sourate_pages, find_sourate_by_page
+from . import urls_cours_quiz
+
+urlpatterns = [
+    # Gestion des composantes
+    path('composante/selection/', views_composante.selection_composante, name='selection_composante'),
+    path('composante/gestion/', views_composante.gestion_composantes, name='gestion_composantes'),
+    path('composante/creer/', views_composante.creer_composante, name='creer_composante'),
+    path('composante/modifier/<int:composante_id>/', views_composante.modifier_composante, name='modifier_composante'),
+    path('composante/supprimer/<int:composante_id>/', views_composante.supprimer_composante, name='supprimer_composante'),
+    path('composante/changer/', views_composante.changer_composante, name='changer_composante'),
+    path('composante/statistiques/<int:composante_id>/', views_composante.statistiques_composante, name='statistiques_composante'),
+    
+    path('carnet/<int:eleve_id>/', views_carnet.carnet_pedagogique, name='carnet_pedagogique'),
+    # Authentification
+    path('login/', views_auth.user_login, name='login'),
+    path('logout/', views_auth.user_logout, name='logout'),
+    path('modifier-nom-site/', views_site.modifier_nom_site, name='modifier_nom_site'),
+    path('reset-password/', views_auth.reset_password, name='reset_password'),
+    path('profile/', views_auth.profile, name='profile'),
+    path('dashboard/professeur/', views_auth.dashboard_professeur, name='dashboard_professeur'),
+    path('dashboard/eleve/', views_auth.dashboard_eleve, name='dashboard_eleve'),
+    path('utilisateurs/<str:type_utilisateur>/<int:id>/identifiants/', views_auth.afficher_identifiants, name='afficher_identifiants'),
+    
+    # Dashboard
+    path('', main_views.dashboard, name='dashboard'),
+    
+    # Eleves
+    path('eleves/home/', main_views.eleve_home, name='eleve_home'),
+    path('eleves/', main_views.liste_eleves, name='liste_eleves'),
+    path('eleves/archives/', main_views.archives_eleves, name='archives_eleves'),
+    path('eleves/attente/', main_views.liste_attente, name='liste_attente'),
+    path('eleves/attente/ajouter-definitivement/', main_views.ajouter_definitivement, name='ajouter_definitivement'),
+    path('eleves/attente/<int:eleve_id>/modifier/', main_views.modifier_eleve_attente, name='modifier_eleve_attente'),
+    path('eleves/attente/<int:eleve_id>/supprimer/', main_views.supprimer_eleve_attente, name='supprimer_eleve_attente'),
+    path('eleves/archiver/', main_views.archiver_eleve, name='archiver_eleve'),
+    path('eleves/desarchiver/', main_views.desarchiver_eleve, name='desarchiver_eleve'),
+    path('eleves/<int:eleve_id>/', main_views.detail_eleve, name='detail_eleve'),
+    path('eleves/<int:eleve_id>/coran/', main_views.coran_eleve, name='coran_eleve'),
+    path('eleves/<int:eleve_id>/modifier/', main_views.modifier_eleve, name='modifier_eleve'),
+    path('eleves/<int:eleve_id>/supprimer/', main_views.supprimer_eleve, name='supprimer_eleve'),
+    path('eleves/<int:eleve_id>/envoyer-identifiants/', main_views.envoyer_identifiants_eleve, name='envoyer_identifiants_eleve'),
+    path('eleves/<int:eleve_id>/regenerer-password/', main_views.regenerer_password_eleve, name='regenerer_password_eleve'),
+    path('eleves/ajout-rapide/', main_views.ajout_rapide_eleve, name='ajout_rapide_eleve'),
+    
+    # Professeurs
+    path('professeurs/', main_views.liste_professeurs, name='liste_professeurs'),
+    path('professeurs/<int:professeur_id>/', main_views.detail_professeur, name='detail_professeur'),
+    path('professeurs/<int:professeur_id>/supprimer/', main_views.supprimer_professeur, name='supprimer_professeur'),
+    path('ecole/professeurs/<int:professeur_id>/supprimer/', main_views.supprimer_professeur, name='supprimer_professeur_ecole'),
+    path('professeurs/<int:professeur_id>/envoyer-identifiants/', main_views.envoyer_identifiants_professeur, name='envoyer_identifiants_professeur'),
+    path('professeurs/<int:professeur_id>/regenerer-password/', main_views.regenerer_password_professeur, name='regenerer_password_professeur'),
+    
+    # Classes
+    path('classes/', main_views.liste_classes, name='liste_classes'),
+    path('classes/<int:classe_id>/', main_views.detail_classe, name='detail_classe'),
+    path('classes/<int:classe_id>/supprimer/', main_views.supprimer_classe, name='supprimer_classe'),
+    
+    # Creneaux
+    path('creneaux/', main_views.liste_creneaux, name='liste_creneaux'),
+    path('creneaux/<int:creneau_id>/', main_views.detail_creneau, name='detail_creneau'),
+    path('creneaux/<int:creneau_id>/supprimer/', main_views.supprimer_creneau, name='supprimer_creneau'),
+    
+    # Paiements
+    path('paiements/', main_views.liste_paiements, name='liste_paiements'),
+    path('paiements/<int:paiement_id>/', main_views.detail_paiement, name='detail_paiement'),
+    path('paiements/export/', main_views.export_paiements, name='export_paiements'),
+    path('paiements/<int:paiement_id>/supprimer/', main_views.supprimer_paiement, name='supprimer_paiement'),
+    
+    # Import/Export
+    path('import-export/', main_views.import_export, name='import_export'),
+    path('import-data/', main_views.import_data, name='import_data'),
+    path('export-data/', main_views.export_data, name='export_data'),
+    path('eleves/export-excel/', main_views.export_eleves_excel, name='export_eleves_excel'),
+    path('eleves/import-excel/', main_views.import_eleves_excel, name='import_eleves_excel'),
+    
+    # Annees scolaires
+    path('anneescolaire/', views_anneescolaire.liste_anneescolaire, name='liste_anneescolaire'),
+    path('anneescolaire/ajouter/', views_anneescolaire.ajouter_anneescolaire, name='ajouter_anneescolaire'),
+    path('anneescolaire/<int:annee_id>/modifier/', views_anneescolaire.modifier_anneescolaire, name='modifier_anneescolaire'),
+    path('anneescolaire/<int:annee_id>/supprimer/', views_anneescolaire.supprimer_anneescolaire, name='supprimer_anneescolaire'),
+    path('anneescolaire/<int:annee_id>/activer/', views_anneescolaire.activer_anneescolaire, name='activer_anneescolaire'),
+    
+    # Presences eleves
+    path('presences/eleves/', views_presence.liste_presences_eleves, name='liste_presences_eleves'),
+    path('presences/eleves/ajouter/', views_presence.ajouter_presence_eleve, name='ajouter_presence_eleve'),
+    path('presences/eleves/<int:presence_id>/modifier/', views_presence.modifier_presence_eleve, name='modifier_presence_eleve'),
+    path('presences/eleves/<int:presence_id>/supprimer/', views_presence.supprimer_presence_eleve, name='supprimer_presence_eleve'),
+    path('presences/eleves/<int:eleve_id>/', views_presence.presences_eleve, name='presences_eleve'),
+    
+    # Presences professeurs
+    path('presences/professeurs/', views_presence.liste_presences_professeurs, name='liste_presences_professeurs'),
+    path('presences/professeurs/ajouter/', views_presence.ajouter_presence_professeur, name='ajouter_presence_professeur'),
+    path('presences/professeurs/<int:presence_id>/modifier/', views_presence.modifier_presence_professeur, name='modifier_presence_professeur'),
+    path('presences/professeurs/<int:presence_id>/supprimer/', views_presence.supprimer_presence_professeur, name='supprimer_presence_professeur'),
+    
+    # Presences par classe
+    path('presences/classe/<int:classe_id>/', views_presence.presences_classe, name='presences_classe'),
+
+    # Utilitaires AJAX
+    path('api/eleve/classe/', main_views.get_eleve_classe, name='get_eleve_classe'),
+    
+    # Comptabilite - Charges
+    path('comptabilite/charges/', views_comptabilite.liste_charges, name='liste_charges'),
+    path('comptabilite/charges/<int:charge_id>/supprimer/', views_comptabilite.supprimer_charge, name='supprimer_charge'),
+    
+    # Comptabilite - Indemnisations
+    path('comptabilite/indemnisations/', views_comptabilite.liste_indemnisations, name='liste_indemnisations'),
+    path('comptabilite/indemnisations/<int:indemnisation_id>/supprimer/', views_comptabilite.supprimer_indemnisation, name='supprimer_indemnisation'),
+    
+    # Comptabilite - Bilan financier
+    path('comptabilite/bilan-financier/', views_bilan_financier.bilan_financier, name='bilan_financier'),
+    
+    # Gestion de presence professeur
+    path('professeurs/presence/', views_presence_professeur.gestion_presence_professeur, name='gestion_presence_professeur'),
+    path('professeurs/presence/rapport/', views_presence_professeur.rapport_presence_professeur, name='rapport_presence_professeur'),
+    
+    # Appel rapide et gestion eleves professeur
+    path('professeurs/appel-rapide/', views_appel_rapide.appel_rapide_professeur, name='appel_rapide_professeur'),
+    path('professeurs/gestion-eleves/', views_appel_rapide.gestion_eleves_professeur, name='gestion_eleves_professeur'),
+    
+    # Gestion de presence eleve
+    path('eleves/presence/', views_presence_eleve.gestion_presence_eleve, name='gestion_presence_eleve'),
+    path('eleves/presence/rapport/', views_presence_eleve.rapport_presence_eleve, name='rapport_presence_eleve'),
+    
+    # Carnet Pedagogique - Consultation
+    path('carnet-pedagogique/', views_carnet.carnet_pedagogique, name='carnet_pedagogique'),
+    path('carnet-pedagogique/<int:eleve_id>/', views_carnet.carnet_pedagogique, name='carnet_pedagogique'),
+    
+    # Carnet Pedagogique - Ajout d'entrees
+    path('carnet-pedagogique/<int:eleve_id>/ajouter-memorisation/', views_carnet_edit.ajouter_memorisation, name='ajouter_memorisation'),
+    path('carnet-pedagogique/<int:eleve_id>/ajouter-ecoute/', views_carnet_edit.ajouter_ecoute, name='ajouter_ecoute'),
+    path('carnet-pedagogique/<int:eleve_id>/ajouter-repetition/', views_carnet_edit.ajouter_repetition, name='ajouter_repetition'),
+    path('carnet-pedagogique/<int:eleve_id>/revision/ajouter/', views_carnet_edit.ajouter_revision, name='ajouter_revision'),
+    
+    # Carnet pedagogique - Modification d'entrees
+    path('carnet-pedagogique/memorisation/<int:memorisation_id>/modifier/', views_carnet_edit.modifier_memorisation, name='modifier_memorisation'),
+    path('carnet-pedagogique/ecoute/<int:ecoute_id>/modifier/', views_carnet_edit.modifier_ecoute, name='modifier_ecoute'),
+    path('carnet-pedagogique/repetition/<int:repetition_id>/modifier/', views_carnet_edit.modifier_repetition, name='modifier_repetition'),
+    path('carnet-pedagogique/revision/<int:revision_id>/modifier/', views_carnet_edit.modifier_revision, name='modifier_revision'),
+    
+    # API
+    path('api/sourate-pages/', get_sourate_pages, name='api_sourate_pages'),
+    path('api/sourate-pages/find-sourate/', find_sourate_by_page, name='api_find_sourate'),
+    path('api/carnet/<int:eleve_id>/data/', views_api.api_carnet_data, name='api_carnet_data'),
+    
+    # Objectifs mensuels
+    path('objectifs/ajouter/', views_objectifs.ajouter_objectif, name='ajouter_objectif'),
+    path('objectifs/<int:objectif_id>/modifier-statut/<str:statut>/', views_objectifs.modifier_statut_objectif, name='modifier_statut_objectif'),
+    
+    # Cours partages et Quiz
+    path('cours-quiz/cours/ajouter/', views_cours_quiz.ajouter_cours, name='ajouter_cours'),
+    path('cours-quiz/cours/modifier/<int:cours_id>/', views_cours_quiz.modifier_cours, name='modifier_cours'),
+    path('cours-quiz/cours/supprimer/<int:cours_id>/', views_cours_quiz.supprimer_cours, name='supprimer_cours'),
+    
+    # Suppression des entrees du carnet
+    path('carnet-pedagogique/ecoute/<int:ecoute_id>/supprimer/', views_carnet_edit.supprimer_ecoute, name='supprimer_ecoute'),
+    path('carnet-pedagogique/memorisation/<int:memorisation_id>/supprimer/', views_carnet_edit.supprimer_memorisation, name='supprimer_memorisation'),
+    path('carnet-pedagogique/revision/<int:revision_id>/supprimer/', views_carnet_edit.supprimer_revision, name='supprimer_revision'),
+    path('carnet-pedagogique/repetition/<int:repetition_id>/supprimer/', views_carnet_edit.supprimer_repetition, name='supprimer_repetition'),
+    
+    # Cours partages et Quiz
+    path('cours-quiz/', include(urls_cours_quiz.urlpatterns)),
+    
+    # Carnet pedagogique - Section Livre
+    path('eleves/<int:eleve_id>/livre/', views_carnet_pedagogique.carnet_pedagogique, name='carnet_pedagogique_livre'),
+    path('eleves/livre/evaluer-competence/', views_carnet_pedagogique.evaluer_competence, name='evaluer_competence'),
+    
+    # Notes d'examen
+    path('notes/professeur/', views_notes.liste_notes_professeur, name='liste_notes_professeur'),
+    path('notes/ajouter/', views_notes.ajouter_note, name='ajouter_note'),
+    path('notes/<int:note_id>/modifier/', views_notes.modifier_note, name='modifier_note'),
+    path('notes/<int:note_id>/supprimer/', views_notes.supprimer_note, name='supprimer_note'),
+    path('notes/classe/<int:classe_id>/statistiques/', views_notes.statistiques_notes_classe, name='statistiques_notes_classe'),
+    path('notes/mes-notes/', views_notes.mes_notes, name='mes_notes'),
+    path('notes/historique-quiz/', views_notes.historique_quiz_eleve, name='historique_quiz_eleve'),
+    path('notes/quiz/convertir/<int:tentative_id>/', views_notes_quiz.convertir_quiz_en_note, name='convertir_quiz_en_note'),
+    path('notes/quiz/historique/', views_notes_quiz.historique_quiz_avec_notes, name='historique_quiz_avec_notes'),
+    path('notes/quiz/classe/<int:classe_id>/', views_notes_quiz.liste_tentatives_quiz_classe, name='liste_tentatives_quiz_classe'),
+]

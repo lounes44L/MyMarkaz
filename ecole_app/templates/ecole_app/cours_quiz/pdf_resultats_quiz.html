@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Résultats du Quiz - {{ tentative.quiz.titre }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #4e73df;
+            padding-bottom: 10px;
+        }
+        .header h1 {
+            color: #4e73df;
+            margin-bottom: 5px;
+        }
+        .info-box {
+            background-color: #f8f9fc;
+            border: 1px solid #e3e6f0;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #5a5c69;
+        }
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .score-high {
+            color: #1cc88a;
+            background-color: #e6fff0;
+        }
+        .score-medium {
+            color: #f6c23e;
+            background-color: #fff9e6;
+        }
+        .score-low {
+            color: #e74a3b;
+            background-color: #ffe6e6;
+        }
+        .question {
+            margin-bottom: 30px;
+            border: 1px solid #e3e6f0;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        .question-header {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #4e73df;
+        }
+        .question-type {
+            font-size: 14px;
+            color: #858796;
+            margin-bottom: 10px;
+        }
+        .response {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fc;
+            border-radius: 5px;
+        }
+        .correct {
+            color: #1cc88a;
+            border-left: 4px solid #1cc88a;
+        }
+        .incorrect {
+            color: #e74a3b;
+            border-left: 4px solid #e74a3b;
+        }
+        .choice {
+            margin: 5px 0;
+            padding: 5px;
+        }
+        .choice-correct {
+            color: #1cc88a;
+        }
+        .choice-incorrect {
+            color: #e74a3b;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #858796;
+            border-top: 1px solid #e3e6f0;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ tentative.quiz.titre }}</h1>
+        <p>{{ tentative.quiz.description }}</p>
+    </div>
+    
+    <div class="info-box">
+        <div class="info-row">
+            <span class="info-label">Élève:</span>
+            <span>{{ tentative.eleve.prenom }} {{ tentative.eleve.nom }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Date:</span>
+            <span>{{ tentative.date_fin|date:"d/m/Y H:i" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Module:</span>
+            <span>{{ tentative.quiz.module.titre }}</span>
+        </div>
+    </div>
+    
+    {% if tentative.score %}
+    <div class="score {% if tentative.score >= 80 %}score-high{% elif tentative.score >= 50 %}score-medium{% else %}score-low{% endif %}">
+        Score: {{ tentative.score|floatformat:1 }}%
+    </div>
+    {% endif %}
+    
+    <h2>Questions et réponses</h2>
+    
+    {% for resultat in resultats %}
+    <div class="question">
+        <div class="question-header">Question {{ forloop.counter }}: {{ resultat.question.texte }}</div>
+        <div class="question-type">
+            {% if resultat.question.type == 'choix_unique' %}
+                Choix unique
+            {% elif resultat.question.type == 'choix_multiple' %}
+                Choix multiple
+            {% elif resultat.question.type == 'texte_court' %}
+                Réponse courte
+            {% elif resultat.question.type == 'vrai_faux' %}
+                Vrai/Faux
+            {% endif %}
+            ({{ resultat.question.points }} points)
+        </div>
+        
+        <div class="response {% if resultat.reponse.est_correcte %}correct{% else %}incorrect{% endif %}">
+            <strong>Votre réponse:</strong>
+            {% if resultat.question.type == 'texte_court' %}
+                <p>{{ resultat.reponse.texte_reponse }}</p>
+            {% else %}
+                <ul>
+                    {% for choix in resultat.choix_selectionnes %}
+                        <li class="choice {% if choix.est_correct %}choice-correct{% else %}choice-incorrect{% endif %}">
+                            {{ choix.texte }}
+                            {% if choix.est_correct %}✓{% else %}✗{% endif %}
+                        </li>
+                    {% empty %}
+                        <li class="choice">Aucune réponse sélectionnée</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        
+        {% if not resultat.reponse.est_correcte %}
+        <div class="response correct">
+            <strong>Réponse(s) correcte(s):</strong>
+            <ul>
+                {% for choix in resultat.choix_corrects %}
+                    <li class="choice choice-correct">
+                        {{ choix.texte }} ✓
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        <div>
+            <strong>Points:</strong> 
+            {% if resultat.reponse.est_correcte %}
+                <span class="choice-correct">{{ resultat.question.points }} / {{ resultat.question.points }}</span>
+            {% else %}
+                <span class="choice-incorrect">0 / {{ resultat.question.points }}</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    
+    <div class="footer">
+        <p>Ce document a été généré automatiquement le {{ tentative.date_fin|date:"d/m/Y" }} à {{ tentative.date_fin|date:"H:i" }}</p>
+    </div>
+</body>
+</html>

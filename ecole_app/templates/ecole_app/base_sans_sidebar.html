@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Markaz Quran - Gestion École{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    {% load static %}
+    <link href="{% static 'ecole_app/css/composante.css' %}" rel="stylesheet">
+    <link href="{% static 'ecole_app/css/custom-styles.css' %}" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #1b5530;
+            --light-green: #22693c;
+            --yellow-accent: #ffce4b;
+            --text-light: #ffffff;
+            --bg-light: #f8fafb;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-light);
+        }
+        
+        .top-nav {
+            background-color: white;
+            padding: 0.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .stats-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            height: 100%;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stats-card .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 10px 0;
+            color: var(--primary-green);
+        }
+        
+        .stats-card .stat-icon {
+            font-size: 2rem;
+            padding: 15px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+        
+        .stats-card.professeurs .stat-icon { background-color: rgba(255, 206, 75, 0.2); color: #ffa600; }
+        .stats-card.etudiants .stat-icon { background-color: rgba(106, 90, 205, 0.2); color: #6a5acd; }
+        .stats-card.creneaux .stat-icon { background-color: rgba(255, 99, 132, 0.2); color: #ff6384; }
+        .stats-card.classes .stat-icon { background-color: rgba(75, 192, 192, 0.2); color: #4bc0c0; }
+        
+        .stats-card.professeurs .stat-value { color: #ffa600; }
+        .stats-card.etudiants .stat-value { color: #6a5acd; }
+        .stats-card.creneaux .stat-value { color: #ff6384; }
+        .stats-card.classes .stat-value { color: #4bc0c0; }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-green);
+            border-color: var(--primary-green);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--light-green);
+            border-color: var(--light-green);
+        }
+        
+        .btn-warning {
+            background-color: var(--yellow-accent);
+            border-color: var(--yellow-accent);
+            color: #333;
+        }
+        
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+        }
+        
+        .progress-bar-success { background-color: #4bc0c0; }
+        .progress-bar-warning { background-color: #ffa600; }
+        .progress-bar-danger { background-color: #ff6384; }
+        
+        /* Classes pour les largeurs de barre de progression */
+        .progress-width-0 { width: 0%; }
+        .progress-width-5 { width: 5%; }
+        .progress-width-10 { width: 10%; }
+        .progress-width-15 { width: 15%; }
+        .progress-width-20 { width: 20%; }
+        .progress-width-25 { width: 25%; }
+        .progress-width-30 { width: 30%; }
+        .progress-width-35 { width: 35%; }
+        .progress-width-40 { width: 40%; }
+        .progress-width-45 { width: 45%; }
+        .progress-width-50 { width: 50%; }
+        .progress-width-55 { width: 55%; }
+        .progress-width-60 { width: 60%; }
+        .progress-width-65 { width: 65%; }
+        .progress-width-70 { width: 70%; }
+        .progress-width-75 { width: 75%; }
+        .progress-width-80 { width: 80%; }
+        .progress-width-85 { width: 85%; }
+        .progress-width-90 { width: 90%; }
+        .progress-width-95 { width: 95%; }
+        .progress-width-100 { width: 100%; }
+        
+        /* Mode sombre */
+        .dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        
+        .dark-mode .top-nav {
+            background-color: #1e1e1e;
+            border-bottom: 1px solid #333;
+            color: #e0e0e0;
+        }
+        
+        .dark-mode .card,
+        .dark-mode .stats-card,
+        .dark-mode .table-container {
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+            border: 1px solid #444;
+        }
+        
+        .dark-mode .card-header {
+            background-color: #333;
+            border-bottom: 1px solid #444;
+            color: #e0e0e0;
+        }
+        
+        .dark-mode .table {
+            color: #e0e0e0;
+        }
+        
+        .dark-mode .table thead th {
+            border-color: #444;
+            background-color: #333;
+        }
+        
+        .dark-mode .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .dark-mode .table td,
+        .dark-mode .table th {
+            border-color: #444;
+        }
+        
+        .dark-mode .form-control,
+        .dark-mode .form-select,
+        .dark-mode .form-control[readonly],
+        .dark-mode .input-group-text {
+            background-color: #333;
+            color: #e0e0e0;
+            border-color: #444;
+        }
+        
+        .dark-mode .form-control:focus,
+        .dark-mode .form-select:focus {
+            background-color: #3a3a3a;
+            color: #ffffff;
+            border-color: var(--primary-green);
+        }
+        
+        .dark-mode a {
+            color: #4db6ac;
+        }
+        
+        .dark-mode .back-button {
+            color: #4db6ac;
+        }
+        
+        .dark-mode .modal-content {
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+            border-color: #444;
+        }
+        
+        .dark-mode .modal-header,
+        .dark-mode .modal-footer {
+            border-color: #444;
+        }
+        
+        .dark-mode .alert-info {
+            background-color: #0f3a42;
+            color: #98d7e4;
+            border-color: #0c7384;
+        }
+        
+        .dark-mode .alert-success {
+            background-color: #0f3a1d;
+            color: #8fe296;
+            border-color: #0e6623;
+        }
+        
+        .dark-mode .alert-warning {
+            background-color: #3a2f0f;
+            color: #f5dc8b;
+            border-color: #84740e;
+        }
+        
+        .dark-mode .alert-danger {
+            background-color: #3a0f1c;
+            color: #efa0b4;
+            border-color: #84132f;
+        }
+        
+        .dark-mode .badge {
+            border: 1px solid #444;
+        }
+        
+        .main-content {
+            margin-top: 60px;
+        }
+        
+        /* Classes pour les barres de progression */
+        .progress-width-custom {
+            display: block;
+        }
+        
+        /* Classes pour les largeurs de barres de progression */
+        [class*="progress-width-"] {
+            height: 100%;
+        }
+        
+        .progress-bar-success {
+            background-color: #28a745;
+        }
+        
+        .progress-bar-warning {
+            background-color: #ffc107;
+        }
+        
+        .progress-bar-danger {
+            background-color: #dc3545;
+        }
+        
+        .mode-toggle {
+            background-color: var(--yellow-accent);
+            color: #333;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .back-button {
+            background-color: var(--yellow-accent);
+            color: #333;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 5px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .table-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-bar-danger {
+            border-left: 8px solid #dc3545 !important;
+            box-shadow: 0 2px 8px rgba(220,53,69,0.08);
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Top Navigation -->
+    <div class="top-nav fixed-top">
+        {% if request.user.professeur %}
+        <a href="{% url 'dashboard_professeur' %}" class="back-button">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+        {% elif request.user.eleve %}
+        <a href="{% url 'dashboard_eleve' %}" class="back-button">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+        {% else %}
+        <a href="{% url 'dashboard' %}" class="back-button">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+        {% endif %}
+        <h5 class="mb-0 d-flex align-items-center" style="gap: 0.5rem;">
+            {{ site_name }}
+            {% if request.user.is_authenticated and request.user.is_superuser %}
+            <button class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="modal" data-bs-target="#modalRenommerSite" title="Renommer le site">
+                <i class="fas fa-pen"></i>
+            </button>
+            {% endif %}
+        </h5>
+        <button class="mode-toggle" id="toggleDarkMode">
+            <i class="fas fa-sun me-1"></i> Mode sombre
+        </button>
+        {% if request.user.is_authenticated %}
+        <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-secondary ms-2" title="Déconnexion">
+            <i class="fas fa-sign-out-alt"></i>
+        </a>
+        {% endif %}
+    </div>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Main Content - Full Width -->
+            <main class="col-12 px-md-4 main-content">
+                <div class="dashboard-header">
+                    <h2>{% block page_title %}{% endblock %}</h2>
+                </div>
+
+                {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show {% if message.tags == 'error' %}alert-bar-danger{% endif %}" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="content">
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Toggle dark mode
+        const toggleButton = document.getElementById('toggleDarkMode');
+        const body = document.body;
+        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+        
+        if (isDarkMode) {
+            body.classList.add('dark-mode');
+            toggleButton.innerHTML = '<i class="fas fa-moon me-1"></i> Mode clair';
+        }
+        
+        toggleButton.addEventListener('click', function() {
+            body.classList.toggle('dark-mode');
+            const isDarkMode = body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+            
+            if (isDarkMode) {
+                this.innerHTML = '<i class="fas fa-moon me-1"></i> Mode clair';
+            } else {
+                this.innerHTML = '<i class="fas fa-sun me-1"></i> Mode sombre';
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+    
+    <!-- Script pour gérer les largeurs des barres de progression sans styles inline -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sélectionner toutes les barres de progression avec data-width
+            const progressBars = document.querySelectorAll('.progress-bar[data-width]');
+            
+            // Appliquer les largeurs via JavaScript et initialiser les attributs ARIA
+            progressBars.forEach(function(bar) {
+                const width = bar.getAttribute('data-width');
+                const value = bar.getAttribute('data-value') || width;
+                
+                // Appliquer la largeur via CSS
+                if (width) {
+                    bar.style.width = width + '%';
+                }
+                
+                // Définir l'attribut ARIA aria-valuenow avec une valeur numérique
+                if (value) {
+                    bar.setAttribute('aria-valuenow', parseInt(value));
+                }
+            });
+        });
+    </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+</body>
+</html>

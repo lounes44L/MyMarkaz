@@ -1,0 +1,457 @@
+{% extends 'ecole_app/professeurs/base_professeur.html' %}
+{% load static %}
+
+{% block title %}Appel Rapide - Professeur{% endblock %}
+
+{% block extra_css %}
+<style>
+    .student-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 2px solid #e9ecef;
+    }
+    
+    .student-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .student-card.present {
+        border-color: #28a745;
+        background-color: #f8fff9;
+    }
+    
+    .student-card.absent {
+        border-color: #dc3545;
+        background-color: #fff8f8;
+    }
+    
+    .student-card.absent-justified {
+        border-color: #ffc107;
+        background-color: #fffdf5;
+    }
+    
+    .status-buttons {
+        display: none;
+    }
+    
+    .student-card:hover .status-buttons {
+        display: block;
+    }
+    
+    .quick-actions {
+        position: sticky;
+        top: 80px;
+        z-index: 100;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Conteneur pour les alertes -->
+    <div id="alert-container" class="mb-3"></div>
+    
+    <!-- Messages Django -->
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Sélection de classe et date -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Sélection</h5>
+                </div>
+                <div class="card-body">
+                    <form id="selection-form" method="get" action="{% url 'appel_rapide_professeur' %}">
+                        <!-- Sélection de classe -->
+                        <div class="form-group mb-3">
+                            <label for="classe-select" class="form-label">Classe</label>
+                            <select class="form-select" id="classe-select" name="classe" onchange="this.form.submit()">
+                                <option value="">Sélectionner une classe</option>
+                                {% for classe in classes %}
+                                    <option value="{{ classe.id }}" {% if selected_classe.id == classe.id %}selected{% endif %}>
+                                        {{ classe.nom }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Sélection de date -->
+                        <div class="form-group mb-3">
+                            <label for="date-select" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="date-select" name="date" 
+                                   value="{{ selected_date|date:'Y-m-d' }}" onchange="this.form.submit()">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            {% if selected_classe %}
+            <form id="presence-form" method="post" action="{% url 'appel_rapide_professeur' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="save_all_presences">
+                <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+                <input type="hidden" name="classe" value="{{ selected_classe.id }}">
+                <input type="checkbox" id="non-ajax-submit" style="display: none;">
+                
+                <!-- Actions rapides -->
+                <div class="quick-actions mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">Actions rapides</h4>
+                        <div>
+                            <button type="button" class="btn btn-success me-2" onclick="markAllPresent()">
+                                <i class="fas fa-check"></i> Tous présents
+                            </button>
+                            <button type="button" class="btn btn-danger" onclick="markAllAbsent()">
+                                <i class="fas fa-times"></i> Tous absents
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Statistiques -->
+                    <div class="d-flex flex-wrap gap-2 mt-3">
+                        <span class="badge bg-secondary">Total: <span id="total-count">0</span></span>
+                        <span class="badge bg-success">Présents: <span id="present-count">0</span></span>
+                        <span class="badge bg-warning text-dark">Absences justifiées: <span id="absent-justified-count">0</span></span>
+                        <span class="badge bg-danger">Absents: <span id="absent-count">0</span></span>
+                    </div>
+                </div>
+                
+                <!-- Bouton de sauvegarde -->
+                <div class="d-flex justify-content-end mb-4">
+                    <button type="button" id="save-presences-btn" class="btn btn-primary" onclick="saveAllPresences()">
+                        <i class="fas fa-save"></i> Enregistrer
+                    </button>
+                </div>
+
+                <!-- Liste des élèves en cartes -->
+                <div class="row" id="students-grid">
+                    {% for eleve, presence in eleves_with_presence %}
+                    <div class="col-md-4 col-lg-3 mb-3">
+                        <div class="card student-card" data-eleve-id="{{ eleve.id }}" data-status="{% if presence %}{% if presence.present %}present{% elif presence.justifie %}absent-justified{% else %}absent{% endif %}{% else %}unknown{% endif %}">
+                            <div class="card-body text-center">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0">{{ eleve.nom }} {{ eleve.prenom }}</h6>
+                                    <div class="status-indicator">
+                                        {% if presence %}
+                                            {% if presence.present %}
+                                                <i class="fas fa-check-circle text-success fs-4"></i>
+                                            {% elif presence.justifie %}
+                                                <i class="fas fa-exclamation-circle text-warning fs-4"></i>
+                                            {% else %}
+                                                <i class="fas fa-times-circle text-danger fs-4"></i>
+                                            {% endif %}
+                                        {% else %}
+                                            <i class="fas fa-question-circle text-secondary fs-4"></i>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <small class="text-muted d-block mb-2">
+                                    {% for classe in eleve.classes.all %}
+                                        {{ classe.nom }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </small>
+                                
+                                <!-- Boutons d'action rapide -->
+                                <div class="status-buttons">
+                                    <div class="btn-group d-flex justify-content-between" role="group">
+                                        <button type="button" class="btn btn-sm btn-success mx-1" onclick="setStatus('{{ eleve.id }}', 'present')">
+                                            <i class="fas fa-check"></i> Présent
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-warning mx-1" onclick="setStatus('{{ eleve.id }}', 'absent-justified')">
+                                            <i class="fas fa-exclamation"></i> Justifié
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger mx-1" onclick="setStatus('{{ eleve.id }}', 'absent')">
+                                            <i class="fas fa-times"></i> Absent
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Zone de commentaire -->
+                                    <div class="mt-2">
+                                        <textarea class="form-control form-control-sm comment-field" 
+                                                  placeholder="Commentaire..." 
+                                                  rows="2"
+                                                  data-eleve-id="{{ eleve.id }}">{% if presence %}{{ presence.commentaire|default:"" }}{% endif %}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-info-circle"></i>
+                            Aucun élève trouvé pour cette classe.
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </form>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                Veuillez sélectionner une classe pour afficher les élèves.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Fonction pour afficher des alertes
+function showAlert(type, message) {
+    // Créer l'élément d'alerte
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.role = 'alert';
+    
+    // Ajouter le message
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    // Ajouter l'alerte au conteneur
+    const alertContainer = document.getElementById('alert-container');
+    if (alertContainer) {
+        alertContainer.appendChild(alertDiv);
+        
+        // Supprimer automatiquement l'alerte après 5 secondes
+        setTimeout(() => {
+            alertDiv.classList.remove('show');
+            setTimeout(() => alertDiv.remove(), 150);
+        }, 5000);
+    } else {
+        // Si le conteneur n'existe pas, utiliser une alerte standard
+        alert(message);
+    }
+}
+
+// Initialiser l'objet de données de présence
+let presenceData = {};
+
+// Initialiser les données de présence à partir des données Django
+{% for eleve, presence in eleves_with_presence %}
+presenceData["{{ eleve.id }}"] = {
+    status: "{% if presence %}{% if presence.present %}present{% elif presence.justifie %}absent-justified{% else %}absent{% endif %}{% else %}unknown{% endif %}",
+    comment: "{% if presence %}{{ presence.commentaire|default:""|escapejs }}{% endif %}"
+};
+{% endfor %}
+
+function setStatus(eleveId, status) {
+    // Mettre à jour les données
+    if (presenceData[eleveId]) {
+        presenceData[eleveId].status = status;
+    } else {
+        presenceData[eleveId] = { status: status, comment: '' };
+    }
+    
+    // Mettre à jour l'interface utilisateur
+    const card = document.querySelector(`.student-card[data-eleve-id="${eleveId}"]`);
+    if (card) {
+        // Supprimer toutes les classes de statut
+        card.classList.remove('present', 'absent', 'absent-justified');
+        
+        // Ajouter la nouvelle classe de statut
+        card.classList.add(status);
+        
+        // Mettre à jour l'attribut data-status
+        card.dataset.status = status;
+        
+        // Mettre à jour l'icône de statut
+        const statusIcon = card.querySelector('.status-indicator i');
+        if (statusIcon) {
+            statusIcon.className = '';
+            statusIcon.classList.add('fas', 'fs-4');
+            
+            switch (status) {
+                case 'present':
+                    statusIcon.classList.add('fa-check-circle', 'text-success');
+                    break;
+                case 'absent-justified':
+                    statusIcon.classList.add('fa-exclamation-circle', 'text-warning');
+                    break;
+                case 'absent':
+                    statusIcon.classList.add('fa-times-circle', 'text-danger');
+                    break;
+                default:
+                    statusIcon.classList.add('fa-question-circle', 'text-secondary');
+            }
+        }
+    }
+    
+    // Mettre à jour les statistiques
+    updateStats();
+}
+
+function updateStats() {
+    let total = 0;
+    let present = 0;
+    let absent = 0;
+    let absentJustified = 0;
+    
+    // Parcourir toutes les données de présence
+    Object.keys(presenceData).forEach(eleveId => {
+        const data = presenceData[eleveId];
+        if (data && data.status) {
+            total++;
+            
+            switch (data.status) {
+                case 'present': present++; break;
+                case 'absent-justified': absentJustified++; break;
+                case 'absent': absent++; break;
+            }
+        }
+    });
+    
+    document.getElementById('total-count').textContent = total;
+    document.getElementById('present-count').textContent = present;
+    document.getElementById('absent-justified-count').textContent = absentJustified;
+    document.getElementById('absent-count').textContent = absent;
+}
+
+function markAllPresent() {
+    Object.keys(presenceData).forEach(eleveId => {
+        setStatus(eleveId, 'present');
+    });
+}
+
+function markAllAbsent() {
+    Object.keys(presenceData).forEach(eleveId => {
+        setStatus(eleveId, 'absent');
+    });
+}
+
+function saveAllPresences() {
+    // Récupérer le formulaire
+    const form = document.getElementById('presence-form');
+    
+    // Mettre à jour les champs cachés avec les données de présence
+    Object.keys(presenceData).forEach(eleveId => {
+        const data = presenceData[eleveId];
+        if (data && data.status) {
+            // Créer ou mettre à jour le champ caché pour le statut de présence
+            let inputStatus = form.querySelector(`input[name="presence_${eleveId}"]`);
+            if (!inputStatus) {
+                inputStatus = document.createElement('input');
+                inputStatus.type = 'hidden';
+                inputStatus.name = `presence_${eleveId}`;
+                form.appendChild(inputStatus);
+            }
+            inputStatus.value = data.status;
+            
+            // Récupérer le commentaire depuis le champ de texte
+            const commentField = document.querySelector(`.comment-field[data-eleve-id="${eleveId}"]`);
+            const comment = commentField ? commentField.value : (data.comment || '');
+            
+            // Créer ou mettre à jour le champ caché pour le commentaire
+            let inputComment = form.querySelector(`input[name="comment_${eleveId}"]`);
+            if (!inputComment) {
+                inputComment = document.createElement('input');
+                inputComment.type = 'hidden';
+                inputComment.name = `comment_${eleveId}`;
+                form.appendChild(inputComment);
+            }
+            inputComment.value = comment;
+            
+            // Mettre à jour l'objet presenceData
+            if (commentField) {
+                presenceData[eleveId].comment = commentField.value;
+            }
+        }
+    });
+    
+    // Afficher un indicateur de chargement
+    const saveBtn = document.querySelector('#save-presences-btn');
+    let originalText = 'Enregistrer';
+    if (saveBtn) {
+        originalText = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sauvegarde...';
+        saveBtn.disabled = true;
+    }
+    
+    // Si le navigateur supporte fetch et que la demande n'est pas explicitement non-AJAX
+    if (window.fetch && !document.getElementById('non-ajax-submit').checked) {
+        // Utiliser AJAX pour soumettre le formulaire
+        const formData = new FormData(form);
+        
+        fetch(window.location.pathname, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || `Erreur réseau: ${response.status}`);
+                }).catch(e => {
+                    throw new Error(`Erreur réseau: ${response.status}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Afficher un message de succès
+                showAlert('success', data.message || 'Présences enregistrées avec succès.');
+            } else {
+                // Afficher un message d'erreur
+                showAlert('danger', data.message || 'Erreur lors de l\'enregistrement des présences.');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showAlert('danger', `Erreur: ${error.message}`);
+            // En cas d'erreur AJAX, soumettre le formulaire normalement
+            form.querySelector('#non-ajax-submit').checked = true;
+            form.submit();
+        })
+        .finally(() => {
+            // Restaurer le bouton de sauvegarde
+            if (saveBtn) {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
+        });
+    } else {
+        // Soumettre le formulaire normalement
+        form.submit();
+    }
+}
+
+// Initialiser les statistiques au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    updateStats();
+    
+    // Gérer les commentaires
+    document.querySelectorAll('.comment-field').forEach(textarea => {
+        textarea.addEventListener('blur', function() {
+            const eleveId = this.dataset.eleveId;
+            if (presenceData[eleveId]) {
+                presenceData[eleveId].comment = this.value;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

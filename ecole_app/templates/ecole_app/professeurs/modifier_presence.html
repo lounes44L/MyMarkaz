@@ -1,0 +1,44 @@
+{% extends 'ecole_app/professeurs/base_professeur.html' %}
+{% load static %}
+
+{% block title %}Modifier la présence{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Modifier la présence</h1>
+        <a href="{% url 'rapport_presence_professeur' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour au rapport
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                Modifier la présence de {{ presence.professeur.nom }} du {{ presence.date|date:"d/m/Y" }}
+                {% if presence.creneau %}
+                    - {{ presence.creneau.nom }} ({{ presence.creneau.get_jour_display }} {{ presence.creneau.heure_debut|time:"H:i" }}-{{ presence.creneau.heure_fin|time:"H:i" }})
+                {% endif %}
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="status">Statut</label>
+                    <select class="form-control" id="status" name="status">
+                        <option value="present" {% if presence.present %}selected{% endif %}>Présent</option>
+                        <option value="absent" {% if not presence.present %}selected{% endif %}>Absent</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="commentaire">Commentaire</label>
+                    <textarea class="form-control" id="commentaire" name="commentaire" rows="3">{{ presence.commentaire }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                <a href="{% url 'rapport_presence_professeur' %}" class="btn btn-secondary">Annuler</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

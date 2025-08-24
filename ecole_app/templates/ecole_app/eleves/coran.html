@@ -1,0 +1,33 @@
+{% extends 'ecole_app/base.html' %}
+{% load static %}
+
+{% block title %}Coran - {{ eleve.nom }} {{ eleve.prenom }}{% endblock %}
+
+{% block page_title %}Coran pour {{ eleve.nom }} {{ eleve.prenom }}{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Coran (texte arabe)</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-md-4">
+                <label for="sourate" class="form-label">Sourate</label>
+                <select name="sourate" id="sourate" class="form-select" onchange="this.form.submit()">
+                    {% for s in sourates %}
+                        <option value="{{ s.numero }}" {% if s.numero == sourate_active %}selected{% endif %}>{{ s.numero }}. {{ s.nom_ar }} ({{ s.nom_fr }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+        <link rel="stylesheet" href="{% static 'coran/coran.css' %}">
+<div class="coran-texte-arabe">
+    {% for verset in versets %}
+        <span class="badge">{{ verset.aya }}</span>
+        {{ verset.text }}<br>
+    {% endfor %}
+</div>
+    </div>
+</div>
+{% endblock %}

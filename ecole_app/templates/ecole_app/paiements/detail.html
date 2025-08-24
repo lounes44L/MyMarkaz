@@ -1,0 +1,278 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Détail du paiement - Gestion Markaz{% endblock %}
+
+{% block page_title %}Détail du paiement #{{ paiement.id }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Informations du paiement -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Informations du paiement</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.eleve.id_for_label }}" class="form-label">Élève</label>
+                            {{ form.eleve }}
+                            {% if form.eleve.errors %}
+                            <div class="invalid-feedback d-block">{{ form.eleve.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.montant.id_for_label }}" class="form-label">Montant (€)</label>
+                            {{ form.montant }}
+                            {% if form.montant.errors %}
+                            <div class="invalid-feedback d-block">{{ form.montant.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.date.id_for_label }}" class="form-label">Date</label>
+                            {{ form.date }}
+                            {% if form.date.errors %}
+                            <div class="invalid-feedback d-block">{{ form.date.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.methode.id_for_label }}" class="form-label">Méthode de paiement</label>
+                            {{ form.methode }}
+                            {% if form.methode.errors %}
+                            <div class="invalid-feedback d-block">{{ form.methode.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.commentaire.id_for_label }}" class="form-label">Commentaire</label>
+                        {{ form.commentaire }}
+                        {% if form.commentaire.errors %}
+                        <div class="invalid-feedback d-block">{{ form.commentaire.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.annee_scolaire.id_for_label }}" class="form-label">Année scolaire</label>
+                        {{ form.annee_scolaire }}
+                        {% if form.annee_scolaire.errors %}
+                        <div class="invalid-feedback d-block">{{ form.annee_scolaire.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'liste_paiements' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Retour
+                        </a>
+                        <div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Enregistrer
+                            </button>
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="fas fa-trash me-1"></i> Supprimer
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations sur l'élève -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Informations sur l'élève</h5>
+            </div>
+            <div class="card-body">
+                {% if paiement.eleve %}
+                <div class="text-center mb-3">
+                    <div class="avatar-placeholder mb-2" aria-hidden="true">
+                        <i class="fas fa-user fa-3x"></i>
+                    </div>
+                    <h5>{{ paiement.eleve.nom }} {{ paiement.eleve.prenom }}</h5>
+                    <ul class="list-unstyled"><li class="mb-2"><strong>Classe:</strong> {{ paiement.eleve.classe.nom }}</li>{% if paiement.eleve.creneau %}<li class="mb-2"><strong>Créneau:</strong> {{ paiement.eleve.creneau.nom }}</li>{% endif %}</ul>
+                </div>
+                
+                <ul class="list-group list-group-flush"><li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-phone me-2"></i> Téléphone</span>
+                        <span>{{ paiement.eleve.telephone|default:"Non renseigné" }}</span>
+                    </li><li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-envelope me-2"></i> Email</span>
+                        <span>{{ paiement.eleve.email|default:"Non renseigné" }}</span>
+                    </li><li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-money-bill me-2"></i> Total payé</span>
+                        <span class="badge bg-success">{{ total_paiements }} €</span>
+                    </li><li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-calendar me-2"></i> Date d'inscription</span>
+                        <span>{{ paiement.eleve.date_inscription|date:"d/m/Y"|default:"Non renseigné" }}</span>
+                    </li></ul>
+                
+                <div class="mt-3">
+                    <div class="alert {% if paiement.eleve.montant_restant > 0 %}alert-warning{% else %}alert-success{% endif %}">
+                        <strong>Montant restant à payer:</strong> {{ paiement.eleve.montant_restant }} €
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-center text-muted">Aucun élève associé à ce paiement</p>
+                {% endif %}
+            </div>
+        </div>
+        
+
+    </div>
+</div>
+
+<!-- Historique des versements pour ce paiement -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Historique des versements</h5>
+    </div>
+    <div class="card-body">
+        {% if historiques and historiques|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Montant</th>
+                        <th>Méthode</th>
+                        <th>Commentaire</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in historiques %}
+                    <tr>
+                        <td>{{ h.date|date:"d/m/Y" }}</td>
+                        <td>{{ h.montant }} €</td>
+                        <td>{{ h.methode|title }}</td>
+                        <td>{{ h.commentaire|default:"-" }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'modifier_historique_paiement' h.id %}" class="btn btn-outline-primary" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteHistoriqueModal{{ h.id }}" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">Aucun versement enregistré pour ce paiement.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Autres paiements de l'élève -->
+{% if autres_paiements %}
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Autres paiements de l'élève</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Montant</th>
+                        <th>Date</th>
+                        <th>Méthode</th>
+                        <th>Commentaire</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in autres_paiements %}
+                    <tr {% if p.id == paiement.id %}class="table-active"{% endif %}>
+                        <td>{{ p.montant }} €</td>
+                        <td>{{ p.date|date:"d/m/Y" }}</td>
+                        <td>{{ p.get_methode_display }}</td>
+                        <td>{{ p.commentaire|default:"-" }}</td>
+                        <td>
+                            <a href="{% url 'detail_paiement' p.id %}" class="btn btn-sm btn-outline-primary" title="Voir les détails du paiement">
+                                <i class="fas fa-eye"></i>
+                                <span class="visually-hidden">Voir les détails du paiement</span>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Modal de confirmation de suppression du paiement -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer ce paiement de <strong>{{ paiement.montant }} €</strong> pour l'élève <strong>{{ paiement.eleve.nom }} {{ paiement.eleve.prenom }}</strong> ?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="{% url 'supprimer_paiement' paiement.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals de confirmation de suppression des historiques -->
+{% for h in historiques %}
+<div class="modal fade" id="deleteHistoriqueModal{{ h.id }}" tabindex="-1" aria-labelledby="deleteHistoriqueModalLabel{{ h.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteHistoriqueModalLabel{{ h.id }}">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer ce versement de <strong>{{ h.montant }} €</strong> du {{ h.date|date:"d/m/Y" }} ?</p>
+                <p class="text-danger"><strong>Attention:</strong> Cette action réduira le montant total du paiement.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="{% url 'supprimer_historique_paiement' h.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<style>
+    .avatar-placeholder {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}

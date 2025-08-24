@@ -1,0 +1,49 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Modifier élève en attente - Gestion Markaz{% endblock %}
+{% block page_title %}Modifier élève en liste d'attente{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Modifier un élève en attente</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" action="">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    {{ form.nom.label_tag }}
+                    {{ form.nom }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.prenom.label_tag }}
+                    {{ form.prenom }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.date_naissance.label_tag }}
+                    {{ form.date_naissance }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.telephone.label_tag }}
+                    {{ form.telephone }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.email.label_tag }}
+                    {{ form.email }}
+                </div>
+                <div class="col-md-12 mb-3">
+                    {{ form.remarque.label_tag }}
+                    {{ form.remarque }}
+                </div>
+            </div>
+            <div class="text-end">
+                <a href="{% url 'liste_attente' %}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> Enregistrer les modifications
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

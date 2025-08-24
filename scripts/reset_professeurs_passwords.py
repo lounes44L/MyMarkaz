@@ -1,0 +1,32 @@
+import os
+import sys
+import django
+
+# Ajout du dossier projet au PYTHONPATH pour import Windows
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/..'))
+
+def main():
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gestion_markaz.settings')
+    django.setup()
+    from ecole_app.models import Professeur
+    from django.contrib.auth.models import User
+    import random, string
+
+    def generer_mot_de_passe():
+        return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+
+    count = 0
+    for prof in Professeur.objects.all():
+        if not prof.user:
+            continue
+        new_password = generer_mot_de_passe()
+        prof.user.set_password(new_password)
+        prof.user.save()
+        prof.mot_de_passe_en_clair = new_password
+        prof.save()
+        print(f"[RESET] Mot de passe réinitialisé pour {prof.nom} (id={prof.id}) : {new_password}")
+        count += 1
+    print(f"Réinitialisation terminée. {count} professeurs traités.")
+
+if __name__ == '__main__':
+    main()

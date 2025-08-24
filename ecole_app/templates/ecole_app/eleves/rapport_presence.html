@@ -1,0 +1,245 @@
+{% extends 'ecole_app/base.html' %}
+{% load static %}
+
+{% block title %}Rapport des présences élèves{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Rapport des présences élèves</h1>
+        <div>
+            <a href="{% url 'export_rapport_presence_pdf' %}?{% if selected_eleve %}eleve={{ selected_eleve.id }}{% endif %}{% if selected_classe %}&classe={{ selected_classe.id }}{% endif %}&date_debut={{ date_debut|date:'Y-m-d' }}&date_fin={{ date_fin|date:'Y-m-d' }}" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm mr-2" target="_blank">
+                <i class="fas fa-file-pdf fa-sm text-white-50"></i> Exporter en PDF
+            </a>
+            <a href="{% url 'gestion_presence_eleve' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-clipboard-list fa-sm text-white-50"></i> Gestion des présences
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Filtrer le rapport</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="eleve" class="form-label">Élève</label>
+                    <select name="eleve" id="eleve" class="form-control">
+                        <option value="">Tous les élèves</option>
+                        {% for eleve in eleves %}
+                            <option value="{{ eleve.id }}" {% if selected_eleve.id == eleve.id %}selected{% endif %}>
+                                {{ eleve.nom }} {{ eleve.prenom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="classe" class="form-label">Classe</label>
+                    <select name="classe" id="classe" class="form-control">
+                        <option value="">Toutes les classes</option>
+                        {% for classe in classes %}
+                            <option value="{{ classe.id }}" {% if selected_classe.id == classe.id %}selected{% endif %}>
+                                {{ classe.nom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="date_debut" class="form-label">Date début</label>
+                    <input type="date" class="form-control" id="date_debut" name="date_debut" value="{{ date_debut|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="date_fin" class="form-label">Date fin</label>
+                    <input type="date" class="form-control" id="date_fin" name="date_fin" value="{{ date_fin|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">Filtrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total enregistrements</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Présences</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.presents }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Absences justifiées</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.absents_justifies }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Absences non justifiées</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.absents }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-times fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Taux de présence -->
+    <div class="row">
+        <div class="col-xl-12 col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Taux de présence</h6>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-success" role="progressbar" data-width="{{ stats.taux_presence }}"
+                            aria-valuemin="0" aria-valuemax="100" title="Taux de présence">{{ stats.taux_presence }}%</div>
+                    </div>
+                    <small>{{ stats.presents }} présences sur {{ stats.total }} enregistrements</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des présences -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                Détail des présences
+                {% if selected_eleve %}
+                    pour {{ selected_eleve.nom }} {{ selected_eleve.prenom }}
+                {% endif %}
+                {% if selected_classe and not selected_eleve %}
+                    pour la classe {{ selected_classe.nom }}
+                {% endif %}
+                du {{ date_debut|date:"d/m/Y" }} au {{ date_fin|date:"d/m/Y" }}
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Élève</th>
+                            <th>Classe</th>
+                            <th>Statut</th>
+                            <th>Commentaire</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for presence in presences %}
+                        <tr>
+                            <td>{{ presence.date|date:"d/m/Y" }}</td>
+                            <td>{{ presence.eleve.nom }} {{ presence.eleve.prenom }}</td>
+                            <td>
+                                {% if presence.classe %}
+                                    {{ presence.classe.nom }}
+                                {% else %}
+                                    {% for classe in presence.eleve.classes.all|slice:":1" %}
+                                        {{ classe.nom }}
+                                    {% empty %}
+                                        Non définie
+                                    {% endfor %}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if presence.present %}
+                                    <span class="badge bg-success text-white">Présent</span>
+                                {% elif presence.justifie %}
+                                    <span class="badge bg-warning text-dark">Absent justifié</span>
+                                {% else %}
+                                    <span class="badge bg-danger text-white">Absent non justifié</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ presence.commentaire|default:"-" }}</td>
+                            <td>
+                                {% if user.is_staff or user.is_superuser or user.professeur %}
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'modifier_presence_eleve' presence.id %}" class="btn btn-sm btn-warning" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'supprimer_presence_eleve' presence.id %}" class="btn btn-sm btn-danger" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">Aucune présence enregistrée pour cette période</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            },
+            "order": [[0, "desc"], [1, "asc"]]
+        });
+    });
+</script>
+{% endblock %}

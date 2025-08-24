@@ -1,0 +1,188 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Ajout rapide d'élève - Gestion Markaz{% endblock %}
+
+{% block page_title %}Ajout rapide d'élève{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Informations de l'élève</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="formAjoutEleve" autocomplete="off">
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.nom.id_for_label }}" class="form-label">Nom*</label>
+                            {{ form.nom }}
+                            {% if form.nom.errors %}
+                            <div class="invalid-feedback d-block">{{ form.nom.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.prenom.id_for_label }}" class="form-label">Prénom*</label>
+                            {{ form.prenom }}
+                            {% if form.prenom.errors %}
+                            <div class="invalid-feedback d-block">{{ form.prenom.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.classes.id_for_label }}" class="form-label">Classes*</label>
+                            {{ form.classes }}
+                            {% if form.classes.errors %}
+                            <div class="invalid-feedback d-block">{{ form.classes.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.creneau.id_for_label }}" class="form-label">Créneau*</label>
+                            {{ form.creneau }}
+                            {% if form.creneau.errors %}
+                            <div class="invalid-feedback d-block">{{ form.creneau.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="{{ form.telephone_secondaire.id_for_label }}" class="form-label">Numéro secondaire</label>
+                            {{ form.telephone_secondaire }}
+                            {% if form.telephone_secondaire.errors %}
+                            <div class="invalid-feedback d-block">{{ form.telephone_secondaire.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.prenom_pere.id_for_label }}" class="form-label">Prénom du père</label>
+                            {{ form.prenom_pere }}
+                            {% if form.prenom_pere.errors %}
+                            <div class="invalid-feedback d-block">{{ form.prenom_pere.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.prenom_mere.id_for_label }}" class="form-label">Prénom de la mère</label>
+                            {{ form.prenom_mere }}
+                            {% if form.prenom_mere.errors %}
+                            <div class="invalid-feedback d-block">{{ form.prenom_mere.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'liste_eleves' %}" class="btn btn-secondary">
+                            <i class="fas fa-list me-1"></i> Liste des élèves
+                        </a>
+                        <div>
+                            <button type="submit" class="btn btn-primary" id="btnAjouter">
+                                <i class="fas fa-save me-1"></i> Ajouter
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="btnAjouterEtNouveau">
+                                <i class="fas fa-plus-circle me-1"></i> Ajouter et nouveau
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Derniers élèves ajoutés -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Derniers élèves ajoutés</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Classe</th>
+                                <th>Créneau</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for eleve in eleves|slice:":5" %}
+                            <tr>
+                                <td>{{ eleve.nom }}</td>
+                                <td>{{ eleve.prenom }}</td>
+                                <td>{{ eleve.classe.nom|default:"-" }}</td>
+                                <td>{{ eleve.creneau.nom|default:"-" }}</td>
+                                <td>
+                                    <a href="{% url 'detail_eleve' eleve.id %}" class="btn btn-sm btn-outline-primary" title="Voir détails de l'élève">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                        <span class="visually-hidden">Voir détails</span>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">Aucun élève enregistré</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Aide et informations -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Aide</h5>
+            </div>
+            <div class="card-body">
+                <h6>Ajout rapide d'élèves</h6>
+                <p>Ce formulaire permet d'ajouter rapidement des élèves avec les informations essentielles.</p>
+                <p>Pour ajouter plus de détails (date de naissance, téléphone, etc.), utilisez le formulaire complet depuis la liste des élèves.</p>
+                
+                <h6 class="mt-3">Raccourcis clavier</h6>
+                <ul class="list-unstyled">
+                    <li><kbd>Tab</kbd> : Passer au champ suivant</li>
+                    <li><kbd>Shift</kbd> + <kbd>Tab</kbd> : Revenir au champ précédent</li>
+                    <li><kbd>Enter</kbd> : Soumettre le formulaire</li>
+                </ul>
+                
+                <h6 class="mt-3">Classes disponibles</h6>
+                <ul class="list-group list-group-flush small">
+                    {% for classe in classes %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ classe.nom }}
+                        <span class="badge bg-primary rounded-pill">{{ classe.get_total_eleves }}/{{ classe.capacite }}</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center">Aucune classe disponible</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Autofocus sur le premier champ
+        document.getElementById('{{ form.nom.id_for_label }}').focus();
+        
+        // Bouton "Ajouter et nouveau"
+        document.getElementById('btnAjouterEtNouveau').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Ajouter un champ caché pour indiquer qu'on veut rester sur la page
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'ajouter_et_nouveau';
+            hiddenInput.value = '1';
+            
+            document.getElementById('formAjoutEleve').appendChild(hiddenInput);
+            document.getElementById('formAjoutEleve').submit();
+        });
+    });
+</script>
+{% endblock %}

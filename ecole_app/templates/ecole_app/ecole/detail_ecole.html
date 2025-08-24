@@ -1,0 +1,166 @@
+{% extends "ecole_app/base_admin.html" %}
+{% load static %}
+
+{% block title %}Détails de l'école{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">{{ ecole.nom }}</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Tableau de bord</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'liste_ecoles' %}">Liste des écoles</a></li>
+        <li class="breadcrumb-item active">{{ ecole.nom }}</li>
+    </ol>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="row">
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Informations générales
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <th style="width: 30%">Nom de l'école</th>
+                            <td>{{ ecole.nom }}</td>
+                        </tr>
+                        <tr>
+                            <th>Adresse</th>
+                            <td>{{ ecole.adresse|default:"Non renseignée"|linebreaks }}</td>
+                        </tr>
+                        <tr>
+                            <th>Téléphone</th>
+                            <td>{{ ecole.telephone|default:"Non renseigné" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email</th>
+                            <td>{{ ecole.email|default:"Non renseigné" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Site web</th>
+                            <td>
+                                {% if ecole.site_web %}
+                                    <a href="{{ ecole.site_web }}" target="_blank">{{ ecole.site_web }}</a>
+                                {% else %}
+                                    Non renseigné
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Date de création</th>
+                            <td>{{ ecole.date_creation|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-user-shield me-1"></i>
+                    Administrateur
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <th style="width: 30%">Nom</th>
+                            <td>{{ ecole.admin.first_name }} {{ ecole.admin.last_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email</th>
+                            <td>{{ ecole.admin.email }}</td>
+                        </tr>
+                        <tr>
+                            <th>Nom d'utilisateur</th>
+                            <td>{{ ecole.admin.username }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date d'inscription</th>
+                            <td>{{ ecole.admin.date_joined|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Dernière connexion</th>
+                            <td>{{ ecole.admin.last_login|date:"d/m/Y H:i"|default:"Jamais connecté" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistiques de l'école -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-chart-bar me-1"></i>
+            Statistiques
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-primary text-white h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="me-3">
+                                    <div class="text-white-75 small">Composantes</div>
+                                    <div class="text-lg fw-bold">{{ ecole.composantes.count }}</div>
+                                </div>
+                                <i class="fas fa-building fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-warning text-white h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="me-3">
+                                    <div class="text-white-75 small">Professeurs</div>
+                                    <div class="text-lg fw-bold">{{ ecole.professeurs.count }}</div>
+                                </div>
+                                <i class="fas fa-chalkboard-teacher fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-success text-white h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="me-3">
+                                    <div class="text-white-75 small">Élèves</div>
+                                    <div class="text-lg fw-bold">{{ ecole.eleves.count }}</div>
+                                </div>
+                                <i class="fas fa-user-graduate fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-danger text-white h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="me-3">
+                                    <div class="text-white-75 small">Classes</div>
+                                    <div class="text-lg fw-bold">{{ ecole.classes.count }}</div>
+                                </div>
+                                <i class="fas fa-school fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

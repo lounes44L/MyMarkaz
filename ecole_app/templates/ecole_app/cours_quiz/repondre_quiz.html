@@ -1,0 +1,96 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Répondre au Quiz{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ tentative.quiz.titre }}</h1>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Progression -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h6 class="font-weight-bold text-primary">Progression</h6>
+            <div class="progress mb-2">
+                <div class="progress-bar quiz-progress-bar" role="progressbar" 
+                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+                     aria-label="Progression du quiz" title="Progression du quiz">
+                    {% firstof progression_percent 0 %}%
+                </div>
+            </div>
+            <small class="text-muted">Question {{ progression }} sur {{ total_questions }}</small>
+        </div>
+    </div>
+
+    <!-- Question -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Question {{ progression }}</h6>
+        </div>
+        <div class="card-body">
+            <div class="mb-4">
+                <h5>{{ question.texte }}</h5>
+                <small class="text-muted">{{ question.points }} point{% if question.points > 1 %}s{% endif %}</small>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    {% for reponse in choix %}
+                        {% if question.type == 'choix_multiple' %}
+                            <div class="custom-control custom-checkbox mb-2">
+                                <input type="checkbox" id="reponse_{{ reponse.id }}" name="choix" value="{{ reponse.id }}" class="custom-control-input">
+                                <label class="custom-control-label" for="reponse_{{ reponse.id }}">{{ reponse.texte }}</label>
+                            </div>
+                        {% else %}
+                            <div class="custom-control custom-radio mb-2">
+                                <input type="radio" id="reponse_{{ reponse.id }}" name="choix" value="{{ reponse.id }}" class="custom-control-input">
+                                <label class="custom-control-label" for="reponse_{{ reponse.id }}">{{ reponse.texte }}</label>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> Question suivante
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize progress bars with proper width
+        const progressBars = document.querySelectorAll('.quiz-progress-bar');
+        
+        progressBars.forEach(function(bar) {
+            // Get the percentage from the text content
+            const progressText = bar.textContent.trim();
+            const progress = parseInt(progressText, 10);
+            
+            // Set width via style
+            bar.style.width = progress + '%';
+        });
+    });
+</script>
+{% endblock %}

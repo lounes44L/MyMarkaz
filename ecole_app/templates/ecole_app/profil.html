@@ -1,0 +1,176 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Mon Profil - Gestion Markaz{% endblock %}
+
+{% block page_title %}Mon Profil{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Informations personnelles -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Informations personnelles</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'profil' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="user_info">
+                    
+                    <div class="mb-3">
+                        <label for="id_first_name" class="form-label">Prénom</label>
+                        <input type="text" class="form-control" id="id_first_name" name="first_name" value="{{ user.first_name }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_last_name" class="form-label">Nom</label>
+                        <input type="text" class="form-control" id="id_last_name" name="last_name" value="{{ user.last_name }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label">Adresse e-mail</label>
+                        <input type="email" class="form-control" id="id_email" name="email" value="{{ user.email }}">
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Changement de mot de passe -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Changer le mot de passe</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'profil' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="password_change">
+                    
+                    <div class="mb-3">
+                        <label for="id_old_password" class="form-label">Mot de passe actuel</label>
+                        <input type="password" class="form-control" id="id_old_password" name="old_password" required>
+                        {% if password_form.old_password.errors %}
+                        <div class="invalid-feedback d-block">{{ password_form.old_password.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_new_password1" class="form-label">Nouveau mot de passe</label>
+                        <input type="password" class="form-control" id="id_new_password1" name="new_password1" required>
+                        {% if password_form.new_password1.errors %}
+                        <div class="invalid-feedback d-block">{{ password_form.new_password1.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">
+                            <ul class="small ps-3 mb-0">
+                                <li>Votre mot de passe ne peut pas être trop similaire à vos autres informations personnelles.</li>
+                                <li>Votre mot de passe doit contenir au moins 8 caractères.</li>
+                                <li>Votre mot de passe ne peut pas être un mot de passe couramment utilisé.</li>
+                                <li>Votre mot de passe ne peut pas être entièrement numérique.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_new_password2" class="form-label">Confirmation du nouveau mot de passe</label>
+                        <input type="password" class="form-control" id="id_new_password2" name="new_password2" required>
+                        {% if password_form.new_password2.errors %}
+                        <div class="invalid-feedback d-block">{{ password_form.new_password2.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-key me-2"></i>Changer le mot de passe
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Informations du compte -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Informations du compte</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="avatar-circle mb-3">
+                        <span class="initials">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</span>
+                    </div>
+                    <h5>{{ user.get_full_name|default:user.username }}</h5>
+                    <p class="text-muted">{{ user.email }}</p>
+                </div>
+                
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Nom d'utilisateur</span>
+                        <span class="text-primary">{{ user.username }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Statut</span>
+                        <span class="badge bg-success">Actif</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Membre depuis</span>
+                        <span>{{ user.date_joined|date:"d/m/Y" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Dernière connexion</span>
+                        <span>{{ user.last_login|date:"d/m/Y H:i" }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Aide -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Aide</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Vous pouvez modifier vos informations personnelles et votre mot de passe sur cette page.
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Besoin d'aide ?</h6>
+                    <p class="small">Si vous avez des questions ou des problèmes avec votre compte, contactez l'administrateur du système.</p>
+                </div>
+                
+                <div class="d-grid">
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour au tableau de bord
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        background-color: #007bff;
+        border-radius: 50%;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+    
+    .initials {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'ecole_app/base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Renommer le site</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.site_name.label_tag }}
+        {{ form.site_name }}
+        <button type="submit" class="btn btn-primary mt-2">Enregistrer</button>
+    </form>
+</div>
+{% endblock %}

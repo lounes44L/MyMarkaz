@@ -1,0 +1,74 @@
+{% extends 'ecole_app/base.html' %}
+{% load static %}
+
+{% block title %}Supprimer une Note d'Examen{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Supprimer une Note d'Examen</h1>
+        <a href="{% url 'liste_notes_professeur' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour à la liste
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-danger">Confirmation de suppression</h6>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <h5><i class="fas fa-exclamation-triangle"></i> Attention</h5>
+                <p>Vous êtes sur le point de supprimer définitivement la note suivante :</p>
+            </div>
+            
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered">
+                    <tr>
+                        <th style="width: 30%">Élève</th>
+                        <td>{{ note.eleve.nom }} {{ note.eleve.prenom }}</td>
+                    </tr>
+                    <tr>
+                        <th>Classe</th>
+                        <td>{{ note.classe.nom }}</td>
+                    </tr>
+                    <tr>
+                        <th>Type d'examen</th>
+                        <td>{{ note.get_type_examen_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>Date de l'examen</th>
+                        <td>{{ note.date_examen }}</td>
+                    </tr>
+                    <tr>
+                        <th>Note</th>
+                        <td>{{ note.note }}/{{ note.note_max }} ({{ note.pourcentage }}%)</td>
+                    </tr>
+                    <tr>
+                        <th>Mention</th>
+                        <td><span class="badge {{ note.get_couleur_badge }}">{{ note.get_mention }}</span></td>
+                    </tr>
+                    <tr>
+                        <th>Commentaire</th>
+                        <td>{{ note.commentaire|default:"Aucun commentaire" }}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="alert alert-danger">
+                <p><strong>Cette action est irréversible.</strong> Êtes-vous sûr de vouloir supprimer cette note ?</p>
+            </div>
+            
+            <form method="post" class="text-center">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Confirmer la suppression
+                </button>
+                <a href="{% url 'liste_notes_professeur' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Annuler
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

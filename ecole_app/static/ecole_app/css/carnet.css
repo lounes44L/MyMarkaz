@@ -1,0 +1,20 @@
+.mois-select {
+    width: auto;
+    display: inline-block;
+}
+
+.annee-input {
+    width: 100px;
+    display: inline-block;
+}
+
+/* Table styles moved from inline CSS */
+.objectives-table th.description-column {
+    width: 60%;
+}
+
+/* Animation styles moved from inline */
+.bg-success-light {
+    background-color: rgba(40, 167, 69, 0.2);
+    transition: background-color 0.5s ease;
+}

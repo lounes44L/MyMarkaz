@@ -1,0 +1,102 @@
+{% extends 'ecole_app/base_admin.html' %}
+
+{% block title %}{{ titre }} | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">{{ titre }}</h6>
+                    <a href="{% url 'liste_anneescolaire' %}" class="btn btn-secondary btn-sm" title="Retour à la liste" aria-label="Retour à la liste">
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i> Retour
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="form-group">
+                            <label for="{{ form.nom.id_for_label }}">Nom de l'année scolaire</label>
+                            {{ form.nom }}
+                            {% if form.nom.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.nom.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% if form.nom.help_text %}
+                            <small class="form-text text-muted">{{ form.nom.help_text }}</small>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.date_debut.id_for_label }}">Date de début</label>
+                                    {{ form.date_debut }}
+                                    {% if form.date_debut.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.date_debut.errors %}
+                                        {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.date_fin.id_for_label }}">Date de fin</label>
+                                    {{ form.date_fin }}
+                                    {% if form.date_fin.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.date_fin.errors %}
+                                        {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                {{ form.active }}
+                                <label class="form-check-label" for="{{ form.active.id_for_label }}">
+                                    Définir comme année scolaire active
+                                </label>
+                            </div>
+                            {% if form.active.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.active.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                L'année scolaire active sera utilisée par défaut pour les nouveaux élèves, classes, paiements, etc.
+                            </small>
+                        </div>
+
+                        <div class="form-group text-center mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save" aria-hidden="true"></i> {{ submit_text|default:"Enregistrer" }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,319 @@
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse
+from django.utils import timezone
+from django.db import transaction
+from .models import Eleve, PresenceEleve, Classe, Professeur
+import datetime
+import json
+
+@login_required
+def appel_rapide_professeur(request):
+    """Vue d'appel rapide pour les professeurs avec fonctionnalités avancées"""
+    
+    # Vérifier si l'utilisateur est un professeur
+    try:
+        professeur = request.user.professeur
+    except:
+        messages.error(request, "Vous devez être connecté en tant que professeur pour accéder à cette page.")
+        return redirect('dashboard')
+    
+    # Récupérer la classe sélectionnée d'abord pour obtenir sa composante
+    classe_id = request.GET.get('classe')
+    
+    # Si une classe est spécifiée, vérifier qu'elle existe et qu'elle appartient au professeur
+    if classe_id:
+        try:
+            # Vérifier si la classe existe et appartient au professeur
+            classe = Classe.objects.get(id=classe_id)
+            
+            # Vérifier si la classe appartient à une des composantes du professeur
+            if classe.composante not in professeur.composantes.all():
+                messages.warning(request, "Cette classe n'appartient pas à vos composantes.")
+                classe_id = None
+            else:
+                # Définir la composante de la classe comme composante active dans la session
+                request.session['composante_id'] = classe.composante_id
+                composante_id = classe.composante_id
+        except Classe.DoesNotExist:
+            # Si la classe n'existe pas, utiliser la composante de la session
+            composante_id = request.session.get('composante_id')
+            classe_id = None
+    else:
+        # Sinon, utiliser la composante de la session
+        composante_id = request.session.get('composante_id')
+    
+    # Si aucune composante n'est disponible, utiliser la première composante du professeur
+    if not composante_id and professeur.composantes.exists():
+        composante = professeur.composantes.first()
+        composante_id = composante.id
+        request.session['composante_id'] = composante_id
+        messages.info(request, f"Composante {composante.nom} sélectionnée automatiquement.")
+    
+    # Si toujours aucune composante disponible, rediriger vers la sélection
+    if not composante_id:
+        messages.warning(request, "Veuillez sélectionner une composante pour accéder à l'appel.")
+        return redirect('selection_composante')
+    
+    # Récupérer toutes les classes de la composante active qui appartiennent au professeur
+    classes = Classe.objects.filter(
+        composante_id=composante_id,
+        professeur=professeur
+    ).order_by('nom')
+    
+    # Si aucune classe n'est disponible dans cette composante
+    if not classes.exists():
+        messages.warning(request, "Vous n'avez pas de classes dans cette composante.")
+        
+        # Chercher une autre composante avec des classes
+        for composante in professeur.composantes.all():
+            classes_test = Classe.objects.filter(composante=composante, professeur=professeur)
+            if classes_test.exists():
+                request.session['composante_id'] = composante.id
+                return redirect('appel_rapide_professeur')
+    
+    # Récupérer la date sélectionnée ou utiliser la date du jour
+    date_str = request.GET.get('date')
+    if date_str:
+        try:
+            selected_date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            selected_date = timezone.now().date()
+    else:
+        selected_date = timezone.now().date()
+    
+    # Récupérer la classe sélectionnée
+    selected_classe = None
+    eleves_with_presence = []
+    
+    # Si une classe était spécifiée mais n'existe plus, sélectionner la première classe disponible
+    if not classe_id and classes.exists():
+        selected_classe = classes.first()
+        return redirect(f"?classe={selected_classe.id}&date={selected_date.strftime('%Y-%m-%d')}")
+    
+    if classe_id:
+        try:
+            selected_classe = classes.get(id=classe_id)
+            # Récupérer les élèves de la classe avec leurs présences
+            eleves = selected_classe.eleves.all().order_by('nom', 'prenom')
+            
+            for eleve in eleves:
+                try:
+                    presence = PresenceEleve.objects.get(
+                        eleve=eleve,
+                        date=selected_date,
+                        classe=selected_classe
+                    )
+                except PresenceEleve.DoesNotExist:
+                    presence = None
+                
+                eleves_with_presence.append((eleve, presence))
+                
+        except Classe.DoesNotExist:
+            messages.error(request, "Classe non trouvée.")
+    
+    # Traitement des requêtes POST (AJAX)
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'save_all_presences':
+            if not selected_classe:
+                messages.error(request, "Veuillez d'abord sélectionner une classe.")
+                return JsonResponse({'success': False, 'message': 'Aucune classe sélectionnée.'})
+            return handle_save_all_presences(request, selected_classe, selected_date)
+    
+    # Récupérer toutes les classes de la composante active
+    all_classes = Classe.objects.filter(
+        composante_id=composante_id,
+        archive=False
+    ).order_by('nom')
+    
+    context = {
+        'classes': classes,  # Classes du professeur pour la sélection principale
+        'all_classes': all_classes,  # Toutes les classes de la composante
+        'selected_classe': selected_classe,
+        'selected_date': selected_date,
+        'eleves_with_presence': eleves_with_presence,
+        'professeur': professeur,
+    }
+    
+    return render(request, 'ecole_app/professeurs/appel_rapide.html', context)
+
+def handle_save_all_presences(request, selected_classe, selected_date):
+    """Gère la sauvegarde de toutes les présences pour une classe et une date"""
+    
+    try:
+        with transaction.atomic():
+            saved_count = 0
+            
+            # Vérifier si une date est fournie dans la requête
+            date_str = request.POST.get('date')
+            if date_str:
+                try:
+                    # Utiliser la date fournie dans la requête
+                    selected_date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    # En cas d'erreur, garder la date passée en paramètre
+                    pass
+            
+            # Récupérer la composante de la classe sélectionnée
+            composante = selected_classe.composante
+            if not composante:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'La classe sélectionnée n\'a pas de composante associée.'
+                }, status=400)
+            
+            for key, value in request.POST.items():
+                if key.startswith('presence_'):
+                    # Extraire l'ID de l'élève
+                    eleve_id = key.split('_')[1]
+                    
+                    # Récupérer l'élève
+                    try:
+                        eleve = Eleve.objects.get(id=eleve_id)
+                    except Eleve.DoesNotExist:
+                        continue
+                    
+                    # Déterminer le statut de présence
+                    present = value == 'present'
+                    justifie = value == 'justifie'
+                    
+                    # Récupérer le commentaire s'il existe
+                    commentaire = request.POST.get(f'comment_{eleve_id}', '')
+                    
+                    try:
+                        # Mettre à jour ou créer l'enregistrement de présence
+                        presence, created = PresenceEleve.objects.update_or_create(
+                            eleve=eleve,
+                            date=selected_date,
+                            classe=selected_classe,
+                            defaults={
+                                'present': present,
+                                'justifie': justifie,
+                                'commentaire': commentaire,
+                                'composante': composante
+                            }
+                        )
+                        saved_count += 1
+                    except Exception as inner_e:
+                        # Log l'erreur spécifique pour chaque élève
+                        print(f"Erreur pour l'élève {eleve.id}: {str(inner_e)}")
+                        raise inner_e
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'{saved_count} présences enregistrées avec succès.'
+            })
+    except Exception as e:
+        # Log l'erreur complète pour le débogage
+        import traceback
+        print(f"Erreur lors de l'enregistrement des présences: {str(e)}")
+        print(traceback.format_exc())
+        
+        return JsonResponse({
+            'success': False,
+            'message': f'Erreur lors de l\'enregistrement des présences: {str(e)}'
+        }, status=500)
+
+@login_required
+def gestion_eleves_professeur(request):
+    """Vue pour gérer les élèves d'un professeur (modifications)"""
+    
+    try:
+        professeur = request.user.professeur
+    except:
+        messages.error(request, "Vous devez être connecté en tant que professeur.")
+        return redirect('dashboard')
+    
+    composante_id = request.session.get('composante_id')
+    if not composante_id:
+        messages.warning(request, "Veuillez sélectionner une composante.")
+        return redirect('selection_composante')
+    
+    # Récupérer toutes les classes du professeur
+    classes = Classe.objects.filter(
+        professeur=professeur,
+        composante_id=composante_id,
+        archive=False
+    ).order_by('nom')
+    
+    # Récupérer tous les élèves du professeur
+    eleves = Eleve.objects.filter(
+        classes__in=classes,
+        archive=False
+    ).distinct().order_by('nom', 'prenom')
+    
+    # Traitement des actions POST
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'bulk_transfer':
+            return handle_bulk_transfer(request, professeur, classes)
+        elif action == 'remove_student':
+            return handle_remove_student(request, professeur)
+    
+    # Récupérer toutes les classes de la composante active
+    all_classes = Classe.objects.filter(
+        composante_id=composante_id,
+        archive=False
+    ).order_by('nom')
+    
+    context = {
+        'professeur': professeur,
+        'classes': classes,
+        'eleves': eleves,
+        'all_classes': all_classes,  # Toutes les classes de la composante
+    }
+    
+    return render(request, 'ecole_app/professeurs/gestion_eleves.html', context)
+
+def handle_bulk_transfer(request, professeur, classes):
+    """Gérer le transfert en lot d'élèves"""
+    selected_students = request.POST.getlist('selected_students')
+    source_class_id = request.POST.get('source_class')
+    destination_class_id = request.POST.get('destination_class')
+    
+    if not selected_students or not destination_class_id:
+        messages.error(request, "Veuillez sélectionner des élèves et une classe de destination.")
+        return redirect('gestion_eleves_professeur')
+    
+    try:
+        destination_class = classes.get(id=destination_class_id)
+        
+        with transaction.atomic():
+            for student_id in selected_students:
+                eleve = Eleve.objects.get(id=student_id)
+                
+                # Ajouter à la nouvelle classe
+                eleve.classes.add(destination_class)
+                
+                # Retirer de la classe source si spécifiée
+                if source_class_id:
+                    source_class = classes.get(id=source_class_id)
+                    eleve.classes.remove(source_class)
+        
+        messages.success(request, f"{len(selected_students)} élèves transférés vers {destination_class.nom}.")
+        
+    except Exception as e:
+        messages.error(request, f"Erreur lors du transfert: {str(e)}")
+    
+    return redirect('gestion_eleves_professeur')
+
+def handle_remove_student(request, professeur):
+    """Gérer la suppression d'un élève d'une classe"""
+    student_id = request.POST.get('student_id')
+    class_id = request.POST.get('class_id')
+    
+    try:
+        eleve = Eleve.objects.get(id=student_id)
+        classe = Classe.objects.get(id=class_id, professeur=professeur)
+        
+        eleve.classes.remove(classe)
+        messages.success(request, f"{eleve.nom} {eleve.prenom} retiré de {classe.nom}.")
+        
+    except Exception as e:
+        messages.error(request, f"Erreur: {str(e)}")
+    
+    return redirect('gestion_eleves_professeur')

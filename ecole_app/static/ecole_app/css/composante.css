@@ -1,0 +1,43 @@
+/* Styles pour la gestion des composantes */
+
+/* Card styles */
+.composante-card {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.composante-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Progress bar styles */
+.progress-sm {
+    height: 10px;
+}
+
+.progress-bar[data-width] {
+    /* La largeur sera appliquée via JavaScript */
+}
+
+/* Table styles */
+.table-stats {
+    width: 100%;
+}
+
+/* Stats cards */
+.stat-card {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: #f8f9fa;
+    transition: background-color 0.2s;
+}
+
+.stat-card:hover {
+    background-color: #e9ecef;
+}
+
+/* Utility classes */
+.width-150 {
+    width: 150px;
+}

@@ -1,0 +1,1160 @@
+{% extends "ecole_app/base.html" %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'ecole_app/css/carnet.css' %}">
+
+{% block title %}Carnet Pédagogique - {{ eleve.nom }} {{ eleve.prenom }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Sélecteur Mois/Année -->
+    <form method="get" class="mb-3 d-flex align-items-center" id="moisForm">
+        <label for="mois" class="me-2 mb-0">Mois :</label>
+        <select name="mois" id="mois" class="form-select me-2 mois-select" aria-label="Sélectionner le mois">
+            <option value="1" {% if mois == 1 %}selected{% endif %}>Janvier</option>
+<option value="2" {% if mois == 2 %}selected{% endif %}>Février</option>
+<option value="3" {% if mois == 3 %}selected{% endif %}>Mars</option>
+<option value="4" {% if mois == 4 %}selected{% endif %}>Avril</option>
+<option value="5" {% if mois == 5 %}selected{% endif %}>Mai</option>
+<option value="6" {% if mois == 6 %}selected{% endif %}>Juin</option>
+<option value="7" {% if mois == 7 %}selected{% endif %}>Juillet</option>
+<option value="8" {% if mois == 8 %}selected{% endif %}>Août</option>
+<option value="9" {% if mois == 9 %}selected{% endif %}>Septembre</option>
+<option value="10" {% if mois == 10 %}selected{% endif %}>Octobre</option>
+<option value="11" {% if mois == 11 %}selected{% endif %}>Novembre</option>
+<option value="12" {% if mois == 12 %}selected{% endif %}>Décembre</option>
+        </select>
+        <label for="annee" class="me-2 mb-0">Année :</label>
+        <input type="number" name="annee" id="annee" value="{{ annee }}" class="form-control me-2 annee-input" min="2000" max="2100" aria-label="Sélectionner l'année">
+        <button type="button" id="updateCarnetBtn" class="btn btn-outline-primary">Afficher</button>
+    </form>
+    <!-- En-tête -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="fas fa-book me-2"></i> Carnet Pédagogique
+            <small class="text-muted">{{ eleve.nom }} {{ eleve.prenom }}</small>
+        </h1>
+        
+        {% if request.user.is_staff or request.user.professeur or request.user.eleve == eleve %}
+        <div class="d-flex">
+
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="addActionDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-plus me-1"></i> Ajouter
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="addActionDropdown">
+                    <li><a class="dropdown-item" href="{% url 'ajouter_ecoute' eleve.id %}">
+                        <i class="fas fa-headphones me-1"></i> Écoute avant mémorisation
+                    </a></li>
+                    <li><a class="dropdown-item" href="{% url 'ajouter_memorisation' eleve.id %}">
+                        <i class="fas fa-brain me-1"></i> Mémorisation
+                    </a></li>
+                    <li><a class="dropdown-item" href="{% url 'ajouter_revision' eleve.id %}">
+                        <i class="fas fa-sync me-1"></i> Révision
+                    </a></li>
+                    <li><a class="dropdown-item" href="{% url 'ajouter_repetition' eleve.id %}">
+                        <i class="fas fa-redo me-1"></i> Répétition (Tikrar)
+                    </a></li>
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Mémorisations</h5>
+                    <h2>{{ memorisations.count }}</h2>
+                    <p class="small mb-0">Séances enregistrées ce mois-ci</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Répétitions</h5>
+                    <h2>{{ repetitions.count }}</h2>
+                    <p class="small mb-0">Pages avec répétitions</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Système d'onglets -->
+    <ul class="nav nav-tabs" id="carnetTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="ecoutes-tab" data-bs-toggle="tab" data-bs-target="#ecoutes" type="button" role="tab" aria-controls="ecoutes" aria-selected="true">
+                <i class="fas fa-headphones me-1"></i> Écoutes
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="memorisations-tab" data-bs-toggle="tab" data-bs-target="#memorisations" type="button" role="tab" aria-controls="memorisations" aria-selected="false">
+                <i class="fas fa-brain me-1"></i> Mémorisations
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="revisions-tab" data-bs-toggle="tab" data-bs-target="#revisions" type="button" role="tab" aria-controls="revisions" aria-selected="false">
+                <i class="fas fa-sync me-1"></i> Révisions
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="repetitions-tab" data-bs-toggle="tab" data-bs-target="#repetitions" type="button" role="tab" aria-controls="repetitions" aria-selected="false">
+                <i class="fas fa-redo me-1"></i> Répétitions (Tikrar)
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="livre-tab" data-bs-toggle="tab" data-bs-target="#livre" type="button" role="tab" aria-controls="livre" aria-selected="false">
+                <i class="fas fa-book me-1"></i> Livre
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content pt-3" id="carnetTabsContent">
+        <!-- Onglet Écoutes -->
+        <div class="tab-pane fade show active" id="ecoutes" role="tabpanel" aria-labelledby="ecoutes-tab">
+            {% if ecoutes %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Source</th>
+                                <th>Sourate</th>
+                                <th>Page</th>
+                                <th>Commentaire</th>
+                                {% if request.user.is_staff or request.user.professeur %}
+                                <th>Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ecoute in ecoutes %}
+                            <tr>
+                                <td>{{ ecoute.date|date:"d/m/Y" }}</td>
+                                <td>{{ ecoute.duree }}</td>
+                                <td>{{ ecoute.source }}</td>
+                                <td>{{ ecoute.sourate }}</td>
+                                <td>{{ ecoute.page }}</td>
+                                {% if request.user.is_staff or request.user.professeur %}
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'modifier_ecoute' ecoute.id %}" class="btn btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'supprimer_ecoute' ecoute.id %}" class="btn btn-outline-danger" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucune séance d'écoute enregistrée pour le moment.
+                    <a href="{% url 'ajouter_ecoute' eleve.id %}" class="alert-link">Ajouter une séance</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Onglet Mémorisations -->
+        <div class="tab-pane fade" id="memorisations" role="tabpanel" aria-labelledby="memorisations-tab">
+            {% if memorisations %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Source</th>
+                                <th>Sourate</th>
+                                <th>Page</th>
+                                <th>Commentaire</th>
+                                {% if request.user.is_staff or request.user.professeur %}
+                                <th>Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for memo in memorisations %}
+                            <tr>
+                                <td>{{ memo.date|date:"d/m/Y" }}</td>
+                                <td>{{ memo.enseignant }}</td>
+                                <td>{{ memo.sourate|default:"-" }}</td>
+                                <td>{{ memo.debut_page }} à {{ memo.fin_page }}</td>
+                                <td>{{ memo.remarques|default:"-" }}</td>
+                                {% if request.user.is_staff or request.user.professeur %}
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'modifier_memorisation' memo.id %}" class="btn btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'supprimer_memorisation' memo.id %}" class="btn btn-outline-danger" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucune mémorisation enregistrée pour le moment.
+                    <a href="{% url 'ajouter_memorisation' eleve.id %}" class="alert-link">Ajouter une mémorisation</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Onglet Révisions -->
+        <div class="tab-pane fade" id="revisions" role="tabpanel" aria-labelledby="revisions-tab">
+            {% if revisions %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Semaine</th>
+                                <th>Date</th>
+                                <th>Jour</th>
+                                <th>Nombre de Hizb</th>
+                                {% if request.user.is_staff or request.user.professeur %}
+                                <th>Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for revision in revisions %}
+                            <tr>
+                                <td>{{ revision.semaine }}</td>
+                                <td>{{ revision.date|date:"d/m/Y" }}</td>
+                                <td>{{ revision.get_jour_display }}</td>
+                                <td>{{ revision.nombre_hizb }}</td>
+                                {% if request.user.is_staff or request.user.professeur %}
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'modifier_revision' revision.id %}" class="btn btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'supprimer_revision' revision.id %}" class="btn btn-outline-danger" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucune révision enregistrée pour le moment.
+                    <a href="{% url 'ajouter_revision' eleve.id %}" class="alert-link">Ajouter une révision</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Onglet Répétitions -->
+        <div class="tab-pane fade" id="repetitions" role="tabpanel" aria-labelledby="repetitions-tab">
+            {% if repetitions %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Sourate</th>
+                                <th>Page</th>
+                                <th>Nombre de répétitions</th>
+                                <th>Dernière date</th>
+                                {% if request.user.is_staff or request.user.professeur %}
+                                <th>Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for repetition in repetitions %}
+                            <tr>
+                                <td>{{ repetition.sourate }}</td>
+                                <td>{{ repetition.page }}</td>
+                                <td class="d-flex align-items-center">
+                                    <div class="btn-group btn-group-sm me-2" role="group" aria-label="Ajuster répétitions">
+                                        <button type="button" class="btn btn-outline-secondary decrement-btn" data-repetition-id="{{ repetition.id }}" title="Diminuer">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary increment-btn" data-repetition-id="{{ repetition.id }}" title="Augmenter">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <span class="repetition-count" data-repetition-id="{{ repetition.id }}">{{ repetition.nombre_repetitions }}</span>
+                                </td>
+                                <td>{{ repetition.derniere_date|date:"d/m/Y" }}</td>
+                                {% if request.user.is_staff or request.user.professeur %}
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'modifier_repetition' repetition.id %}" class="btn btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'supprimer_repetition' repetition.id %}" class="btn btn-outline-danger" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucune répétition enregistrée pour le moment.
+                    <a href="{% url 'ajouter_repetition' eleve.id %}" class="alert-link">Ajouter une répétition</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Onglet Livre -->
+        <div class="tab-pane fade" id="livre" role="tabpanel" aria-labelledby="livre-tab">
+            {% if competences_par_lecon %}
+                <!-- Bilans de progression déroulants -->
+                <div class="accordion mb-4" id="bilanAccordion">
+                    
+                    <!-- Bilan Règles de base -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingReglesBase">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseReglesBase" aria-expanded="false" aria-controls="collapseReglesBase">
+                                <i class="fas fa-chart-line me-2"></i> Bilan de progression - Règles de base
+                            </button>
+                        </h2>
+                        <div id="collapseReglesBase" class="accordion-collapse collapse" aria-labelledby="headingReglesBase" data-bs-parent="#bilanAccordion">
+                            <div class="accordion-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover">
+                                        <thead class="table-primary">
+                                            <tr>
+                                                <th class="objectives-table description-column">Objectifs</th>
+                                                <th class="text-center">Acquis</th>
+                                                <th class="text-center">Non Acquis</th>
+                                                <th class="text-center">En cours</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Capacité à appliquer la nasalisation (الغُنَّة) sur le noun ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_1" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_1" title="Acquis - Appliquer la nasalisation" aria-label="Acquis - Appliquer la nasalisation"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_1" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_1" title="Non Acquis - Appliquer la nasalisation" aria-label="Non Acquis - Appliquer la nasalisation"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_1" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_1" title="En cours - Appliquer la nasalisation" aria-label="En cours - Appliquer la nasalisation"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Maîtrise des différentes déclinaisons de ن ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_2" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_2" title="Acquis - Déclinaisons de noun" aria-label="Acquis - Déclinaisons de noun"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_2" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_2" title="Non Acquis - Déclinaisons de noun" aria-label="Non Acquis - Déclinaisons de noun"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_2" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_2" title="En cours - Déclinaisons de noun" aria-label="En cours - Déclinaisons de noun"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à distinguer les différents types de prolongement plus de 2 temps ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_3" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_3" title="Acquis - Types de prolongement" aria-label="Acquis - Types de prolongement"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_3" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_3" title="Non Acquis - Types de prolongement" aria-label="Non Acquis - Types de prolongement"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_3" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_3" title="En cours - Types de prolongement" aria-label="En cours - Types de prolongement"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Maîtrise les types de القَلْقَلَة.</td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_4" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_4" title="Acquis - Types de qalqala" aria-label="Acquis - Types de qalqala"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_4" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_4" title="Non Acquis - Types de qalqala" aria-label="Non Acquis - Types de qalqala"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_4" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_4" title="En cours - Types de qalqala" aria-label="En cours - Types de qalqala"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <label for="date_annotation_regles" class="form-label">Date d'annotation :</label>
+                                        <input type="date" id="date_annotation_regles" name="date_annotation_regles" class="form-control" value="{% now 'Y-m-d' %}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bilan Leçons 3-4-5 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingLecons345">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLecons345" aria-expanded="false" aria-controls="collapseLecons345">
+                                <i class="fas fa-chart-line me-2"></i> Bilan de progression - Leçons 3, 4 et 5
+                            </button>
+                        </h2>
+                        <div id="collapseLecons345" class="accordion-collapse collapse" aria-labelledby="headingLecons345" data-bs-parent="#bilanAccordion">
+                            <div class="accordion-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover">
+                                        <thead class="table-primary">
+                                            <tr>
+                                                <th class="objectives-table description-column">Objectifs</th>
+                                                <th class="text-center">Acquis</th>
+                                                <th class="text-center">Non Acquis</th>
+                                                <th class="text-center">En cours</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Capacité à reconnaître et lire les lettres fortes ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_1" value="acquis" class="form-check-input" title="Acquis - Reconnaître et lire les lettres fortes" aria-label="Acquis - Reconnaître et lire les lettres fortes"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_1" value="non_acquis" class="form-check-input" title="Non Acquis - Reconnaître et lire les lettres fortes" aria-label="Non Acquis - Reconnaître et lire les lettres fortes"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_1" value="en_cours" class="form-check-input" title="En cours - Reconnaître et lire les lettres fortes" aria-label="En cours - Reconnaître et lire les lettres fortes"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à identifier la position des lettres dans un mot ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_2" value="acquis" class="form-check-input" title="Acquis - Identifier la position des lettres" aria-label="Acquis - Identifier la position des lettres"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_2" value="non_acquis" class="form-check-input" title="Non Acquis - Identifier la position des lettres" aria-label="Non Acquis - Identifier la position des lettres"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_2" value="en_cours" class="form-check-input" title="En cours - Identifier la position des lettres" aria-label="En cours - Identifier la position des lettres"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à identifier et lire les lettres qui nécessitent de tirer le bout de la langue ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_3" value="acquis" class="form-check-input" title="Acquis - Identifier et lire les lettres spéciales" aria-label="Acquis - Identifier et lire les lettres spéciales"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_3" value="non_acquis" class="form-check-input" title="Non Acquis - Identifier et lire les lettres spéciales" aria-label="Non Acquis - Identifier et lire les lettres spéciales"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_3" value="en_cours" class="form-check-input" title="En cours - Identifier et lire les lettres spéciales" aria-label="En cours - Identifier et lire les lettres spéciales"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à lire les lettres mises dans le désordre ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_4" value="acquis" class="form-check-input" title="Acquis - Lire les lettres dans le désordre" aria-label="Acquis - Lire les lettres dans le désordre"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_4" value="non_acquis" class="form-check-input" title="Non Acquis - Lire les lettres dans le désordre" aria-label="Non Acquis - Lire les lettres dans le désordre"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_4" value="en_cours" class="form-check-input" title="En cours - Lire les lettres dans le désordre" aria-label="En cours - Lire les lettres dans le désordre"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Compétences générales en prononciation ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_5" value="acquis" class="form-check-input" title="Acquis - Compétences générales en prononciation" aria-label="Acquis - Compétences générales en prononciation"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_5" value="non_acquis" class="form-check-input" title="Non Acquis - Compétences générales en prononciation" aria-label="Non Acquis - Compétences générales en prononciation"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_5" value="en_cours" class="form-check-input" title="En cours - Compétences générales en prononciation" aria-label="En cours - Compétences générales en prononciation"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à lire fluidement les mots des exercices 1 à 5 ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_6" value="acquis" class="form-check-input" title="Acquis - Lire fluidement les mots des exercices" aria-label="Acquis - Lire fluidement les mots des exercices"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_6" value="non_acquis" class="form-check-input" title="Non Acquis - Lire fluidement les mots des exercices" aria-label="Non Acquis - Lire fluidement les mots des exercices"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_6" value="en_cours" class="form-check-input" title="En cours - Lire fluidement les mots des exercices" aria-label="En cours - Lire fluidement les mots des exercices"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à bien prononcer les 3 voyelles courtes.</td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_7" value="acquis" class="form-check-input" title="Acquis - Prononcer les 3 voyelles courtes" aria-label="Acquis - Prononcer les 3 voyelles courtes"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_7" value="non_acquis" class="form-check-input" title="Non Acquis - Prononcer les 3 voyelles courtes" aria-label="Non Acquis - Prononcer les 3 voyelles courtes"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_345_7" value="en_cours" class="form-check-input" title="En cours - Prononcer les 3 voyelles courtes" aria-label="En cours - Prononcer les 3 voyelles courtes"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <label for="date_annotation_345" class="form-label">Date d'annotation :</label>
+                                        <input type="date" id="date_annotation_345" name="date_annotation_345" class="form-control" value="{% now 'Y-m-d' %}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Bilan Leçons 6-7-8 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingLecons678">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLecons678" aria-expanded="false" aria-controls="collapseLecons678">
+                                <i class="fas fa-chart-line me-2"></i> Bilan de progression - Leçons 6, 7 et 8
+                            </button>
+                        </h2>
+                        <div id="collapseLecons678" class="accordion-collapse collapse" aria-labelledby="headingLecons678" data-bs-parent="#bilanAccordion">
+                            <div class="accordion-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover">
+                                        <thead class="table-primary">
+                                            <tr>
+                                                <th class="objectives-table description-column">Objectifs</th>
+                                                <th class="text-center">Acquis</th>
+                                                <th class="text-center">Non Acquis</th>
+                                                <th class="text-center">En cours</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Leçon 6 -->
+                                            <tr>
+                                                <td class="fw-bold" colspan="4">Leçon 6</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à reconnaître les lettres de prolongement ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_6_1" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="6_1" title="Acquis - Reconnaître les lettres de prolongement" aria-label="Acquis - Reconnaître les lettres de prolongement"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_6_1" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="6_1" title="Non Acquis - Reconnaître les lettres de prolongement" aria-label="Non Acquis - Reconnaître les lettres de prolongement"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_6_1" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="6_1" title="En cours - Reconnaître les lettres de prolongement" aria-label="En cours - Reconnaître les lettres de prolongement"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à distinguer les voyelles courtes des voyelles longues ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_6_2" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="6_2" title="Acquis - Distinguer les voyelles courtes des voyelles longues" aria-label="Acquis - Distinguer les voyelles courtes des voyelles longues"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_6_2" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="6_2" title="Non Acquis - Distinguer les voyelles courtes des voyelles longues" aria-label="Non Acquis - Distinguer les voyelles courtes des voyelles longues"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_6_2" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="6_2" title="En cours - Distinguer les voyelles courtes des voyelles longues" aria-label="En cours - Distinguer les voyelles courtes des voyelles longues"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à distinguer les lettres de line des lettres de prolongement ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_6_3" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="6_3" title="Acquis - Distinguer les lettres de line des lettres de prolongement" aria-label="Acquis - Distinguer les lettres de line des lettres de prolongement"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_6_3" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="6_3" title="Non Acquis - Distinguer les lettres de line des lettres de prolongement" aria-label="Non Acquis - Distinguer les lettres de line des lettres de prolongement"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_6_3" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="6_3" title="En cours - Distinguer les lettres de line des lettres de prolongement" aria-label="En cours - Distinguer les lettres de line des lettres de prolongement"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Compétences générales en prononciation ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_6_4" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="6_4" title="Acquis - Compétences générales en prononciation" aria-label="Acquis - Compétences générales en prononciation"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_6_4" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="6_4" title="Non Acquis - Compétences générales en prononciation" aria-label="Non Acquis - Compétences générales en prononciation"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_6_4" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="6_4" title="En cours - Compétences générales en prononciation" aria-label="En cours - Compétences générales en prononciation"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à lire fluidement le texte, les exemples et l'exercice 8.</td>
+                                                <td class="text-center"><input type="radio" name="bilan_6_5" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="6_5" title="Acquis - Lire fluidement le texte et les exercices" aria-label="Acquis - Lire fluidement le texte et les exercices"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_6_5" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="6_5" title="Non Acquis - Lire fluidement le texte et les exercices" aria-label="Non Acquis - Lire fluidement le texte et les exercices"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_6_5" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="6_5" title="En cours - Lire fluidement le texte et les exercices" aria-label="En cours - Lire fluidement le texte et les exercices"></td>
+                                            </tr>
+                                            
+                                            <!-- Leçon 7 -->
+                                            <tr>
+                                                <td class="fw-bold" colspan="4">Leçon 7</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à identifier les différents types de doubles voyelles ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_1" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_1" title="Acquis - Identifier les types de doubles voyelles" aria-label="Acquis - Identifier les types de doubles voyelles"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_1" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_1" title="Non Acquis - Identifier les types de doubles voyelles" aria-label="Non Acquis - Identifier les types de doubles voyelles"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_1" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_1" title="En cours - Identifier les types de doubles voyelles" aria-label="En cours - Identifier les types de doubles voyelles"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à maîtriser l'arrêt sur les doubles voyelles ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_2" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_2" title="Acquis - Maîtriser l'arrêt sur les doubles voyelles" aria-label="Acquis - Maîtriser l'arrêt sur les doubles voyelles"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_2" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_2" title="Non Acquis - Maîtriser l'arrêt sur les doubles voyelles" aria-label="Non Acquis - Maîtriser l'arrêt sur les doubles voyelles"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_2" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_2" title="En cours - Maîtriser l'arrêt sur les doubles voyelles" aria-label="En cours - Maîtriser l'arrêt sur les doubles voyelles"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Compétences générales en prononciation ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_3" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_3" title="Acquis - Compétences générales en prononciation" aria-label="Acquis - Compétences générales en prononciation"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_3" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_3" title="Non Acquis - Compétences générales en prononciation" aria-label="Non Acquis - Compétences générales en prononciation"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_3" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_3" title="En cours - Compétences générales en prononciation" aria-label="En cours - Compétences générales en prononciation"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à lire fluidement le texte, les exemples et l'exercice 9.</td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_4" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_4" title="Acquis - Lire fluidement le texte et les exercices" aria-label="Acquis - Lire fluidement le texte et les exercices"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_4" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_4" title="Non Acquis - Lire fluidement le texte et les exercices" aria-label="Non Acquis - Lire fluidement le texte et les exercices"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_4" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_4" title="En cours - Lire fluidement le texte et les exercices" aria-label="En cours - Lire fluidement le texte et les exercices"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à distinguer la particularité des doubles voyelles fathatayn par rapport aux autres doubles voyelles.</td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_5" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_5" title="Acquis - Distinguer la particularité des doubles voyelles fathatayn" aria-label="Acquis - Distinguer la particularité des doubles voyelles fathatayn"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_5" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_5" title="Non Acquis - Distinguer la particularité des doubles voyelles fathatayn" aria-label="Non Acquis - Distinguer la particularité des doubles voyelles fathatayn"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_5" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_5" title="En cours - Distinguer la particularité des doubles voyelles fathatayn" aria-label="En cours - Distinguer la particularité des doubles voyelles fathatayn"></td>
+                                            </tr>
+                                            
+                                            <!-- Leçon 8 -->
+                                            <tr>
+                                                <td class="fw-bold" colspan="4">Leçon 8</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à reconnaître et prononcer les lettres avec chadda ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_1" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_1" title="Acquis - Reconnaître et prononcer les lettres avec chadda" aria-label="Acquis - Reconnaître et prononcer les lettres avec chadda"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_1" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_1" title="Non Acquis - Reconnaître et prononcer les lettres avec chadda" aria-label="Non Acquis - Reconnaître et prononcer les lettres avec chadda"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_1" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_1" title="En cours - Reconnaître et prononcer les lettres avec chadda" aria-label="En cours - Reconnaître et prononcer les lettres avec chadda"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à identifier la différence entre une lettre avec chadda et sans chadda ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_2" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_2" title="Acquis - Identifier la différence entre une lettre avec chadda et sans chadda" aria-label="Acquis - Identifier la différence entre une lettre avec chadda et sans chadda"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_2" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_2" title="Non Acquis - Identifier la différence entre une lettre avec chadda et sans chadda" aria-label="Non Acquis - Identifier la différence entre une lettre avec chadda et sans chadda"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_2" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_2" title="En cours - Identifier la différence entre une lettre avec chadda et sans chadda" aria-label="En cours - Identifier la différence entre une lettre avec chadda et sans chadda"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Compétences générales en prononciation des mots avec chadda ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_3" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_3" title="Acquis - Compétences générales en prononciation des mots avec chadda" aria-label="Acquis - Compétences générales en prononciation des mots avec chadda"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_3" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_3" title="Non Acquis - Compétences générales en prononciation des mots avec chadda" aria-label="Non Acquis - Compétences générales en prononciation des mots avec chadda"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_3" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_3" title="En cours - Compétences générales en prononciation des mots avec chadda" aria-label="En cours - Compétences générales en prononciation des mots avec chadda"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à lire fluidement le texte, les exemples et l'exercice 10.</td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_4" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_4" title="Acquis - Lire fluidement le texte et les exercices" aria-label="Acquis - Lire fluidement le texte et les exercices"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_4" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_4" title="Non Acquis - Lire fluidement le texte et les exercices" aria-label="Non Acquis - Lire fluidement le texte et les exercices"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_4" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_4" title="En cours - Lire fluidement le texte et les exercices" aria-label="En cours - Lire fluidement le texte et les exercices"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à appliquer correctement les règles de prononciation de la chadda.</td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_5" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_5" title="Acquis - Appliquer correctement les règles de prononciation de la chadda" aria-label="Acquis - Appliquer correctement les règles de prononciation de la chadda"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_5" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_5" title="Non Acquis - Appliquer correctement les règles de prononciation de la chadda" aria-label="Non Acquis - Appliquer correctement les règles de prononciation de la chadda"></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_5" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_5" title="En cours - Appliquer correctement les règles de prononciation de la chadda" aria-label="En cours - Appliquer correctement les règles de prononciation de la chadda"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <label for="date_annotation_678" class="form-label">Date d'annotation :</label>
+                                        <input type="date" id="date_annotation_678" name="date_annotation_678" class="form-control" value="{% now 'Y-m-d' %}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- Affichage des compétences par leçon -->
+                {% for lecon, competences in competences_par_lecon.items %}
+                {% if lecon != '1' %}
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Leçon {{ lecon }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 60%">Compétence</th>
+                                        <th class="text-center">Acquis</th>
+                                        <th class="text-center">En cours</th>
+                                        <th class="text-center">Non acquis</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in competences %}
+                                    <tr>
+                                        <td>{{ item.competence.description }}</td>
+                                        <td class="text-center">
+                                            <input type="radio" name="competence_{{ item.competence.id }}" value="acquis" class="competence-check" data-eleve="{{ eleve.id }}" data-competence="{{ item.competence.id }}" {% if item.evaluation and item.evaluation.statut == 'acquis' %}checked{% endif %} title="Acquis - {{ item.competence.description }}" aria-label="Acquis - {{ item.competence.description }}">
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="competence_{{ item.competence.id }}" value="en_cours" class="competence-check" data-eleve="{{ eleve.id }}" data-competence="{{ item.competence.id }}" {% if item.evaluation and item.evaluation.statut == 'en_cours' %}checked{% endif %} title="En cours - {{ item.competence.description }}" aria-label="En cours - {{ item.competence.description }}">
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="radio" name="competence_{{ item.competence.id }}" value="non_acquis" class="competence-check" data-eleve="{{ eleve.id }}" data-competence="{{ item.competence.id }}" {% if item.evaluation and item.evaluation.statut == 'non_acquis' %}checked{% endif %} title="Non Acquis - {{ item.competence.description }}" aria-label="Non Acquis - {{ item.competence.description }}">
+                                            <div class="form-check d-flex justify-content-center">
+                                                <input class="form-check-input competence-check" 
+                                                       type="radio" 
+                                                       name="competence_{{ item.competence.id }}" 
+                                                       value="en_cours" 
+                                                       data-eleve="{{ eleve.id }}" 
+                                                       data-competence="{{ item.competence.id }}"
+                                                       title="En cours - {{ item.competence.description }}"
+                                                       aria-label="En cours - {{ item.competence.description }}"
+                                                       {% if item.evaluation and item.evaluation.statut == 'en_cours' %}checked{% endif %}>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if not forloop.last %}<hr class="my-4">{% endif %}
+                {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucune compétence n'a été définie pour les leçons 1 et 2.
+                    Veuillez exécuter la commande <code>python manage.py init_competences_livre</code> pour initialiser les compétences.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Activer les onglets Bootstrap
+    document.addEventListener('DOMContentLoaded', function() {
+        const triggerTabList = [].slice.call(document.querySelectorAll('#carnetTabs button'));
+        triggerTabList.forEach(function(triggerEl) {
+            const tabTrigger = new bootstrap.Tab(triggerEl);
+            triggerEl.addEventListener('click', function(event) {
+                event.preventDefault();
+                tabTrigger.show();
+            });
+        });
+        
+        // Variables Django pour JavaScript
+        const eleveId = parseInt("{{ eleve.id }}");
+        const moisInitial = parseInt("{{ mois }}");
+        const anneeInitiale = parseInt("{{ annee }}");
+        
+        // Gestion du changement de mois/année avec AJAX
+        function updateCarnetData() {
+            const mois = document.getElementById('mois').value;
+            const annee = document.getElementById('annee').value;
+            
+            // Afficher un indicateur de chargement
+            document.querySelectorAll('.card-body h2').forEach(function(el) {
+                el.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Chargement...</span></div>';
+            });
+            
+            // Faire la requête AJAX
+            fetch(`/api/carnet/${eleveId}/data/?mois=${mois}&annee=${annee}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Erreur HTTP: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    
+                    // Mettre à jour les statistiques
+                    updateStatistics(data.stats);
+                    
+                    // Mettre à jour les tableaux
+                    updateTables(data);
+                    
+                    // Mettre à jour l'URL pour permettre le partage/bookmark
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('mois', mois);
+                    url.searchParams.set('annee', annee);
+                    window.history.replaceState({}, '', url);
+                    
+                    // Afficher un message de succès si on change de mois
+                    if (mois != moisInitial || annee != anneeInitiale) {
+                        // Message de succès optionnel - désactivé pour éviter trop d'alertes
+                        // alert('Données du carnet mises à jour avec succès');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la mise à jour des données:', error);
+                    
+                    // Restaurer les valeurs précédentes dans les sélecteurs
+                    document.getElementById('mois').value = moisInitial;
+                    document.getElementById('annee').value = anneeInitiale;
+                    
+                    // Restaurer les statistiques en rechargeant la page actuelle
+                    const currentUrl = new URL(window.location.href);
+                    if (currentUrl.searchParams.has('mois') || currentUrl.searchParams.has('annee')) {
+                        // Si on a déjà des paramètres, on les garde
+                        alert('Une erreur s\'est produite lors de la mise à jour des données. Veuillez réessayer.');
+                    } else {
+                        // Sinon on recharge la page sans paramètres (mois courant)
+                        window.location.reload();
+                    }
+                });
+        }
+        
+        // Mettre à jour les statistiques
+        function updateStatistics(stats) {
+            document.querySelector('.card.bg-primary h2').textContent = stats.memorisations_count;
+            document.querySelector('.card.bg-success h2').textContent = stats.total_pages_memo;
+            document.querySelector('.card.bg-info h2').textContent = stats.revisions_count;
+            document.querySelector('.card.bg-warning h2').textContent = stats.repetitions_count;
+        }
+        
+        // Mettre à jour les tableaux
+        function updateTables(data) {
+            // Mettre à jour le tableau des écoutes
+            updateEcoutesTable(data.ecoutes);
+            
+            // Mettre à jour le tableau des mémorisations
+            updateMemorisationsTable(data.memorisations);
+            
+            // Mettre à jour le tableau des révisions
+            updateRevisionsTable(data.revisions);
+            
+            // Mettre à jour le tableau des répétitions
+            updateRepetitionsTable(data.repetitions);
+        }
+        
+        // Mettre à jour le tableau des écoutes
+        function updateEcoutesTable(ecoutes) {
+            const tableContainer = document.querySelector('#ecoutes .table-responsive');
+            if (!tableContainer) return;
+            
+            if (ecoutes.length === 0) {
+                tableContainer.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Aucune écoute enregistrée pour cette période.</div>';
+                return;
+            }
+            
+            // S'assurer que le tableau existe
+            if (!tableContainer.querySelector('table')) {
+                tableContainer.innerHTML = `
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Durée (min)</th>
+                                <th>Sourate</th>
+                                <th>Versets</th>
+                                <th>Enseignant</th>
+                                <th>Commentaire</th>
+                                {% if request.user.is_staff or request.user.professeur %}
+                                <th>Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                `;
+            }
+            
+            const tableBody = tableContainer.querySelector('tbody');
+            let html = '';
+            ecoutes.forEach(ecoute => {
+                html += `
+                <tr>
+                    <td>${ecoute.date}</td>
+                    <td>${ecoute.duree}</td>
+                    <td>${ecoute.sourate}</td>
+                    <td>${ecoute.debut_verset} à ${ecoute.fin_verset}</td>
+                    <td>${ecoute.enseignant}</td>
+                    <td>${ecoute.commentaire || '-'}</td>
+                    {% if request.user.is_staff or request.user.professeur %}
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'modifier_ecoute' 0 %}`.replace('0', ecoute.id) + `" class="btn btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'supprimer_ecoute' 0 %}`.replace('0', ecoute.id) + `" class="btn btn-outline-danger">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                    {% endif %}
+                </tr>`;
+            });
+            
+            tableBody.innerHTML = html;
+        }
+        
+        // Mettre à jour le tableau des mémorisations
+        function updateMemorisationsTable(memorisations) {
+            const tableContainer = document.querySelector('#memorisations .table-responsive');
+            if (!tableContainer) return;
+            
+            if (memorisations.length === 0) {
+                tableContainer.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Aucune mémorisation enregistrée pour cette période.</div>';
+                return;
+            }
+            
+            // S'assurer que le tableau existe
+            if (!tableContainer.querySelector('table')) {
+                tableContainer.innerHTML = `
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Sourate</th>
+                                <th>Pages</th>
+                                <th>Enseignant</th>
+                                <th>Commentaire</th>
+                                {% if request.user.is_staff or request.user.professeur %}
+                                <th>Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                `;
+            }
+            
+            const tableBody = tableContainer.querySelector('tbody');
+            let html = '';
+            memorisations.forEach(memo => {
+                html += `
+                <tr>
+                    <td>${memo.date}</td>
+                    <td>${memo.sourate}</td>
+                    <td>${memo.debut_page} à ${memo.fin_page}</td>
+                    <td>${memo.enseignant}</td>
+                    <td>${memo.commentaire || '-'}</td>
+                    {% if request.user.is_staff or request.user.professeur %}
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'modifier_memorisation' 0 %}`.replace('0', memo.id) + `" class="btn btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'supprimer_memorisation' 0 %}`.replace('0', memo.id) + `" class="btn btn-outline-danger">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                    {% endif %}
+                </tr>`;
+            });
+            
+            tableBody.innerHTML = html;
+        }
+        
+        // Mettre à jour le tableau des révisions
+        function updateRevisionsTable(revisions) {
+            const tableContainer = document.querySelector('#revisions .table-responsive');
+            if (!tableContainer) return;
+            
+            if (revisions.length === 0) {
+                tableContainer.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Aucune révision enregistrée pour cette période.</div>';
+                return;
+            }
+            
+            // S'assurer que le tableau existe
+            if (!tableContainer.querySelector('table')) {
+                tableContainer.innerHTML = `
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Semaine</th>
+                                <th>Sourate</th>
+                                <th>Pages</th>
+                                <th>Enseignant</th>
+                                <th>Commentaire</th>
+                                {% if request.user.is_staff or request.user.professeur %}
+                                <th>Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                `;
+            }
+            
+            const tableBody = tableContainer.querySelector('tbody');
+            let html = '';
+            revisions.forEach(revision => {
+                html += `
+                <tr>
+                    <td>${revision.date}</td>
+                    <td>${revision.semaine}</td>
+                    <td>${revision.sourate}</td>
+                    <td>${revision.debut_page} à ${revision.fin_page}</td>
+                    <td>${revision.enseignant}</td>
+                    <td>${revision.commentaire || '-'}</td>
+                    {% if request.user.is_staff or request.user.professeur %}
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'modifier_revision' 0 %}`.replace('0', revision.id) + `" class="btn btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'supprimer_revision' 0 %}`.replace('0', revision.id) + `" class="btn btn-outline-danger">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                    {% endif %}
+                </tr>`;
+            });
+            
+            tableBody.innerHTML = html;
+        }
+        
+        // Mettre à jour le tableau des répétitions
+        function updateRepetitionsTable(repetitions) {
+            const tableContainer = document.querySelector('#repetitions .table-responsive');
+            if (!tableContainer) return;
+            
+            if (repetitions.length === 0) {
+                tableContainer.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Aucune répétition enregistrée pour cette période.</div>';
+                return;
+            }
+            
+            // S'assurer que le tableau existe
+            if (!tableContainer.querySelector('table')) {
+                tableContainer.innerHTML = `
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Sourate</th>
+                                <th>Page</th>
+                                <th>Nombre de répétitions</th>
+                                {% if request.user.is_staff or request.user.professeur %}
+                                <th>Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                `;
+            }
+            
+            const tableBody = tableContainer.querySelector('tbody');
+            let html = '';
+            repetitions.forEach(repetition => {
+                html += `
+                <tr>
+                    <td>${repetition.derniere_date}</td>
+                    <td>${repetition.sourate}</td>
+                    <td>${repetition.page}</td>
+                    <td>${repetition.nombre_repetitions}</td>
+                    {% if request.user.is_staff or request.user.professeur %}
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'modifier_repetition' 0 %}`.replace('0', repetition.id) + `" class="btn btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'supprimer_repetition' 0 %}`.replace('0', repetition.id) + `" class="btn btn-outline-danger">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                    {% endif %}
+                </tr>`;
+            });
+            
+            tableBody.innerHTML = html;
+        }
+        
+        // Événements pour les changements de mois/année
+        document.getElementById('mois').addEventListener('change', function() {
+            // Ne pas déclencher automatiquement pour éviter les erreurs
+            // updateCarnetData() sera appelé par le bouton
+        });
+        
+        document.getElementById('annee').addEventListener('change', function() {
+            // Ne pas déclencher automatiquement pour éviter les erreurs
+            // updateCarnetData() sera appelé par le bouton
+        });
+        
+        document.getElementById('updateCarnetBtn').addEventListener('click', function() {
+            updateCarnetData();
+        });
+        
+        // Utiliser les valeurs du mois et de l'année actuelles du serveur Django
+        // Ces valeurs sont déjà définies par Django lors du rendu initial de la page
+        const moisServeur = parseInt("{{ mois_actuel|default:mois }}");
+        const anneeServeur = parseInt("{{ annee_actuelle|default:annee }}");
+        
+        // Ajouter un bouton pour revenir au mois courant après le bouton Afficher
+        const updateBtn = document.getElementById('updateCarnetBtn');
+        const moisCourantBtn = document.createElement('button');
+        moisCourantBtn.type = 'button';
+        moisCourantBtn.className = 'btn btn-outline-secondary ms-2';
+        moisCourantBtn.innerHTML = '<i class="fas fa-calendar-day me-1"></i> Mois courant';
+        moisCourantBtn.addEventListener('click', function() {
+            // Utiliser window.location.href pour naviguer directement vers l'URL sans paramètres
+            // Cela va recharger la page avec les valeurs par défaut du mois et de l'année
+            const baseUrl = window.location.href.split('?')[0];
+            window.location.href = baseUrl;
+        });
+        updateBtn.parentNode.insertBefore(moisCourantBtn, updateBtn.nextSibling);
+
+        // Gestion des évaluations de compétences via AJAX
+        document.querySelectorAll('.competence-check').forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    const eleveId = this.getAttribute('data-eleve');
+                    const competenceId = this.getAttribute('data-competence');
+                    const statut = this.value;
+                    
+                    // Afficher un indicateur de chargement
+                    const row = this.closest('tr');
+                    row.classList.add('bg-light');
+                    
+                    // Envoyer la requête AJAX
+                    fetch('/eleves/evaluation-competence/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({
+                            eleve_id: eleveId,
+                            competence_id: competenceId,
+                            statut: statut
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Traiter la réponse
+                        if (data.success) {
+                            // Succès - afficher une animation de confirmation
+                            row.classList.remove('bg-light');
+                            row.classList.add('bg-success-light');
+                            setTimeout(() => {
+                                row.classList.remove('bg-success-light');
+                            }, 1000);
+                        } else {
+                            // Erreur - afficher un message d'erreur
+                            alert('Erreur lors de la mise à jour : ' + data.error);
+                            row.classList.remove('bg-light');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        alert('Une erreur s\'est produite lors de la mise à jour.');
+                        row.classList.remove('bg-light');
+                    });
+                }
+            });
+        });
+    });
+    
+    // Fonction pour récupérer le token CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Gérer les boutons d'incrément/décrément des répétitions
+    document.querySelectorAll('.increment-btn').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const repetitionId = this.getAttribute('data-repetition-id');
+            updateRepetitionCount(repetitionId, 'increment');
+        });
+    });
+    
+    document.querySelectorAll('.decrement-btn').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const repetitionId = this.getAttribute('data-repetition-id');
+            updateRepetitionCount(repetitionId, 'decrement');
+        });
+    });
+    
+    function updateRepetitionCount(repetitionId, action) {
+        const url = action === 'increment' 
+            ? `/api/repetition/${repetitionId}/increment/` 
+            : `/api/repetition/${repetitionId}/decrement/`;
+        
+        // Afficher un indicateur de chargement
+        const countElement = document.querySelector(`.repetition-count[data-repetition-id="${repetitionId}"]`);
+        const originalText = countElement.textContent;
+        countElement.textContent = '...';
+        
+        // Envoyer la requête AJAX
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erreur lors de la mise à jour');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Mettre à jour l'affichage
+            countElement.textContent = data.nombre_repetitions;
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            countElement.textContent = originalText;
+            alert('Une erreur est survenue lors de la mise à jour.');
+        });
+    }
+</script>
+
+<!-- Styles moved to carnet.css -->
+{% endblock %}

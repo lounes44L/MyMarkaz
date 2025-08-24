@@ -1,0 +1,326 @@
+<!-- Section Progression Coran pour inclusion dans le dashboard élève -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Ma progression de mémorisation du Coran</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Formulaire de progression -->
+                    <div class="col-lg-4 mb-4">
+                        <div class="card border-left-success shadow h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="m-0 font-weight-bold text-success">Mettre à jour ma progression</h6>
+                            </div>
+                            <div class="card-body">
+                                <form method="post" action="{% url 'ajouter_progression_coran' %}" class="mb-3">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="eleve_id" value="{{ eleve.id }}">
+                                    
+                                    <div class="form-group">
+                                        <label for="sourate">Sourate actuelle</label>
+                                        <select class="form-control" id="sourate" name="sourate" onchange="updatePageRange()">
+                                            <option value="Al-Fatiha" data-debut="1" data-fin="1">1. Al-Fatiha</option>
+                                            <option value="Al-Baqara" data-debut="2" data-fin="49">2. Al-Baqara</option>
+                                            <option value="Aal-E-Imran" data-debut="50" data-fin="76">3. Aal-E-Imran</option>
+                                            <option value="An-Nisa" data-debut="77" data-fin="106">4. An-Nisa</option>
+                                            <option value="Al-Ma'ida" data-debut="107" data-fin="126">5. Al-Ma'ida</option>
+                                            <option value="Al-An'am" data-debut="127" data-fin="150">6. Al-An'am</option>
+                                            <option value="Al-A'raf" data-debut="151" data-fin="176">7. Al-A'raf</option>
+                                            <option value="Al-Anfal" data-debut="177" data-fin="186">8. Al-Anfal</option>
+                                            <option value="At-Tawba" data-debut="187" data-fin="207">9. At-Tawba</option>
+                                            <option value="Yunus" data-debut="208" data-fin="221">10. Yunus</option>
+                                            <option value="Hud" data-debut="222" data-fin="235">11. Hud</option>
+                                            <option value="Yusuf" data-debut="236" data-fin="248">12. Yusuf</option>
+                                            <option value="Ar-Ra'd" data-debut="249" data-fin="254">13. Ar-Ra'd</option>
+                                            <option value="Ibrahim" data-debut="255" data-fin="261">14. Ibrahim</option>
+                                            <option value="Al-Hijr" data-debut="262" data-fin="267">15. Al-Hijr</option>
+                                            <option value="An-Nahl" data-debut="268" data-fin="281">16. An-Nahl</option>
+                                            <option value="Al-Isra" data-debut="282" data-fin="293">17. Al-Isra</option>
+                                            <option value="Al-Kahf" data-debut="294" data-fin="304">18. Al-Kahf</option>
+                                            <option value="Maryam" data-debut="305" data-fin="311">19. Maryam</option>
+                                            <option value="Ta-Ha" data-debut="312" data-fin="321">20. Ta-Ha</option>
+                                            <option value="Al-Anbiya" data-debut="322" data-fin="331">21. Al-Anbiya</option>
+                                            <option value="Al-Hajj" data-debut="332" data-fin="341">22. Al-Hajj</option>
+                                            <option value="Al-Mu'minun" data-debut="342" data-fin="349">23. Al-Mu'minun</option>
+                                            <option value="An-Nur" data-debut="350" data-fin="359">24. An-Nur</option>
+                                            <option value="Al-Furqan" data-debut="360" data-fin="366">25. Al-Furqan</option>
+                                            <option value="Ash-Shu'ara" data-debut="367" data-fin="376">26. Ash-Shu'ara</option>
+                                            <option value="An-Naml" data-debut="377" data-fin="385">27. An-Naml</option>
+                                            <option value="Al-Qasas" data-debut="386" data-fin="396">28. Al-Qasas</option>
+                                            <option value="Al-Ankabut" data-debut="397" data-fin="404">29. Al-Ankabut</option>
+                                            <option value="Ar-Rum" data-debut="405" data-fin="410">30. Ar-Rum</option>
+                                            <option value="Luqman" data-debut="411" data-fin="414">31. Luqman</option>
+                                            <option value="As-Sajda" data-debut="415" data-fin="417">32. As-Sajda</option>
+                                            <option value="Al-Ahzab" data-debut="418" data-fin="427">33. Al-Ahzab</option>
+                                            <option value="Saba" data-debut="428" data-fin="434">34. Saba</option>
+                                            <option value="Fatir" data-debut="435" data-fin="439">35. Fatir</option>
+                                            <option value="Ya-Sin" data-debut="440" data-fin="445">36. Ya-Sin</option>
+                                            <option value="As-Saffat" data-debut="446" data-fin="452">37. As-Saffat</option>
+                                            <option value="Sad" data-debut="453" data-fin="457">38. Sad</option>
+                                            <option value="Az-Zumar" data-debut="458" data-fin="466">39. Az-Zumar</option>
+                                            <option value="Ghafir" data-debut="467" data-fin="476">40. Ghafir</option>
+                                            <option value="Fussilat" data-debut="477" data-fin="482">41. Fussilat</option>
+                                            <option value="Ash-Shura" data-debut="483" data-fin="488">42. Ash-Shura</option>
+                                            <option value="Az-Zukhruf" data-debut="489" data-fin="495">43. Az-Zukhruf</option>
+                                            <option value="Ad-Dukhan" data-debut="496" data-fin="498">44. Ad-Dukhan</option>
+                                            <option value="Al-Jathiya" data-debut="499" data-fin="501">45. Al-Jathiya</option>
+                                            <option value="Al-Ahqaf" data-debut="502" data-fin="506">46. Al-Ahqaf</option>
+                                            <option value="Muhammad" data-debut="507" data-fin="510">47. Muhammad</option>
+                                            <option value="Al-Fath" data-debut="511" data-fin="515">48. Al-Fath</option>
+                                            <option value="Al-Hujurat" data-debut="516" data-fin="517">49. Al-Hujurat</option>
+                                            <option value="Qaf" data-debut="518" data-fin="520">50. Qaf</option>
+                                            <option value="Adh-Dhariyat" data-debut="521" data-fin="523">51. Adh-Dhariyat</option>
+                                            <option value="At-Tur" data-debut="524" data-fin="525">52. At-Tur</option>
+                                            <option value="An-Najm" data-debut="526" data-fin="528">53. An-Najm</option>
+                                            <option value="Al-Qamar" data-debut="529" data-fin="530">54. Al-Qamar</option>
+                                            <option value="Ar-Rahman" data-debut="531" data-fin="533">55. Ar-Rahman</option>
+                                            <option value="Al-Waqia" data-debut="534" data-fin="537">56. Al-Waqia</option>
+                                            <option value="Al-Hadid" data-debut="538" data-fin="541">57. Al-Hadid</option>
+                                            <option value="Al-Mujadila" data-debut="542" data-fin="545">58. Al-Mujadila</option>
+                                            <option value="Al-Hashr" data-debut="546" data-fin="548">59. Al-Hashr</option>
+                                            <option value="Al-Mumtahana" data-debut="549" data-fin="550">60. Al-Mumtahana</option>
+                                            <option value="As-Saff" data-debut="551" data-fin="552">61. As-Saff</option>
+                                            <option value="Al-Jumu'a" data-debut="553" data-fin="554">62. Al-Jumu'a</option>
+                                            <option value="Al-Munafiqun" data-debut="555" data-fin="555">63. Al-Munafiqun</option>
+                                            <option value="At-Taghabun" data-debut="556" data-fin="557">64. At-Taghabun</option>
+                                            <option value="At-Talaq" data-debut="558" data-fin="559">65. At-Talaq</option>
+                                            <option value="At-Tahrim" data-debut="560" data-fin="561">66. At-Tahrim</option>
+                                            <option value="Al-Mulk" data-debut="562" data-fin="563">67. Al-Mulk</option>
+                                            <option value="Al-Qalam" data-debut="564" data-fin="566">68. Al-Qalam</option>
+                                            <option value="Al-Haaqqa" data-debut="567" data-fin="568">69. Al-Haaqqa</option>
+                                            <option value="Al-Ma'arij" data-debut="569" data-fin="569">70. Al-Ma'arij</option>
+                                            <option value="Nuh" data-debut="570" data-fin="571">71. Nuh</option>
+                                            <option value="Al-Jinn" data-debut="572" data-fin="573">72. Al-Jinn</option>
+                                            <option value="Al-Muzzammil" data-debut="574" data-fin="575">73. Al-Muzzammil</option>
+                                            <option value="Al-Muddaththir" data-debut="576" data-fin="577">74. Al-Muddaththir</option>
+                                            <option value="Al-Qiyama" data-debut="578" data-fin="578">75. Al-Qiyama</option>
+                                            <option value="Al-Insan" data-debut="579" data-fin="580">76. Al-Insan</option>
+                                            <option value="Al-Mursalat" data-debut="581" data-fin="581">77. Al-Mursalat</option>
+                                            <option value="An-Naba" data-debut="582" data-fin="583">78. An-Naba</option>
+                                            <option value="An-Nazi'at" data-debut="584" data-fin="584">79. An-Nazi'at</option>
+                                            <option value="Abasa" data-debut="585" data-fin="585">80. Abasa</option>
+                                            <option value="At-Takwir" data-debut="586" data-fin="586">81. At-Takwir</option>
+                                            <option value="Al-Infitar" data-debut="587" data-fin="587">82. Al-Infitar</option>
+                                            <option value="Al-Mutaffifin" data-debut="588" data-fin="588">83. Al-Mutaffifin</option>
+                                            <option value="Al-Inshiqaq" data-debut="589" data-fin="589">84. Al-Inshiqaq</option>
+                                            <option value="Al-Buruj" data-debut="590" data-fin="590">85. Al-Buruj</option>
+                                            <option value="At-Tariq" data-debut="591" data-fin="591">86. At-Tariq</option>
+                                            <option value="Al-A'la" data-debut="591" data-fin="591">87. Al-A'la</option>
+                                            <option value="Al-Ghashiya" data-debut="592" data-fin="592">88. Al-Ghashiya</option>
+                                            <option value="Al-Fajr" data-debut="593" data-fin="593">89. Al-Fajr</option>
+                                            <option value="Al-Balad" data-debut="594" data-fin="594">90. Al-Balad</option>
+                                            <option value="Ash-Shams" data-debut="595" data-fin="595">91. Ash-Shams</option>
+                                            <option value="Al-Layl" data-debut="595" data-fin="595">92. Al-Layl</option>
+                                            <option value="Ad-Duhaa" data-debut="596" data-fin="596">93. Ad-Duhaa</option>
+                                            <option value="Ash-Sharh" data-debut="596" data-fin="596">94. Ash-Sharh</option>
+                                            <option value="At-Tin" data-debut="597" data-fin="597">95. At-Tin</option>
+                                            <option value="Al-'Alaq" data-debut="597" data-fin="597">96. Al-'Alaq</option>
+                                            <option value="Al-Qadr" data-debut="598" data-fin="598">97. Al-Qadr</option>
+                                            <option value="Al-Bayyina" data-debut="598" data-fin="598">98. Al-Bayyina</option>
+                                            <option value="Az-Zalzalah" data-debut="599" data-fin="599">99. Az-Zalzalah</option>
+                                            <option value="Al-Adiyat" data-debut="599" data-fin="599">100. Al-Adiyat</option>
+                                            <option value="Al-Qari'a" data-debut="600" data-fin="600">101. Al-Qari'a</option>
+                                            <option value="At-Takathur" data-debut="600" data-fin="600">102. At-Takathur</option>
+                                            <option value="Al-Asr" data-debut="601" data-fin="601">103. Al-Asr</option>
+                                            <option value="Al-Humazah" data-debut="601" data-fin="601">104. Al-Humazah</option>
+                                            <option value="Al-Fil" data-debut="601" data-fin="601">105. Al-Fil</option>
+                                            <option value="Quraysh" data-debut="602" data-fin="602">106. Quraysh</option>
+                                            <option value="Al-Ma'un" data-debut="602" data-fin="602">107. Al-Ma'un</option>
+                                            <option value="Al-Kawthar" data-debut="602" data-fin="602">108. Al-Kawthar</option>
+                                            <option value="Al-Kafirun" data-debut="603" data-fin="603">109. Al-Kafirun</option>
+                                            <option value="An-Nasr" data-debut="603" data-fin="603">110. An-Nasr</option>
+                                            <option value="Al-Masad" data-debut="603" data-fin="603">111. Al-Masad</option>
+                                            <option value="Al-Ikhlas" data-debut="604" data-fin="604">112. Al-Ikhlas</option>
+                                            <option value="Al-Falaq" data-debut="604" data-fin="604">113. Al-Falaq</option>
+                                            <option value="An-Nas" data-debut="604" data-fin="604">114. An-Nas</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="page_debut_sourate">Page de début de la sourate</label>
+                                        <select class="form-control" id="page_debut_sourate" name="page_debut_sourate">
+                                            <!-- Les options seront remplies dynamiquement par JavaScript -->
+                                        </select>
+                                        <small class="form-text text-muted">Page de début de la sourate actuelle</small>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="page_objectif">Page actuelle</label>
+                                        <select class="form-control" id="page_objectif" name="page_objectif">
+                                            <!-- Les options seront remplies dynamiquement par JavaScript -->
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="direction_memorisation">Direction de mémorisation</label>
+                                        <select class="form-control" id="direction_memorisation" name="direction_memorisation">
+                                            <option value="debut" {% if progression_coran.direction_memorisation == 'debut' %}selected{% endif %}>Depuis le début (Al-Fatiha)</option>
+                                            <option value="fin" {% if progression_coran.direction_memorisation == 'fin' %}selected{% endif %}>Depuis la fin (An-Nas)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-success btn-block">
+                                        <i class="fas fa-save mr-2"></i>Enregistrer ma progression
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Progression circulaire -->
+                    <div class="col-lg-8 mb-4">
+                        <div class="card border-left-primary shadow h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="m-0 font-weight-bold text-primary">Ma progression du Coran</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 text-center">
+                                        <div class="chart-container">
+                                            <canvas id="coranProgressionChart" data-progression="{{ progression_pourcentage|default:0 }}"></canvas>
+                                            <div class="chart-center-text">
+                                                <span class="percent-text">{{ progression_pourcentage|default:"0" }}%</span>
+                                                <span class="label-text">Mémorisé</span>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3">
+                                            <h4 class="small font-weight-bold">Progression du Coran <span class="float-right">{{ progression_pourcentage|default:"0" }}%</span></h4>
+                                            <div class="progress mb-4">
+                                                <div class="progress-bar bg-info" role="progressbar" style="width: {{ progression_pourcentage|default:'0' }}%" aria-valuenow="{{ progression_pourcentage|default:'0' }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        {% if progression_coran %}
+                                            <div class="card border-left-info shadow h-100 py-2">
+                                                <div class="card-body">
+                                                    <div class="row no-gutters align-items-center">
+                                                        <div class="col mr-2">
+                                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Dernière mise à jour</div>
+                                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ progression_coran.date_mise_a_jour|date:"d/m/Y" }}</div>
+                                                            <div class="mt-3">
+                                                                <p><strong>Sourate actuelle:</strong> {{ progression_coran.sourate_actuelle }}</p>
+                                                                <p><strong>Page actuelle:</strong> {{ progression_coran.page_actuelle }} / 604</p>
+                                                                <p><strong>Direction:</strong> 
+                                                                    {% if progression_coran.direction_memorisation == 'debut' %}
+                                                                        Depuis le début (Al-Fatiha)
+                                                                    {% else %}
+                                                                        Depuis la fin (An-Nas)
+                                                                    {% endif %}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <i class="fas fa-book-open fa-2x text-gray-300"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <div class="text-center py-4">
+                                                <p class="text-muted">Aucune progression enregistrée.</p>
+                                                <p>Commencez à enregistrer votre progression!</p>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script pour gérer les pages du Coran -->
+<style type="text/css">
+/* Style pour le graphique circulaire */
+.chart-container {
+    position: relative;
+    height: 200px;
+    width: 200px;
+    margin: 0 auto;
+}
+
+.chart-center-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.percent-text {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+    color: #36b9cc;
+}
+
+.label-text {
+    display: block;
+    font-size: 14px;
+    color: #858796;
+}
+</style>
+
+<script>
+function updatePageRange() {
+    var sourateSelect = document.getElementById('sourate');
+    var selectedOption = sourateSelect.options[sourateSelect.selectedIndex];
+    var pageDebut = parseInt(selectedOption.getAttribute('data-debut'));
+    var pageFin = parseInt(selectedOption.getAttribute('data-fin'));
+    
+    var pageDebutSourateSelect = document.getElementById('page_debut_sourate');
+    var pageObjectifSelect = document.getElementById('page_objectif');
+    
+    // Vider les menus déroulants
+    pageDebutSourateSelect.innerHTML = '';
+    pageObjectifSelect.innerHTML = '';
+    
+    // Remplir le menu déroulant page de début avec la première page de la sourate
+    var optionDebut = document.createElement('option');
+    optionDebut.value = pageDebut;
+    optionDebut.textContent = 'Page ' + pageDebut;
+    pageDebutSourateSelect.appendChild(optionDebut);
+    
+    // Remplir le menu déroulant avec toutes les pages de la sourate
+    for (var i = pageDebut; i <= pageFin; i++) {
+        var option = document.createElement('option');
+        option.value = i;
+        option.textContent = 'Page ' + i;
+        pageObjectifSelect.appendChild(option);
+    }
+    
+    // Sélectionner par défaut la première page de la sourate
+    pageObjectifSelect.value = pageDebut;
+}
+
+// Appel initial pour configurer l'affichage
+document.addEventListener('DOMContentLoaded', function() {
+    updatePageRange();
+    
+    // Initialiser la sourate actuelle si elle existe
+    {% if progression_coran %}
+    (function() {
+        var sourateSelect = document.getElementById('sourate');
+        for (var i = 0; i < sourateSelect.options.length; i++) {
+            if (sourateSelect.options[i].value === "{{ progression_coran.sourate_actuelle }}") {
+                sourateSelect.selectedIndex = i;
+                break;
+            }
+        }
+        updatePageRange();
+        
+        // Sélectionner la page de début et la page actuelle
+        var pageDebutSourateSelect = document.getElementById('page_debut_sourate');
+        var pageObjectifSelect = document.getElementById('page_objectif');
+        pageDebutSourateSelect.value = "{{ progression_coran.page_debut_sourate }}";
+        pageObjectifSelect.value = "{{ progression_coran.page_actuelle }}";
+    })();
+    {% endif %}
+});
+</script>
