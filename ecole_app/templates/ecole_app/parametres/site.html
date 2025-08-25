@@ -26,6 +26,14 @@
                             <small class="form-text text-muted">Ce montant sera automatiquement appliqué lors de la création d'un nouvel élève.</small>
                         </div>
                         
+                        <div class="form-group form-check">
+                            {{ form.mettre_a_jour_eleves }}
+                            <label class="form-check-label" for="{{ form.mettre_a_jour_eleves.id_for_label }}">
+                                {{ form.mettre_a_jour_eleves.label }}
+                            </label>
+                            <small class="form-text text-muted">{{ form.mettre_a_jour_eleves.help_text }}</small>
+                        </div>
+                        
                         <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
                     </form>
                 </div>

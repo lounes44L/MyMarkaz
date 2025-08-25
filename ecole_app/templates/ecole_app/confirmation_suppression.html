@@ -1,0 +1,92 @@
+{% extends "ecole_app/base.html" %}
+{% load static %}
+
+{% block title %}Confirmation de suppression{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h4>Confirmation de suppression</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i>Confirmation requise</h5>
+                        <p>Voulez-vous vraiment supprimer {{ type_objet }} ?</p>
+                        <p>Cette action est irréversible.</p>
+                    </div>
+                    
+                    {% if presence %}
+                        <div class="table-responsive mb-4">
+                            <table class="table table-bordered">
+                                {% if presence.eleve %}
+                                <tr>
+                                    <th style="width: 30%">Élève</th>
+                                    <td>{{ presence.eleve.nom }} {{ presence.eleve.prenom }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if presence.professeur %}
+                                <tr>
+                                    <th style="width: 30%">Professeur</th>
+                                    <td>{{ presence.professeur.nom }}</td>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <th>Date</th>
+                                    <td>{{ presence.date|date:"d/m/Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Statut</th>
+                                    <td>
+                                        {% if presence.present %}
+                                            <span class="badge bg-success">Présent</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Absent</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% if presence.classe %}
+                                <tr>
+                                    <th>Classe</th>
+                                    <td>{{ presence.classe.nom }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if presence.commentaire %}
+                                <tr>
+                                    <th>Commentaire</th>
+                                    <td>{{ presence.commentaire }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            {% if presence.eleve %}
+                                <a href="{% url 'rapport_presence_eleve' %}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Annuler
+                                </a>
+                            {% elif presence.professeur %}
+                                <a href="{% url 'rapport_presence_professeur' %}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Annuler
+                                </a>
+                            {% else %}
+                                <a href="javascript:history.back()" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Annuler
+                                </a>
+                            {% endif %}
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash-alt me-2"></i>Confirmer la suppression
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

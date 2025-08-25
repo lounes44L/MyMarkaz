@@ -204,6 +204,7 @@ $(document).ready(function() {
     // Mettre à jour l'affichage quand le type change
     $('#type_question').change(function() {
         updateQuestionTypeHelp();
+        enforceUniqueCorrectAnswer();
     });
     
     // Compteur pour les nouveaux choix
@@ -250,6 +251,10 @@ $(document).ready(function() {
     
     // Pour le type choix unique, s'assurer qu'une seule réponse est correcte
     function enforceUniqueCorrectAnswer() {
+        // Enlever d'abord tous les gestionnaires d'événements
+        $(document).off('change', 'input[name="correct[]"]');
+        
+        // Ajouter le gestionnaire uniquement pour le type choix_unique
         if ($('#type_question').val() === 'choix_unique') {
             $(document).on('change', 'input[name="correct[]"]', function() {
                 if ($(this).prop('checked')) {
@@ -257,9 +262,8 @@ $(document).ready(function() {
                     $('input[name="correct[]"]').not(this).prop('checked', false);
                 }
             });
-        } else {
-            $(document).off('change', 'input[name="correct[]"]');
         }
+        // Pour choix_multiple, on ne fait rien (permettre plusieurs sélections)
     }
     
     // Validation du formulaire

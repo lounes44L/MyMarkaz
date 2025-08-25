@@ -25,19 +25,10 @@
                     </div>
                 {% endif %}
                 
-                {% if user.is_superuser or user.is_staff %}
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <label for="professeur_id">Professeur</label>
-                        <select name="professeur_id" id="professeur_id" class="form-control" required>
-                            <option value="">Sélectionner un professeur</option>
-                            {% for prof in professeurs %}
-                                <option value="{{ prof.id }}" {% if professeur_id == prof.id %}selected{% endif %}>{{ prof.user.first_name }} {{ prof.user.last_name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                {% endif %}
+                {% comment %}
+<!-- Le sélecteur de professeur a été supprimé pour les administrateurs. 
+Les notes ajoutées par les administrateurs seront automatiquement attribuées au professeur "administration" -->
+{% endcomment %}
                 
                 <div class="row">
                     <div class="col-md-6 mb-3">

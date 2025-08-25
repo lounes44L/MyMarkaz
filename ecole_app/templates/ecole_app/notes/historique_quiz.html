@@ -23,7 +23,7 @@
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                 Score moyen
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-dark">{{ stats.score_moyen|floatformat:1 }}%</div>
+                            <div class="h5 mb-0 font-weight-bold text-primary">{{ stats.score_moyen|floatformat:1 }}%</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-percent fa-2x text-primary"></i>
@@ -42,7 +42,7 @@
                             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                                 Nombre de quiz
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-dark">{{ stats.total_quiz }}</div>
+                            <div class="h5 mb-0 font-weight-bold text-info">{{ stats.total_quiz }}</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-clipboard-list fa-2x text-info"></i>
@@ -78,7 +78,7 @@
                             <td class="align-middle font-weight-bold">{{ tentative.date_fin|date:"d/m/Y H:i" }}</td>
                             <td class="align-middle">{{ tentative.quiz.titre }}</td>
                             <td class="align-middle text-center">
-                                <span class="badge badge-{% if tentative.score >= 50 %}success{% else %}danger{% endif %} p-3" style="font-size: 1.2rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">
+                                <span class="badge badge-{% if tentative.score >= 50 %}success{% elif tentative.score > 0 %}warning{% else %}danger{% endif %} p-3 text-dark" style="font-size: 1.2rem; font-weight: 700; text-shadow: 0 1px 2px rgba(255,255,255,0.2); box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                                     {{ tentative.score|floatformat:1 }}%
                                 </span>
                             </td>

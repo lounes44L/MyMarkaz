@@ -5,6 +5,9 @@ from django.utils import timezone
 from django.http import JsonResponse, HttpResponseForbidden
 from django.db.models import Count, Sum, Avg
 from django.core.exceptions import PermissionDenied
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+import json
 from .models import (Eleve, Professeur, CarnetPedagogique, EcouteAvantMemo, 
                     Memorisation, Revision, Repetition, Creneau, CompetenceLivre, EvaluationCompetence)
 from .forms import (CarnetPedagogiqueForm, EcouteAvantMemoForm, MemorisationForm,
@@ -58,13 +61,26 @@ def carnet_pedagogique(request, eleve_id=None):
     
     # Récupérer le mois et l'année depuis les paramètres GET ou utiliser la date actuelle
     date_actuelle = timezone.now()
-    mois = int(request.GET.get('mois', date_actuelle.month))
-    annee = int(request.GET.get('annee', date_actuelle.year))
+    try:
+        mois = int(request.GET.get('mois', date_actuelle.month))
+        annee = int(request.GET.get('annee', date_actuelle.year))
+        
+        # Vérifier que les valeurs sont dans des plages valides
+        if mois < 1 or mois > 12:
+            mois = date_actuelle.month
+        if annee < 2000 or annee > 2100:  # Plage raisonnable pour les années
+            annee = date_actuelle.year
+    except (ValueError, TypeError):
+        # En cas d'erreur de conversion, utiliser les valeurs par défaut
+        mois = date_actuelle.month
+        annee = date_actuelle.year
     
     # Récupérer les données du carnet
     ecoutes = EcouteAvantMemo.objects.filter(carnet=carnet).order_by('-date')
     memorisations = Memorisation.objects.filter(carnet=carnet).order_by('-date')
-    revisions = Revision.objects.filter(carnet=carnet).order_by('-date')
+    
+    # Utiliser values() pour sélectionner uniquement les champs nécessaires et éviter l'erreur de colonne manquante
+    revisions = Revision.objects.filter(carnet=carnet).values('id', 'carnet_id', 'semaine', 'date', 'jour', 'nombre_hizb').order_by('-date')
     repetitions = Repetition.objects.filter(carnet=carnet).order_by('-derniere_date')
     
     # Statistiques
@@ -76,12 +92,18 @@ def carnet_pedagogique(request, eleve_id=None):
     
     # Organiser les compétences par leçon avec leurs évaluations
     competences_par_lecon = {}
+    competences_status = {}
+    
     for competence in competences:
         if competence.lecon not in competences_par_lecon:
             competences_par_lecon[competence.lecon] = []
         
         # Chercher l'évaluation pour cette compétence
         evaluation = next((e for e in evaluations if e.competence_id == competence.id), None)
+        
+        # Ajouter le statut de la compétence au dictionnaire
+        if evaluation:
+            competences_status[str(competence.id)] = evaluation.statut
         
         competences_par_lecon[competence.lecon].append({
             'competence': competence,
@@ -152,6 +174,9 @@ def ajouter_memorisation(request, eleve_id=None):
         if form.is_valid():
             memorisation = form.save(commit=False)
             memorisation.carnet = carnet
+            # Récupérer le nom de la sourate depuis les données nettoyées
+            if 'sourate' in form.cleaned_data and form.cleaned_data['sourate']:
+                memorisation.sourate = form.cleaned_data['sourate']
             memorisation.save()
             messages.success(request, "Séance de mémorisation ajoutée avec succès.")
             return redirect('carnet_pedagogique', eleve_id=eleve.id)
@@ -184,6 +209,12 @@ def ajouter_revision(request, eleve_id=None):
         if form.is_valid():
             revision = form.save(commit=False)
             revision.carnet = carnet
+            # Ignorer le champ remarques pour éviter l'erreur de colonne manquante
+            # remarques = form.cleaned_data.get('remarques')
+            # if remarques:
+            #     revision.remarques = remarques
+            # Auto-calculate the week number
+            revision.semaine = revision.date.isocalendar()[1]
             revision.save()
             messages.success(request, "Révision ajoutée avec succès.")
             return redirect('carnet_pedagogique', eleve_id=eleve.id)
@@ -241,3 +272,61 @@ def ajouter_repetition(request, eleve_id=None):
         'titre_page': "Ajouter une répétition"
     }
     return render(request, 'ecole_app/carnet/formulaire.html', context)
+
+@login_required
+@require_http_methods(["POST"])
+def evaluation_competences_batch(request):
+    """Enregistrer plusieurs évaluations de compétences en lot via AJAX"""
+    try:
+        data = json.loads(request.body)
+        competences_data = data.get('competences', [])
+        date_annotation = data.get('date_annotation')
+        
+        if not competences_data:
+            return JsonResponse({'success': False, 'error': 'Aucune compétence fournie'})
+        
+        # Vérifier l'accès à l'élève
+        eleve_id = competences_data[0].get('eleve_id')
+        if not eleve_id:
+            return JsonResponse({'success': False, 'error': 'ID élève manquant'})
+            
+        eleve, has_access = check_eleve_access(request, eleve_id)
+        if not has_access:
+            return JsonResponse({'success': False, 'error': 'Accès non autorisé'})
+        
+        # Traiter chaque compétence
+        evaluations_created = 0
+        for comp_data in competences_data:
+            competence_id = comp_data.get('competence_id')
+            statut = comp_data.get('statut')
+            
+            if not competence_id or not statut:
+                continue
+                
+            try:
+                # Chercher la compétence
+                competence = CompetenceLivre.objects.get(id=competence_id)
+                
+                # Créer ou mettre à jour l'évaluation
+                evaluation, created = EvaluationCompetence.objects.update_or_create(
+                    eleve=eleve,
+                    competence=competence,
+                    defaults={
+                        'statut': statut,
+                        'date_evaluation': timezone.now().date() if date_annotation else timezone.now().date()
+                    }
+                )
+                evaluations_created += 1
+                
+            except CompetenceLivre.DoesNotExist:
+                continue
+        
+        return JsonResponse({
+            'success': True, 
+            'message': f'{evaluations_created} évaluations enregistrées avec succès'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Données JSON invalides'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

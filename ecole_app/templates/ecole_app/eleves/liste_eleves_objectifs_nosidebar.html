@@ -234,15 +234,13 @@
                         <label for="classes_destination{{ eleve.id }}" class="form-label">Choisir la classe de destination</label>
                         <select class="form-select" id="classes_destination{{ eleve.id }}" name="classe_destination" required>
                             <option value="">Sélectionner une classe</option>
-                            {% for classe_dest in classes_autres_profs %}
+                            {% for classe_dest in classes_meme_composante %}
                                 <option value="{{ classe_dest.id }}">{{ classe_dest.nom }} (Prof: {{ classe_dest.professeur.nom }})</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label for="commentaire{{ eleve.id }}" class="form-label">Commentaire (optionnel)</label>
-                        <textarea class="form-control" id="commentaire{{ eleve.id }}" name="commentaire" rows="3"></textarea>
-                    </div>
+                    <input type="hidden" name="classe_origine" value="{{ classe.id }}">
+
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" id="conserver_copie{{ eleve.id }}" name="conserver_copie">
                         <label class="form-check-label" for="conserver_copie{{ eleve.id }}">

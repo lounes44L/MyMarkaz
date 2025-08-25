@@ -10,22 +10,6 @@
         </div>
         <div class="modal-body">
           <input type="hidden" name="eleve_id" id="desarchiveEleveId">
-          <div class="mb-3">
-            <label for="desarchiveClasse" class="form-label">Classe</label>
-            <select name="classe" id="desarchiveClasse" class="form-control">
-              {% for classe in classes %}
-                <option value="{{ classe.id }}">{{ classe.nom }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="desarchiveCreneau" class="form-label">Créneau</label>
-            <select name="creneau" id="desarchiveCreneau" class="form-control">
-              {% for creneau in creneaux %}
-                <option value="{{ creneau.id }}">{{ creneau.nom }}</option>
-              {% endfor %}
-            </select>
-          </div>
           <div class="alert alert-info" id="desarchiveEleveName"></div>
         </div>
         <div class="modal-footer">

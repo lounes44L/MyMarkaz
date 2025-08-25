@@ -47,8 +47,19 @@ def api_carnet_data(request, eleve_id=None):
     
     # Récupérer le mois et l'année depuis les paramètres GET
     date_actuelle = timezone.now()
-    mois = int(request.GET.get('mois', date_actuelle.month))
-    annee = int(request.GET.get('annee', date_actuelle.year))
+    try:
+        mois = int(request.GET.get('mois', date_actuelle.month))
+        annee = int(request.GET.get('annee', date_actuelle.year))
+        
+        # Vérifier que les valeurs sont dans des plages valides
+        if mois < 1 or mois > 12:
+            mois = date_actuelle.month
+        if annee < 2000 or annee > 2100:  # Plage raisonnable pour les années
+            annee = date_actuelle.year
+    except (ValueError, TypeError):
+        # En cas d'erreur de conversion, utiliser les valeurs par défaut
+        mois = date_actuelle.month
+        annee = date_actuelle.year
     
     # Filtrer les données par mois et année
     ecoutes = EcouteAvantMemo.objects.filter(

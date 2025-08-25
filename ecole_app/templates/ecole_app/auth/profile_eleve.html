@@ -78,10 +78,17 @@
                         <table class="table">
                             <tbody>
                                 <tr>
-                                    <th>Classe</th>
+                                    <th>Classe{% if profile_data.classes.all|length > 1 %}s{% endif %}</th>
                                     <td>
-                                        {% if profile_data.classe %}
-                                            {{ profile_data.classe.nom }}
+                                        {% if profile_data.classes.all %}
+                                            {% for classe in profile_data.classes.all %}
+                                                <div class="mb-1">
+                                                    <span class="badge bg-primary">{{ classe.nom }}</span>
+                                                    {% if classe.composante %}
+                                                        <small class="text-muted">{{ classe.composante.nom }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
                                         {% else %}
                                             <em>Non assigné</em>
                                         {% endif %}

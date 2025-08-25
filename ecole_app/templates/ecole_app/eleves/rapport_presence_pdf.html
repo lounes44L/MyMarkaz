@@ -91,43 +91,43 @@
     <table>
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Élève</th>
-                <th>Classe</th>
-                <th>Statut</th>
-                <th>Commentaire</th>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Classe actuelle</th>
+                <th>Présences</th>
+                <th>Absences justifiées</th>
+                <th>Absences non justifiées</th>
+                <th>Taux de présence</th>
+                <th>Historique des commentaires</th>
             </tr>
         </thead>
         <tbody>
-            {% for presence in presences %}
+            {% for eleve, stats in eleves_stats.items %}
             <tr>
-                <td>{{ presence.date|date:"d/m/Y" }}</td>
-                <td>{{ presence.eleve.nom }} {{ presence.eleve.prenom }}</td>
+                <td>{{ eleve.nom }}</td>
+                <td>{{ eleve.prenom }}</td>
                 <td>
-                    {% if presence.classe %}
-                        {{ presence.classe.nom }}
-                    {% else %}
-                        {% for classe in presence.eleve.classes.all|slice:":1" %}
-                            {{ classe.nom }}
-                        {% empty %}
-                            Non définie
-                        {% endfor %}
-                    {% endif %}
+                    {% for classe in eleve.classes.all|slice:":1" %}
+                        {{ classe.nom }}
+                    {% empty %}
+                        Non définie
+                    {% endfor %}
                 </td>
+                <td>{{ stats.presents }}</td>
+                <td>{{ stats.absents_justifies }}</td>
+                <td>{{ stats.absents }}</td>
+                <td>{{ stats.taux_presence }}%</td>
                 <td>
-                    {% if presence.present %}
-                        <span class="present">Présent</span>
-                    {% elif presence.justifie %}
-                        <span class="justified">Absent justifié</span>
-                    {% else %}
-                        <span class="absent">Absent non justifié</span>
-                    {% endif %}
+                    {% for presence in stats.commentaires %}
+                        {% if presence.commentaire %}
+                            {{ presence.date|date:"d/m/Y" }}: {{ presence.commentaire }}<br>
+                        {% endif %}
+                    {% endfor %}
                 </td>
-                <td>{{ presence.commentaire|default:"-" }}</td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="5" class="empty-message">Aucune présence enregistrée pour cette période</td>
+                <td colspan="8" class="empty-message">Aucune présence enregistrée pour cette période</td>
             </tr>
             {% endfor %}
         </tbody>

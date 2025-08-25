@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Avg, Count
 from django.http import JsonResponse
-from .models import NoteExamen, Eleve, Classe, Professeur
+from .models import NoteExamen, Eleve, Classe, Professeur, Composante
 from .forms import NoteExamenForm
 from datetime import date
 
@@ -89,26 +89,23 @@ def ajouter_note(request):
         messages.error(request, "Accès réservé aux professeurs et administrateurs.")
         return redirect('dashboard')
     
-    # Pour les admins, on utilise le professeur sélectionné ou on affiche la liste des professeurs
+    # Pour les admins, on utilise automatiquement un professeur nommé "administration"
     if is_admin:
-        professeur_id = request.POST.get('professeur_id') if request.method == 'POST' else None
-        # Récupérer tous les professeurs pour le formulaire
-        professeurs = Professeur.objects.all().select_related('user')
+        # Chercher ou créer un professeur nommé "administration"
+        professeur, created = Professeur.objects.get_or_create(
+            nom="administration",
+            defaults={
+                'email': request.user.email if hasattr(request.user, 'email') else None
+            }
+        )
         
-        if not professeurs.exists():
-            messages.error(request, "Aucun professeur disponible pour créer une note.")
-            return redirect('liste_notes_professeur')
+        # Si le professeur vient d'être créé, s'assurer qu'il est associé à toutes les composantes
+        if created:
+            composantes = Composante.objects.all()
+            professeur.composantes.add(*composantes)
+            professeur.save()
             
-        if professeur_id:
-            professeur = get_object_or_404(Professeur, id=professeur_id)
-        else:
-            # Pour le formulaire initial, pas de professeur sélectionné
-            professeur = None
-            return render(request, 'ecole_app/notes/ajouter.html', {
-                'form': NoteExamenForm(),
-                'professeurs': professeurs,
-                'professeur_id': None
-            })
+        professeurs = None  # Pas besoin de la liste des professeurs
     else:
         professeur = request.user.professeur
         professeurs = None

@@ -1,13 +1,72 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Sum, Count
-from django.http import HttpResponse
-from django.db.models.functions import TruncMonth
-from .models import Charge, Professeur, AnneeScolaire, Paiement
+from django.db.models import Sum, Count, Q, F, ExpressionWrapper, DecimalField, Value, CharField, Case, When
+from django.db.models.functions import Concat, ExtractMonth, ExtractYear, TruncMonth
+
+def recalculer_indemnisation_professeur(professeur):
+    """
+    Recalcule le montant total des indemnisations d'un professeur à partir des charges de type 'indemnisation'
+    
+    Args:
+        professeur: L'instance du modèle Professeur dont on veut recalculer les indemnisations
+    """
+    from decimal import Decimal
+    
+    # Calculer la somme des indemnisations du professeur
+    total_indemnisations = Charge.objects.filter(
+        professeur=professeur,
+        categorie='indemnisation'
+    ).aggregate(total=Sum('montant'))['total'] or Decimal('0.00')
+    
+    # Mettre à jour le champ indemnisation du professeur
+    professeur.indemnisation = total_indemnisations
+    professeur.save()
+    
+    return total_indemnisations
+
+from .models import Charge, Professeur, AnneeScolaire, Paiement, Eleve
 from .forms import ChargeForm, IndemnisationForm, PaiementForm
 import datetime
 import locale
+
+
+@login_required
+def paiements_manquants(request):
+    """
+    Vue pour afficher la liste des élèves qui n'ont jamais effectué de paiement
+    """
+    # Vérifier si une composante est sélectionnée
+    composante_id = request.session.get('composante_id')
+    if not composante_id:
+        messages.warning(request, 'Veuillez sélectionner une composante pour continuer.')
+        return redirect('selection_composante')
+    
+    # Récupérer tous les élèves actifs de la composante actuelle
+    eleves_actifs = Eleve.objects.filter(composante_id=composante_id, archive=False)
+    
+    # Récupérer les IDs des élèves qui ont au moins un paiement
+    eleves_avec_paiements = Paiement.objects.filter(composante_id=composante_id).values_list('eleve_id', flat=True).distinct()
+    
+    # Filtrer les élèves qui n'ont pas de paiements
+    eleves_sans_paiements = eleves_actifs.exclude(id__in=eleves_avec_paiements).order_by('nom', 'prenom')
+    
+    # Calcul du nombre total d'élèves sans paiement
+    total_eleves_sans_paiements = eleves_sans_paiements.count()
+    
+    # Calcul du pourcentage d'élèves sans paiement par rapport au total d'élèves actifs
+    total_eleves_actifs = eleves_actifs.count()
+    pourcentage_sans_paiements = round((total_eleves_sans_paiements / total_eleves_actifs * 100), 2) if total_eleves_actifs > 0 else 0
+    
+    context = {
+        'eleves_sans_paiements': eleves_sans_paiements,
+        'total_eleves_sans_paiements': total_eleves_sans_paiements,
+        'total_eleves_actifs': total_eleves_actifs,
+        'pourcentage_sans_paiements': pourcentage_sans_paiements,
+        'now': datetime.datetime.now()  # Pour afficher la date de dernière mise à jour
+    }
+    
+    return render(request, 'ecole_app/paiements/paiements_manquants.html', context)
 from collections import defaultdict
 
 @login_required
@@ -162,35 +221,48 @@ def liste_indemnisations(request):
             pass
     
     # Formulaire d'ajout d'indemnisation
-    form = ChargeForm(initial={'categorie': 'indemnisation'})
-    
     if request.method == 'POST':
-        form = ChargeForm(request.POST)
+        # Assurons-nous que la catégorie est bien 'indemnisation'
+        post_data = request.POST.copy()
+        post_data['categorie'] = 'indemnisation'
+        form = ChargeForm(post_data)
         if form.is_valid():
-            indemnisation = form.save(commit=False)
-            indemnisation.categorie = 'indemnisation'
-            if not indemnisation.annee_scolaire and annee_active:
-                indemnisation.annee_scolaire = annee_active
+            try:
+                indemnisation = form.save(commit=False)
+                indemnisation.categorie = 'indemnisation'  # S'assurer que la catégorie est bien définie
+                if not indemnisation.annee_scolaire and annee_active:
+                    indemnisation.annee_scolaire = annee_active
                 
-            # Vérifier si une indemnisation identique existe déjà
-            indemnisation_existante = Charge.objects.filter(
-                description=indemnisation.description,
-                categorie='indemnisation',
-                montant=indemnisation.montant,
-                date=indemnisation.date,
-                professeur=indemnisation.professeur,
-                annee_scolaire=indemnisation.annee_scolaire
-            ).first()
-            
-            if indemnisation_existante:
-                messages.warning(request, "Une indemnisation identique existe déjà dans le système. Aucune nouvelle indemnisation n'a été ajoutée.")
-            else:
-                indemnisation.save()
-                messages.success(request, "L'indemnisation a été ajoutée avec succès.")
+                # Vérifier si une indemnisation identique existe déjà
+                indemnisation_existante = Charge.objects.filter(
+                    description=indemnisation.description,
+                    categorie='indemnisation',
+                    montant=indemnisation.montant,
+                    date=indemnisation.date,
+                    professeur=indemnisation.professeur,
+                    annee_scolaire=indemnisation.annee_scolaire
+                ).first()
+                
+                if indemnisation_existante:
+                    messages.warning(request, "Une indemnisation identique existe déjà dans le système. Aucune nouvelle indemnisation n'a été ajoutée.")
+                else:
+                    # Sauvegarder l'indemnisation
+                    indemnisation.save()
+                    
+                    # Mettre à jour le champ indemnisation du professeur
+                    if indemnisation.professeur:
+                        from decimal import Decimal
+                        professeur = indemnisation.professeur
+                        professeur.indemnisation += Decimal(str(indemnisation.montant))
+                        professeur.save()
+                        
+                    messages.success(request, "L'indemnisation a été ajoutée avec succès et le montant d'indemnisation du professeur a été mis à jour.")
+            except Exception as e:
+                messages.error(request, f"Erreur lors de l'ajout de l'indemnisation : {str(e)}")
                 
             return redirect('liste_indemnisations')
     else:
-        form = IndemnisationForm()
+        form = ChargeForm(initial={'categorie': 'indemnisation'})
     
     # Configuration de la localisation pour les mois en français
     try:
@@ -220,14 +292,25 @@ def supprimer_indemnisation(request, indemnisation_id):
     indemnisation = get_object_or_404(Charge, id=indemnisation_id, categorie='indemnisation')
     
     if request.method == 'POST':
+        # Mettre à jour le champ indemnisation du professeur avant de supprimer
+        if indemnisation.professeur:
+            from decimal import Decimal
+            professeur = indemnisation.professeur
+            professeur.indemnisation -= Decimal(str(indemnisation.montant))
+            # Éviter les valeurs négatives
+            if professeur.indemnisation < 0:
+                professeur.indemnisation = Decimal('0.00')
+            professeur.save()
+        
         indemnisation.delete()
-        messages.success(request, "L'indemnisation a été supprimée avec succès.")
+        messages.success(request, "L'indemnisation a été supprimée avec succès et le montant d'indemnisation du professeur a été mis à jour.")
         return redirect('liste_indemnisations')
     
     context = {
         'indemnisation': indemnisation,
     }
     return render(request, 'ecole_app/comptabilite/confirmer_suppression_indemnisation.html', context)
+
 
 @login_required
 def statistiques_paiements(request):

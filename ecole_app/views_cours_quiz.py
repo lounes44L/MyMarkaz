@@ -61,7 +61,8 @@ def ajouter_cours(request):
     if is_user_admin:
         # Si c'est un admin, montrer toutes les classes
         classes = Classe.objects.all()
-        professeur = None
+        # Utiliser le premier professeur disponible pour éviter l'erreur d'intégrité
+        professeur = Professeur.objects.first()
     else:
         # Si c'est un professeur
         professeur = request.user.professeur
@@ -81,7 +82,7 @@ def ajouter_cours(request):
             titre=titre,
             description=description,
             fichier=fichier,
-            professeur=None if is_user_admin else professeur,
+            professeur=professeur,  # Utiliser le professeur défini plus haut (même pour admin)
             eleve=None  # Rendre le champ 'eleve' explicitement optionnel
         )
         cours.save()
@@ -368,10 +369,17 @@ def ajouter_questions(request, quiz_id):
                         ordre=i
                     )
         
-        messages.success(request, 'La question a été ajoutée avec succès.')
+        # Stocker le message dans la session pour éviter les doublons
+        request.session['question_added'] = True
         
         # Rediriger vers la même page pour ajouter d'autres questions
         return redirect('ajouter_questions', quiz_id=quiz.id)
+    
+    # Vérifier si une question vient d'être ajoutée
+    if request.session.get('question_added'):
+        messages.success(request, 'La question a été ajoutée avec succès.')
+        # Supprimer le flag de la session pour éviter les doublons
+        del request.session['question_added']
     
     context = {
         'quiz': quiz,

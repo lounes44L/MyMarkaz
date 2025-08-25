@@ -43,6 +43,10 @@ class ComposanteMiddleware:
         
         # Ne pas imposer la sélection de composante pour les élèves et les professeurs
         if (hasattr(request.user, 'eleve') and request.user.eleve) or (hasattr(request.user, 'professeur') and request.user.professeur):
+            # Pour les professeurs, sélectionner automatiquement la première composante si aucune n'est sélectionnée
+            if hasattr(request.user, 'professeur') and request.user.professeur and not request.session.get('composante_id'):
+                if request.user.professeur.composantes.exists():
+                    request.session['composante_id'] = request.user.professeur.composantes.first().id
             return self.get_response(request)
 
         # Vérifier si une composante est sélectionnée (pour les autres)

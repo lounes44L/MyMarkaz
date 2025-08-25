@@ -377,7 +377,6 @@
                                     <th>Élève</th>
                                     <th>Type d'examen</th>
                                     <th>Note</th>
-                                    <th>Mention</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -386,8 +385,7 @@
                                         <td>{{ note.date_examen }}</td>
                                         <td>{{ note.eleve.nom }} {{ note.eleve.prenom }}</td>
                                         <td>{{ note.get_type_examen_display }}</td>
-                                        <td>{{ note.note }}/{{ note.note_max }}</td>
-                                        <td><span class="badge {{ note.get_couleur_badge }}">{{ note.get_mention }}</span></td>
+                                        <td><span class="badge {{ note.get_couleur_badge }} {% if note.get_couleur_badge == 'bg-warning' or note.get_couleur_badge == 'bg-light' %}text-dark{% else %}text-white{% endif %}">{{ note.note }}/{{ note.note_max }}</span></td>
                                     </tr>
                                 {% endfor %}
                             </tbody>

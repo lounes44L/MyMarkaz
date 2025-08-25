@@ -1,6 +1,6 @@
 from django.urls import path, include
 from . import main_views, views_anneescolaire, views_auth, views_presence, views_comptabilite, views_presence_professeur, views_presence_eleve, views_carnet, views_composante, views_bilan_financier, views_objectifs, views_cours_quiz, views_appel_rapide, views_notes, views_eleves_objectifs, views_objectifs_eleve
-from . import views_carnet_pedagogique, views_api, views_parametres, views_transfert_eleves
+from . import views_carnet_pedagogique, views_api, views_parametres, views_transfert_eleves, views_notes_export
 from .views import api, views_carnet_edit
 from . import views_site
 from .views.api import get_sourate_pages, find_sourate_by_page
@@ -106,6 +106,7 @@ urlpatterns = [
     path('presences/eleves/', views_presence.liste_presences_eleves, name='liste_presences_eleves'),
     path('presences/eleves/ajouter/', views_presence.ajouter_presence_eleve, name='ajouter_presence_eleve'),
     path('presences/eleves/<int:presence_id>/modifier/', views_presence.modifier_presence_eleve, name='modifier_presence_eleve'),
+    path('presences/eleves/modifier-ajax/', views_presence.modifier_presence_eleve_ajax, name='modifier_presence_eleve_ajax'),
     path('presences/eleves/<int:presence_id>/supprimer/', views_presence.supprimer_presence_eleve, name='supprimer_presence_eleve'),
     path('presences/eleves/<int:eleve_id>/', views_presence.presences_eleve, name='presences_eleve'),
     
@@ -134,6 +135,9 @@ urlpatterns = [
     path('comptabilite/indemnisations/', views_comptabilite.liste_indemnisations, name='liste_indemnisations'),
     path('comptabilite/indemnisations/<int:indemnisation_id>/supprimer/', views_comptabilite.supprimer_indemnisation, name='supprimer_indemnisation'),
     
+    # Comptabilité - Paiements manquants
+    path('comptabilite/paiements-manquants/', views_comptabilite.paiements_manquants, name='paiements_manquants'),
+    
     # Comptabilité - Bilan financier
     path('comptabilite/bilan-financier/', views_bilan_financier.bilan_financier, name='bilan_financier'),
     
@@ -150,7 +154,7 @@ urlpatterns = [
     # Gestion de présence élève
     path('eleves/presence/', views_presence_eleve.gestion_presence_eleve, name='gestion_presence_eleve'),
     path('eleves/presence/rapport/', views_presence_eleve.rapport_presence_eleve, name='rapport_presence_eleve'),
-    path('eleves/presence/rapport/pdf/', views_presence_eleve.export_rapport_presence_pdf, name='export_rapport_presence_pdf'),
+    path('eleves/presence/rapport/export-excel/', views_presence_eleve.export_rapport_presence_excel, name='export_rapport_presence_excel'),
     
     # Carnet Pédagogique - Consultation
     path('carnet-pedagogique/', views_carnet.carnet_pedagogique, name='carnet_pedagogique'),
@@ -201,6 +205,7 @@ urlpatterns = [
     # Carnet pédagogique - Section Livre
     path('eleves/<int:eleve_id>/livre/', views_carnet_pedagogique.carnet_pedagogique, name='carnet_pedagogique_livre'),
     path('eleves/livre/evaluer-competence/', views_carnet_pedagogique.evaluer_competence, name='evaluer_competence'),
+    path('eleves/evaluation-competences-batch/', views_carnet.evaluation_competences_batch, name='evaluation_competences_batch'),
     
     # Notes d'examen
     path('notes/professeur/', views_notes.liste_notes_professeur, name='liste_notes_professeur'),
@@ -210,4 +215,5 @@ urlpatterns = [
     path('notes/classe/<int:classe_id>/statistiques/', views_notes.statistiques_notes_classe, name='statistiques_notes_classe'),
     path('notes/mes-notes/', views_notes.mes_notes, name='mes_notes'),
     path('notes/historique-quiz/', views_notes.historique_quiz_eleve, name='historique_quiz_eleve'),
+    path('notes/export-excel/', views_notes_export.export_notes_excel, name='export_notes_excel'),
 ]

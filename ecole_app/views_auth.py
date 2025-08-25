@@ -24,10 +24,8 @@ def user_login(request):
             # Vérifier si c'est un professeur avec plusieurs composantes
             if hasattr(user, 'professeur') and user.professeur:
                 if hasattr(user.professeur, 'composantes') and user.professeur.composantes.count() > 1:
-                    # Vérifier si une composante est déjà sélectionnée
-                    if not request.session.get('composante_id'):
-                        messages.info(request, 'Veuillez sélectionner une composante.')
-                        return redirect('selection_composante')
+                    # Si c'est un professeur avec plusieurs composantes, on ne demande pas de sélectionner une composante
+                    pass
             
             # Redirection en fonction du rôle
             return redirect_based_on_role(user, request)
@@ -85,7 +83,8 @@ def profile(request):
         profile_data = professeur
     elif hasattr(user, 'eleve') and user.eleve:
         user_type = 'eleve'
-        profile_data = user.eleve
+        # Précharger les classes pour l'élève
+        profile_data = Eleve.objects.prefetch_related('classes').get(id=user.eleve.id)
     
     context = {
         'user_type': user_type,
@@ -127,8 +126,9 @@ def dashboard_professeur(request):
         # Vérifier si une composante est sélectionnée dans la session
         composante_id = request.session.get('composante_id')
         if not composante_id:
-            messages.info(request, 'Veuillez sélectionner une composante pour accéder à votre tableau de bord.')
-            return redirect('selection_composante')
+            # Sélectionner automatiquement la première composante
+            composante_selectionnee = professeur.composantes.first()
+            request.session['composante_id'] = composante_selectionnee.id
         
         # Vérifier que la composante sélectionnée appartient bien au professeur
         try:
@@ -170,14 +170,13 @@ def dashboard_professeur(request):
         # Message d'avertissement si aucune année scolaire active
         messages.warning(request, "Attention: Aucune année scolaire active n'est définie. Toutes les classes sont affichées.")
     
-    # Si aucune classe n'est trouvée après filtrage, afficher un message explicatif
+    # Si aucune classe n'est trouvée après filtrage, afficher les classes sans filtrer par année scolaire
     if classes.count() == 0 and classes_count_total > 0:
         if classes_count_composante == 0:
-            messages.info(request, f"Vous avez {classes_count_total} classe(s) mais aucune n'est associée à la composante sélectionnée.")
+            # Ne pas afficher de message
+            pass
         elif classes_count_annee == 0:
-            messages.info(request, f"Vous avez {classes_count_composante} classe(s) dans cette composante, mais aucune n'est associée à l'année scolaire active.")
-            
-            # Option: afficher les classes sans filtrer par année scolaire si aucune n'est trouvée
+            # Ne pas afficher de message et afficher toutes les classes de la composante
             if classes_count_composante > 0:
                 classes = professeur.classes.all()
                 if composante_selectionnee:
@@ -195,7 +194,7 @@ def dashboard_professeur(request):
     }
     return render(request, 'ecole_app/auth/dashboard_professeur.html', context)
 
-from django.db.models import Sum
+# Import Sum supprimé car plus utilisé
 
 @login_required
 @user_passes_test(is_eleve)
@@ -213,8 +212,10 @@ def dashboard_eleve(request):
     
     # Conserver uniquement les messages pertinents pour les élèves
     for message in storage:
-        # Filtrer les messages concernant la sélection de composante
-        if 'composante' not in message.message.lower() and 'sélectionner une composante' not in message.message.lower():
+        # Filtrer les messages concernant la sélection de composante et les messages de bienvenue
+        if ('composante' not in message.message.lower() and 
+            'sélectionner une composante' not in message.message.lower() and
+            'bienvenue' not in message.message.lower()):
             filtered_messages.append(message)
     
     # Réinitialiser les messages filtrés dans la session
@@ -227,15 +228,7 @@ def dashboard_eleve(request):
     eleve = request.user.eleve
     annee_active = AnneeScolaire.objects.filter(active=True).first()
     
-    # Récupérer les classes et les paiements de l'élève pour l'année active
-    paiements = eleve.paiements.all()
-    if annee_active:
-        paiements = paiements.filter(annee_scolaire=annee_active)
-    
-    # Calcul du montant restant
-    montant_total = getattr(eleve, 'montant_total', 0) or 0
-    total_paye = paiements.aggregate(sum_montant=Sum('montant'))['sum_montant'] or 0
-    montant_restant = max(montant_total - total_paye, 0)
+    # Les données de paiement ne sont plus nécessaires car la section a été supprimée du dashboard élève
     
     # Récupérer les objectifs mensuels de l'élève
     mois_actuel = timezone.now().replace(day=1)
@@ -259,9 +252,7 @@ def dashboard_eleve(request):
     
     context = {
         'eleve': eleve,
-        'paiements': paiements,
         'annee_active': annee_active,
-        'montant_restant': montant_restant,
         'objectif_actuel': objectif_actuel,
         'objectifs': objectifs,
         'progression_pourcentage': progression_pourcentage,

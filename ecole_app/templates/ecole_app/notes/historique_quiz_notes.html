@@ -28,13 +28,13 @@
                                     <td>{{ tentative.quiz.module.titre }}</td>
                                     <td>{{ tentative.date_fin|date:"d/m/Y" }}</td>
                                     <td>
-                                        <span class="badge badge-info">{{ tentative.score|floatformat:2 }}%</span>
+                                        <span class="badge badge-info text-white">{{ tentative.score|floatformat:2 }}%</span>
                                     </td>
                                     <td>
                                         {% if tentative.note_associee %}
-                                            <span class="badge badge-success">{{ tentative.note_associee.note|floatformat:2 }}/20</span>
+                                            <span class="badge badge-success text-white">{{ tentative.note_associee.note|floatformat:2 }}/20</span>
                                         {% else %}
-                                            <span class="badge badge-warning">Non noté</span>
+                                            <span class="badge badge-warning text-dark">Non noté</span>
                                         {% endif %}
                                     </td>
                                     <td>

@@ -7,9 +7,11 @@
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Gestion des indemnisations</h1>
-        <button type="button" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addIndemnisationModal">
-            <i class="fas fa-plus fa-sm text-white-50"></i> Ajouter une indemnisation
-        </button>
+        <div>
+            <button type="button" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addIndemnisationModal">
+                <i class="fas fa-plus fa-sm text-white-50"></i> Ajouter une indemnisation
+            </button>
+        </div>
     </div>
 
     <!-- Filtres -->
@@ -177,6 +179,7 @@
             </div>
             <form method="post">
                 {% csrf_token %}
+                <input type="hidden" name="categorie" value="indemnisation">
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="{{ form.professeur.id_for_label }}" class="form-label">Professeur</label>

@@ -2,6 +2,29 @@
 
 {% block title %}Liste des élèves et objectifs | {{ block.super }}{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Override sidebar styles for this page */
+    .sidebar {
+        display: none !important;
+    }
+    
+    .navbar-nav {
+        width: 100%;
+    }
+    
+    #content {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    
+    .container-fluid {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
     <!-- Page Heading -->
@@ -18,9 +41,6 @@
             {% else %}
             <a href="{% url 'dashboard_professeur' %}" class="btn btn-sm btn-primary shadow-sm">
                 <i class="fas fa-home fa-sm text-white-50"></i> Tableau de bord
-            </a>
-            <a href="{% url 'liste_eleves_objectifs_nosidebar' classe.id %}" class="btn btn-sm btn-info shadow-sm ms-2">
-                <i class="fas fa-exchange-alt fa-sm text-white-50"></i> Mode transfert
             </a>
             {% endif %}
         </div>
@@ -111,6 +131,9 @@
                                     <a href="{% url 'carnet_pedagogique' eleve.id %}" class="btn btn-success btn-sm rounded-pill shadow-sm">
                                         <i class="fas fa-book me-1"></i> Carnet
                                     </a>
+                                    <button type="button" class="btn btn-info btn-sm rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#transferModal{{ eleve.id }}">
+                                        <i class="fas fa-exchange-alt me-1"></i> Transférer
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -191,6 +214,43 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal de transfert pour chaque élève -->
+<div class="modal fade" id="transferModal{{ eleve.id }}" tabindex="-1" aria-labelledby="transferModalLabel{{ eleve.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transferModalLabel{{ eleve.id }}">Transférer {{ eleve.prenom }} {{ eleve.nom }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'transferer_eleve' eleve.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="classes_destination{{ eleve.id }}" class="form-label">Choisir la classe de destination</label>
+                        <select class="form-select" id="classes_destination{{ eleve.id }}" name="classe_destination" required>
+                            <option value="">Sélectionner une classe</option>
+                            {% for classe_dest in classes_meme_composante %}
+                                <option value="{{ classe_dest.id }}">{{ classe_dest.nom }} (Prof: {{ classe_dest.professeur.nom }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <input type="hidden" name="classe_origine" value="{{ classe.id }}">
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="conserver_copie{{ eleve.id }}" name="conserver_copie">
+                        <label class="form-check-label" for="conserver_copie{{ eleve.id }}">
+                            Garder également l'élève dans ma classe
+                        </label>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Transférer</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

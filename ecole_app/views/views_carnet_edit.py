@@ -38,27 +38,50 @@ def ajouter_memorisation(request, eleve_id):
 def modifier_memorisation(request, memorisation_id):
     """Vue pour modifier une mémorisation existante"""
     memorisation = get_object_or_404(Memorisation, id=memorisation_id)
-    eleve = memorisation.eleve
+    # Accéder à l'élève via le carnet pédagogique
+    carnet = memorisation.carnet
+    eleve = carnet.eleve if carnet else None
+    
+    # Debugging
+    print(f"DEBUG: Memorisation ID: {memorisation_id}")
+    print(f"DEBUG: Carnet: {carnet}")
+    print(f"DEBUG: Eleve: {eleve}")
+    print(f"DEBUG: Eleve ID: {eleve.id if eleve else 'None'}")
+    
+    # Si l'élève est None, essayer de le récupérer directement
+    if eleve is None and carnet:
+        try:
+            from ecole_app.models import Eleve
+            eleve = Eleve.objects.filter(carnet_pedagogique=carnet).first()
+            print(f"DEBUG: Eleve récupéré directement: {eleve}")
+        except Exception as e:
+            print(f"DEBUG: Erreur lors de la récupération directe de l'élève: {e}")
     
     if request.method == 'POST':
         form = MemorisationForm(request.POST, instance=memorisation)
         if form.is_valid():
             form.save()
             messages.success(request, "Mémorisation modifiée avec succès.")
-            return redirect('carnet_pedagogique', eleve_id=eleve.id)
+            if eleve and eleve.id:
+                return redirect('carnet_pedagogique', eleve_id=eleve.id)
+            else:
+                # Fallback si l'élève n'est pas disponible
+                return redirect('liste_eleves')
     else:
         form = MemorisationForm(instance=memorisation)
     
     return render(request, 'ecole_app/carnet/modifier_memorisation.html', {
         'form': form,
-        'memorisation': memorisation
+        'memorisation': memorisation,
+        'eleve': eleve  # Ajouter l'élève au contexte pour le template
     })
 
 @login_required
 def supprimer_memorisation(request, memorisation_id):
     """Vue pour supprimer une mémorisation"""
     memorisation = get_object_or_404(Memorisation, id=memorisation_id)
-    eleve_id = memorisation.eleve.id
+    # Accéder à l'élève via le carnet pédagogique
+    eleve_id = memorisation.carnet.eleve.id
     
     memorisation.delete()
     messages.success(request, "Mémorisation supprimée avec succès.")
@@ -111,7 +134,8 @@ def modifier_ecoute(request, ecoute_id):
     return render(request, 'ecole_app/carnet/modifier_ecoute.html', {
         'form': form,
         'ecoute': ecoute,
-        'eleve': eleve  # Ajouter l'élève au contexte pour le template
+        'eleve': eleve,  # Ajouter l'élève au contexte pour le template
+        'eleve_id': eleve.id  # Ajouter explicitement l'ID de l'élève
     })
 
 @login_required
@@ -181,6 +205,17 @@ def ajouter_repetition(request, eleve_id):
 def modifier_repetition(request, repetition_id):
     """Vue pour modifier une répétition existante"""
     repetition = get_object_or_404(Repetition, id=repetition_id)
+    
+    # Vérifier que la répétition a un carnet associé
+    if not repetition.carnet:
+        messages.error(request, "Cette répétition n'a pas de carnet pédagogique associé.")
+        return redirect('dashboard')
+    
+    # Vérifier que le carnet a un élève associé
+    if not hasattr(repetition.carnet, 'eleve') or not repetition.carnet.eleve:
+        messages.error(request, "Le carnet pédagogique n'a pas d'élève associé.")
+        return redirect('dashboard')
+    
     # Accéder à l'élève via le carnet pédagogique
     eleve = repetition.carnet.eleve
     
@@ -203,6 +238,19 @@ def modifier_repetition(request, repetition_id):
 def supprimer_repetition(request, repetition_id):
     """Vue pour supprimer une répétition"""
     repetition = get_object_or_404(Repetition, id=repetition_id)
+    
+    # Vérifier que la répétition a un carnet associé
+    if not repetition.carnet:
+        messages.error(request, "Cette répétition n'a pas de carnet pédagogique associé.")
+        repetition.delete()
+        return redirect('dashboard')
+    
+    # Vérifier que le carnet a un élève associé
+    if not hasattr(repetition.carnet, 'eleve') or not repetition.carnet.eleve:
+        messages.error(request, "Le carnet pédagogique n'a pas d'élève associé.")
+        repetition.delete()
+        return redirect('dashboard')
+    
     # Accéder à l'élève via le carnet pédagogique
     eleve_id = repetition.carnet.eleve.id
     
@@ -214,6 +262,17 @@ def supprimer_repetition(request, repetition_id):
 def modifier_revision(request, revision_id):
     """Vue pour modifier une révision existante"""
     revision = get_object_or_404(Revision, id=revision_id)
+    
+    # Vérifier que la révision a un carnet associé
+    if not revision.carnet:
+        messages.error(request, "Cette révision n'a pas de carnet pédagogique associé.")
+        return redirect('dashboard')
+    
+    # Vérifier que le carnet a un élève associé
+    if not hasattr(revision.carnet, 'eleve') or not revision.carnet.eleve:
+        messages.error(request, "Le carnet pédagogique n'a pas d'élève associé.")
+        return redirect('dashboard')
+    
     # Accéder à l'élève via le carnet pédagogique
     eleve = revision.carnet.eleve
     
@@ -222,6 +281,7 @@ def modifier_revision(request, revision_id):
         if form.is_valid():
             form.save()
             messages.success(request, "Révision modifiée avec succès.")
+            # S'assurer que l'ID de l'élève est correctement passé
             return redirect('carnet_pedagogique', eleve_id=eleve.id)
     else:
         form = RevisionForm(instance=revision)
@@ -236,6 +296,19 @@ def modifier_revision(request, revision_id):
 def supprimer_revision(request, revision_id):
     """Vue pour supprimer une révision"""
     revision = get_object_or_404(Revision, id=revision_id)
+    
+    # Vérifier que la révision a un carnet associé
+    if not revision.carnet:
+        messages.error(request, "Cette révision n'a pas de carnet pédagogique associé.")
+        revision.delete()
+        return redirect('dashboard')
+    
+    # Vérifier que le carnet a un élève associé
+    if not hasattr(revision.carnet, 'eleve') or not revision.carnet.eleve:
+        messages.error(request, "Le carnet pédagogique n'a pas d'élève associé.")
+        revision.delete()
+        return redirect('dashboard')
+    
     # Accéder à l'élève via le carnet pédagogique
     eleve_id = revision.carnet.eleve.id
     
@@ -257,13 +330,33 @@ def ajouter_revision(request, eleve_id):
         if form.is_valid():
             revision = form.save(commit=False)
             revision.carnet = carnet  # Associer au carnet et non directement à l'élève
+            
+            # Calculer le jour de la semaine à partir de la date
+            if revision.date:
+                weekday = revision.date.weekday()
+                days = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
+                revision.jour = days[weekday]
+            
+            # Récupérer les champs supplémentaires du formulaire
+            # Ces champs ne sont pas stockés dans le modèle Revision mais peuvent être utilisés
+            # pour d'autres traitements si nécessaire
+            sourate = form.cleaned_data.get('sourate')
+            debut_page = form.cleaned_data.get('debut_page')
+            fin_page = form.cleaned_data.get('fin_page')
+            enseignant = form.cleaned_data.get('enseignant')
+            remarques = form.cleaned_data.get('remarques')
+            
+            # Enregistrer la révision
             revision.save()
+            
             messages.success(request, "Révision ajoutée avec succès.")
             return redirect('carnet_pedagogique', eleve_id=eleve.id)
     else:
-        form = RevisionForm()
+        form = RevisionForm(initial={'date': timezone.now().date()})
     
-    return render(request, 'ecole_app/carnet/ajouter_revision.html', {
+    context = {
         'form': form,
-        'eleve': eleve
-    })
+        'eleve': eleve,
+        'titre_page': "Ajouter une révision"
+    }
+    return render(request, 'ecole_app/carnet/ajouter_revision.html', context)

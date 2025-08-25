@@ -32,17 +32,29 @@ def generate_username(nom, prenom):
     # Créer l'identifiant au format prenom.nom
     return f"{prenom_clean}.{nom_clean}"
 
-def generate_password(nom, prenom):
-    """Génère un mot de passe au format: 3 premières lettres du nom + 3 premières lettres du prénom + 1 chiffre aléatoire"""
-    # Récupérer les 3 premières lettres (ou moins si plus court)
-    nom_part = nom[:3].lower() if len(nom) >= 3 else nom.lower()
-    prenom_part = prenom[:3].lower() if len(prenom) >= 3 else prenom.lower()
+def generate_password(nom_complet):
+    """Génère un mot de passe aléatoire basé sur le nom complet"""
+    import random
+    import string
     
-    # Ajouter un chiffre aléatoire
-    random_digit = str(random.randint(0, 9))
+    # Extraire le nom et prénom du nom complet si possible
+    parts = nom_complet.split() if nom_complet else []
     
-    # Créer le mot de passe
-    return f"{nom_part}{prenom_part}{random_digit}"
+    # Utiliser les 3 premières lettres du nom et prénom si disponibles
+    prefix = ""
+    if parts and len(parts) > 0:
+        prefix += parts[0][:3].lower()  # Première partie (nom)
+    if parts and len(parts) > 1:
+        prefix += parts[1][:3].lower()  # Deuxième partie (prénom)
+    
+    # Si le préfixe est trop court, ajouter des caractères aléatoires
+    while len(prefix) < 4:
+        prefix += random.choice(string.ascii_lowercase)
+    
+    # Ajouter 4 chiffres aléatoires
+    suffix = ''.join(random.choices(string.digits, k=4))
+    
+    return prefix + suffix
 
 # Vue principale - Dashboard
 @login_required
@@ -169,16 +181,12 @@ def ajouter_definitivement(request):
         
     if request.method == 'POST':
         enfant_id = request.POST.get('enfant_id')
-        classe_id = request.POST.get('classe')
-        creneau_id = request.POST.get('creneau')
-        if not (enfant_id and classe_id and creneau_id):
-            messages.error(request, "Veuillez sélectionner une classe et un créneau.")
+        if not enfant_id:
+            messages.error(request, "Données invalides.")
             return redirect('liste_attente')
         try:
             enfant = ListeAttente.objects.get(id=enfant_id, ajoute_definitivement=False, composante_id=composante_id)
-            classe = Classe.objects.get(id=classe_id, composante_id=composante_id)
-            creneau = Creneau.objects.get(id=creneau_id, composante_id=composante_id)
-        except (ListeAttente.DoesNotExist, Classe.DoesNotExist, Creneau.DoesNotExist):
+        except ListeAttente.DoesNotExist:
             messages.error(request, "Données invalides.")
             return redirect('liste_attente')
         # Créer un nouvel élève à partir des infos de l'enfant
@@ -189,8 +197,6 @@ def ajouter_definitivement(request):
             telephone=enfant.telephone,
             email=enfant.email,
             remarque=enfant.remarque,
-            classe=classe,
-            creneau=creneau,
             composante_id=composante_id,
             archive=False
         )
@@ -257,27 +263,12 @@ def archiver_eleve(request):
 def desarchiver_eleve(request):
     eleve_id = request.POST.get('eleve_id')
     eleve = get_object_or_404(Eleve, pk=eleve_id, archive=True)
-    form = DesarchivageEleveForm(request.POST, instance=eleve)
-    if form.is_valid():
-        eleve = form.save(commit=False)
-        eleve.archive = False
-        eleve.motif_archive = ''
-        eleve.save()
-        messages.success(request, f"L'élève {eleve.nom} {eleve.prenom} a été désarchivé.")
-    else:
-        messages.error(request, "Veuillez sélectionner la classe et le créneau.")
+    # Désarchiver directement sans formulaire
+    eleve.archive = False
+    eleve.motif_archive = ''
+    eleve.save()
+    messages.success(request, f"L'élève {eleve.nom} {eleve.prenom} a été désarchivé.")
     return redirect('archives_eleves')
-    eleve_id = request.POST.get('eleve_id')
-    motif = request.POST.get('motif_archive', '').strip()
-    eleve = get_object_or_404(Eleve, pk=eleve_id, archive=False)
-    if motif:
-        eleve.archive = True
-        eleve.motif_archive = motif
-        eleve.save()
-        messages.success(request, f"L'élève {eleve.nom} {eleve.prenom} a été archivé.")
-    else:
-        messages.error(request, "Le motif d'archivage est obligatoire.")
-    return redirect('liste_eleves')
 
 @login_required
 def archives_eleves(request):
@@ -459,7 +450,7 @@ def liste_eleves(request):
                         
                         # Créer un utilisateur pour cet élève
                         username = generate_username('eleve', f"{nom}{prenom}")
-                        password = generate_password(nom, prenom)  # Utiliser nom et prénom pour le mot de passe
+                        password = generate_password(nom)  # Utiliser nom et prénom pour le mot de passe
                         
                         # Vérifier si le nom d'utilisateur existe déjà
                         while User.objects.filter(username=username).exists():
@@ -542,7 +533,7 @@ def liste_eleves(request):
                     return redirect('liste_eleves')
                 # Créer un utilisateur pour cet élève
                 username = generate_username('eleve', f"{nom}{prenom}")
-                password = generate_password(nom, prenom)
+                password = generate_password(f"{nom} {prenom}")
                 
                 # Vérifier si le nom d'utilisateur existe déjà
                 while User.objects.filter(username=username).exists():
@@ -577,7 +568,7 @@ def liste_eleves(request):
                 
                 # Créer un utilisateur pour cet élève
                 username = generate_username('eleve', f"{nom}{prenom}")
-                password = generate_password(nom, prenom)
+                password = generate_password(f"{nom} {prenom}")
                 
                 # Vérifier si le nom d'utilisateur existe déjà
                 while User.objects.filter(username=username).exists():
@@ -734,7 +725,7 @@ def liste_professeurs(request):
                     # Créer un nouveau professeur
                     # Créer un utilisateur pour ce professeur
                     username = generate_username(nom, '')
-                    password = generate_password(nom, '')
+                    password = generate_password(nom)
                     
                     # Vérifier si le nom d'utilisateur existe déjà
                     while User.objects.filter(username=username).exists():
@@ -743,14 +734,27 @@ def liste_professeurs(request):
                     # Créer l'utilisateur
                     user = User.objects.create_user(username=username, password=password)
                     
-                    # Sauvegarder le professeur via le formulaire
-                    professeur = form.save(commit=False)
-                    professeur.user = user
-                    professeur.save()
+                    # Créer le professeur directement sans passer par le formulaire
+                    # pour éviter les problèmes de many-to-many
+                    indemnisation_value = form.cleaned_data.get('indemnisation', 0.0)
+                    if indemnisation_value is None:
+                        indemnisation_value = 0.0
                     
-                    # Ajouter la composante actuelle au professeur
-                    professeur.composantes.add(composante)
-                    form.save_m2m()  # Sauvegarder les autres relations ManyToMany
+                    professeur = Professeur(
+                        user=user,
+                        nom=form.cleaned_data.get('nom_complet', '').strip(),
+                        email=form.cleaned_data.get('email', ''),
+                        telephone=form.cleaned_data.get('telephone', ''),
+                        indemnisation=indemnisation_value,
+                        mot_de_passe_en_clair=password  # Stocker le mot de passe en clair
+                    )
+                    professeur.save()  # Sauvegarder d'abord pour obtenir un ID
+                    
+                    # Ajouter toutes les composantes au professeur
+                    toutes_composantes = Composante.objects.all()
+                    if toutes_composantes.exists():
+                        for comp in toutes_composantes:
+                            professeur.composantes.add(comp)
                     
                     # Afficher les informations de connexion
                     messages.success(request, f'Le professeur a été créé avec succès ! Identifiant: {username} | Mot de passe: {password}')
@@ -890,7 +894,7 @@ def supprimer_classe(request, classe_id):
 def detail_creneau(request, creneau_id):
     creneau = get_object_or_404(Creneau, id=creneau_id)
     classes = Classe.objects.filter(creneau=creneau)
-    eleves = Eleve.objects.filter(creneau=creneau)
+    eleves = Eleve.objects.filter(creneaux=creneau)
     context = {
         'creneau': creneau,
         'classes': classes,
@@ -1212,8 +1216,7 @@ def liste_paiements(request):
             
             from .models import PaiementHistorique
             if paiement_existant:
-                # Mettre à jour le paiement existant
-                paiement_existant.montant += montant
+                # Mettre à jour la date et la méthode du paiement existant
                 paiement_existant.date = date  # Mettre à jour avec la date la plus récente
                 paiement_existant.methode = methode
                 
@@ -1224,6 +1227,7 @@ def liste_paiements(request):
                     else:
                         paiement_existant.commentaire = f"{date.strftime('%d/%m/%Y')}: {commentaire}"
                 paiement_existant.save()
+                
                 # Ajouter une entrée historique
                 PaiementHistorique.objects.create(
                     paiement=paiement_existant,
@@ -1232,12 +1236,18 @@ def liste_paiements(request):
                     methode=methode,
                     commentaire=commentaire or ''
                 )
+                
+                # Recalculer le montant total du paiement à partir des historiques
+                recalculer_montant_paiement(paiement_existant)
+                
                 messages.success(request, f'Le paiement pour {eleve} a été mis à jour avec succès!')
             else:
                 # Créer un nouveau paiement
                 nouveau_paiement = form.save(commit=False)
                 nouveau_paiement.composante_id = composante_id
+                nouveau_paiement.montant = 0  # Initialiser à 0, sera recalculé
                 nouveau_paiement.save()
+                
                 # Ajouter une entrée historique
                 PaiementHistorique.objects.create(
                     paiement=nouveau_paiement,
@@ -1246,6 +1256,10 @@ def liste_paiements(request):
                     methode=methode,
                     commentaire=commentaire or ''
                 )
+                
+                # Recalculer le montant total du paiement à partir des historiques
+                recalculer_montant_paiement(nouveau_paiement)
+                
                 messages.success(request, 'Le paiement a été enregistré avec succès!')
     
     # Calcul du montant total collecté
@@ -1378,7 +1392,7 @@ def regenerer_password_professeur(request, professeur_id):
         return redirect('detail_professeur', professeur_id=professeur.id)
     
     # Générer un nouveau mot de passe
-    password = generate_password(nom, prenom)
+    password = generate_password(professeur.nom)
     professeur.user.set_password(password)
     professeur.user.save()
     
@@ -1394,6 +1408,7 @@ def regenerer_password_professeur(request, professeur_id):
 # Vue pour envoyer les identifiants d'un élève par email
 @login_required
 def envoyer_identifiants_eleve(request, eleve_id):
+    from django.conf import settings
     eleve = get_object_or_404(Eleve, id=eleve_id)
     
     # Vérifier si l'élève a un compte utilisateur associé
@@ -1618,6 +1633,10 @@ L'équipe Al Markaz
     sender_email = settings.DEFAULT_FROM_EMAIL
     recipient_list = [email]
     
+    # Afficher les identifiants directement dans l'interface
+    messages.info(request, f"Identifiant: {eleve.user.username}")
+    messages.info(request, f"Mot de passe: {password}")
+    
     try:
         # Utilisation de EmailMultiAlternatives pour envoyer à la fois du texte et du HTML
         from django.core.mail import EmailMultiAlternatives
@@ -1633,7 +1652,20 @@ L'équipe Al Markaz
         
         messages.success(request, f"Les identifiants ont été envoyés avec succès à l'adresse {email}.")
     except Exception as e:
-        messages.error(request, f"Erreur lors de l'envoi de l'email : {str(e)}")
+        # Enregistrer dans un fichier pour référence
+        import os
+        from django.conf import settings
+        try:
+            log_dir = os.path.join(settings.BASE_DIR, 'sent_emails')
+            os.makedirs(log_dir, exist_ok=True)
+            with open(os.path.join(log_dir, f"eleve_{eleve.user.username}.txt"), 'w', encoding='utf-8') as f:
+                f.write(f"Identifiants pour {eleve.prenom} {eleve.nom}\n")
+                f.write(f"Email: {email}\n")
+                f.write(f"Identifiant: {eleve.user.username}\n")
+                f.write(f"Mot de passe: {password}\n")
+            messages.warning(request, f"L'email n'a pas pu être envoyé à {email}, mais les identifiants sont sauvegardés.")
+        except Exception as save_error:
+            messages.error(request, f"Erreur lors de l'envoi de l'email : {str(e)}")
     
     return redirect('detail_eleve', eleve_id=eleve.id)
 
@@ -1641,6 +1673,7 @@ L'équipe Al Markaz
 # Vue pour envoyer les identifiants d'un professeur par email
 @login_required
 def envoyer_identifiants_professeur(request, professeur_id):
+    from django.conf import settings
     professeur = get_object_or_404(Professeur, id=professeur_id)
     
     # Vérifier si le professeur a un compte utilisateur associé
@@ -1655,7 +1688,7 @@ def envoyer_identifiants_professeur(request, professeur_id):
         return redirect('detail_professeur', professeur_id=professeur.id)
     
     # Générer un nouveau mot de passe
-    password = generate_password(nom, prenom)
+    password = generate_password(professeur.nom)
     professeur.user.set_password(password)
     professeur.user.save()
     
@@ -1674,8 +1707,81 @@ Cordialement,
 L'équipe de gestion de l'École Al Markaz
     """
     
+    # Stocker le mot de passe dans le modèle pour l'afficher plus tard
+    professeur.mot_de_passe_en_clair = password
+    professeur.save()
+    
+    # Version HTML du message
+    html_message = f"""
+    <html>
+    <head>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+            }}
+            .container {{
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+            }}
+            .header {{
+                background-color: #4CAF50;
+                color: white;
+                padding: 10px;
+                text-align: center;
+                border-radius: 5px 5px 0 0;
+            }}
+            .content {{
+                padding: 20px;
+            }}
+            .credentials {{
+                background-color: #f9f9f9;
+                border: 1px solid #ddd;
+                padding: 15px;
+                margin: 20px 0;
+                border-radius: 5px;
+            }}
+            .footer {{
+                text-align: center;
+                margin-top: 20px;
+                font-size: 12px;
+                color: #777;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h2>École Al Markaz - Vos identifiants</h2>
+            </div>
+            <div class="content">
+                <p>Bonjour {professeur.nom},</p>
+                <p>Voici vos identifiants de connexion pour votre compte École Al Markaz :</p>
+                <div class="credentials">
+                    <p><strong>Identifiant:</strong> {professeur.user.username}</p>
+                    <p><strong>Mot de passe:</strong> {password}</p>
+                </div>
+                <p>Veuillez conserver ces informations en lieu sûr.</p>
+                <p>Cordialement,<br>L'équipe de gestion de l'École Al Markaz</p>
+            </div>
+            <div class="footer">
+                <p>Ce message est automatique, merci de ne pas y répondre.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
     sender_email = settings.DEFAULT_FROM_EMAIL
     recipient_list = [email]
+    
+    # Afficher les identifiants directement dans l'interface
+    messages.info(request, f"Identifiant: {professeur.user.username}")
+    messages.info(request, f"Mot de passe: {password}")
     
     try:
         # Utilisation de EmailMultiAlternatives pour envoyer à la fois du texte et du HTML
@@ -1692,7 +1798,20 @@ L'équipe de gestion de l'École Al Markaz
         
         messages.success(request, f"Les identifiants ont été envoyés avec succès à l'adresse {email}.")
     except Exception as e:
-        messages.error(request, f"Erreur lors de l'envoi de l'email : {str(e)}")
+        # Enregistrer dans un fichier pour référence
+        import os
+        from django.conf import settings
+        try:
+            log_dir = os.path.join(settings.BASE_DIR, 'sent_emails')
+            os.makedirs(log_dir, exist_ok=True)
+            with open(os.path.join(log_dir, f"prof_{professeur.user.username}.txt"), 'w', encoding='utf-8') as f:
+                f.write(f"Identifiants pour {professeur.nom}\n")
+                f.write(f"Email: {email}\n")
+                f.write(f"Identifiant: {professeur.user.username}\n")
+                f.write(f"Mot de passe: {password}\n")
+            messages.warning(request, f"L'email n'a pas pu être envoyé à {email}, mais les identifiants sont sauvegardés.")
+        except Exception as save_error:
+            messages.error(request, f"Erreur lors de l'envoi de l'email : {str(e)}")
     
     return redirect('detail_professeur', professeur_id=professeur.id)
 
@@ -1816,7 +1935,7 @@ def import_eleves_excel(request):
                 
                 # Créer un utilisateur pour cet élève
                 username = generate_username('eleve', f"{nom}{prenom}")
-                password = generate_password(nom, prenom)
+                password = generate_password(f"{nom} {prenom}")
                 
                 # Vérifier si le nom d'utilisateur existe déjà
                 while User.objects.filter(username=username).exists():
@@ -1870,6 +1989,17 @@ def import_eleves_excel(request):
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from .models import Eleve, PaiementHistorique
+from decimal import Decimal
+
+# Fonction utilitaire pour recalculer le montant total d'un paiement
+def recalculer_montant_paiement(paiement):
+    """Recalcule le montant total d'un paiement à partir de ses historiques"""
+    total = Decimal('0.00')
+    for historique in paiement.historiques.all():
+        total += historique.montant
+    paiement.montant = total
+    paiement.save()
+    return total
 
 # Vue pour modifier un historique de paiement
 @login_required
@@ -1878,14 +2008,13 @@ def modifier_historique_paiement(request, historique_id):
     paiement = historique.paiement
     
     if request.method == 'POST':
-        ancien_montant = float(historique.montant)
-        nouveau_montant = float(request.POST.get('montant', 0))
+        from decimal import Decimal
+        
+        # Récupérer les valeurs directement en Decimal
+        nouveau_montant = Decimal(request.POST.get('montant', '0'))
         date = request.POST.get('date')
         methode = request.POST.get('methode')
         commentaire = request.POST.get('commentaire', '')
-        
-        # Calculer la différence de montant
-        difference = nouveau_montant - ancien_montant
         
         # Mettre à jour l'historique
         historique.montant = nouveau_montant
@@ -1894,9 +2023,8 @@ def modifier_historique_paiement(request, historique_id):
         historique.commentaire = commentaire
         historique.save()
         
-        # Mettre à jour le montant total du paiement
-        paiement.montant += difference
-        paiement.save()
+        # Recalculer le montant total du paiement à partir de tous les historiques
+        recalculer_montant_paiement(paiement)
         
         messages.success(request, 'L\'historique de paiement a été modifié avec succès!')
         return redirect('detail_paiement', paiement_id=paiement.id)
@@ -1914,13 +2042,14 @@ def supprimer_historique_paiement(request, historique_id):
     paiement = historique.paiement
     
     if request.method == 'POST':
-        # Soustraire le montant de l'historique du montant total du paiement
-        montant_historique = float(historique.montant)
-        paiement.montant = float(paiement.montant) - montant_historique
-        paiement.save()
+        # Sauvegarder une référence au paiement avant de supprimer l'historique
+        paiement_ref = paiement
         
         # Supprimer l'historique
         historique.delete()
+        
+        # Recalculer le montant total du paiement à partir des historiques restants
+        recalculer_montant_paiement(paiement_ref)
         
         messages.success(request, 'L\'historique de paiement a été supprimé avec succès!')
         return redirect('detail_paiement', paiement_id=paiement.id)

@@ -27,19 +27,21 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="{{ form.sourate.id_for_label }}" class="form-label">Sourate</label>
-                            {{ form.sourate }}
+                            <label for="{{ form.sourate_select.id_for_label }}" class="form-label">Sourate</label>
+                            {{ form.sourate_select }}
                             <small class="form-text text-muted">Sélectionnez d'abord la sourate pour afficher les pages disponibles</small>
-                            {% if form.sourate.errors %}
-                            <div class="text-danger">{{ form.sourate.errors }}</div>
+                            {% if form.sourate_select.errors %}
+                            <div class="text-danger">{{ form.sourate_select.errors }}</div>
                             {% endif %}
                         </div>
                         
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="{{ form.debut_page.id_for_label }}" class="form-label">Page de début</label>
-                                    {{ form.debut_page }}
+                                    <label for="debut-page-select-memorisation" class="form-label">Page de début</label>
+                                    <select name="debut_page" id="debut-page-select-memorisation" class="form-control" disabled aria-label="Page de début">
+                                        <option value="">Sélectionnez d'abord une sourate</option>
+                                    </select>
                                     {% if form.debut_page.errors %}
                                     <div class="text-danger">{{ form.debut_page.errors }}</div>
                                     {% endif %}
@@ -47,8 +49,10 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="{{ form.fin_page.id_for_label }}" class="form-label">Page de fin</label>
-                                    {{ form.fin_page }}
+                                    <label for="fin-page-select-memorisation" class="form-label">Page de fin</label>
+                                    <select name="fin_page" id="fin-page-select-memorisation" class="form-control" disabled aria-label="Page de fin">
+                                        <option value="">Sélectionnez d'abord une sourate</option>
+                                    </select>
                                     {% if form.fin_page.errors %}
                                     <div class="text-danger">{{ form.fin_page.errors }}</div>
                                     {% endif %}
@@ -91,4 +95,16 @@
 
 {% block extra_js %}
 <script src="{% static 'js/sourate-pages.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM fully loaded for memorisation form');
+        
+        // Configuration pour la mémorisation
+        setupSouratePageSelection(
+            'id_sourate_select',
+            'debut-page-select-memorisation',
+            'fin-page-select-memorisation'
+        );
+    });
+</script>
 {% endblock %}

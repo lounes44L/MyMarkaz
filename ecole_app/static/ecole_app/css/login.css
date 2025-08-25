@@ -1,0 +1,165 @@
+/* Styles pour la page de login avec thème islamique */
+
+@import url('https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+
+:root {
+    --islamic-green: #006C35;
+    --islamic-green-dark: #00582c;
+    --islamic-gold: #D4AF37;
+    --islamic-beige: #F8F0E3;
+    --islamic-blue: #1D3461;
+    --islamic-teal: #006666;
+}
+
+/* Conteneur du hadith */
+.hadith-section {
+    background: var(--islamic-green);
+    background-image: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 0 L100 50 L50 100 L0 50 Z" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/><path d="M25 0 L50 25 L25 50 L0 25 Z" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/><path d="M75 0 L100 25 L75 50 L50 25 Z" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/><path d="M25 50 L50 75 L25 100 L0 75 Z" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/><path d="M75 50 L100 75 L75 100 L50 75 Z" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></svg>');
+    background-size: 100px 100px;
+    border-radius: 0.35rem 0 0 0.35rem;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.hadith-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(0,108,53,0.8) 0%, var(--islamic-green) 70%);
+    z-index: 1;
+}
+
+.hadith-section > div {
+    position: relative;
+    z-index: 2;
+}
+
+.hadith-container {
+    margin-bottom: 1.5rem;
+    padding: 20px;
+    border-radius: 10px;
+    position: relative;
+}
+
+.hadith-container::before,
+.hadith-container::after {
+    content: '❁';
+    font-size: 1.5rem;
+    color: var(--islamic-gold);
+    display: block;
+    text-align: center;
+    margin: 10px 0;
+}
+
+.arabic-text {
+    font-size: 2.5rem;
+    line-height: 1.6;
+    color: #fff;
+    font-family: 'Scheherazade New', 'Amiri', serif;
+    margin-bottom: 1.5rem;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+}
+
+.hadith-translation {
+    color: rgba(255, 255, 255, 0.9);
+    font-style: italic;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    padding: 0 15px;
+}
+
+.hadith-source {
+    color: var(--islamic-gold);
+    font-size: 1rem;
+    font-family: 'Amiri', serif;
+}
+
+/* Formulaire de connexion */
+.login-header {
+    background-color: white;
+    text-align: center;
+    padding: 1.5rem 0;
+    border: none;
+}
+
+.login-title {
+    color: var(--islamic-green);
+    margin-bottom: 0;
+}
+
+/* Bouton de connexion */
+.btn-login {
+    padding: 0.75rem 1rem;
+    font-size: 1.1rem;
+    background-color: var(--islamic-green) !important;
+    border-color: var(--islamic-green) !important;
+    transition: all 0.3s ease;
+}
+
+.btn-login:hover {
+    background-color: var(--islamic-green-dark) !important;
+    border-color: var(--islamic-green-dark) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Footer */
+.login-footer {
+    background-color: white;
+    text-align: center;
+    padding: 0.75rem 0;
+    border: none;
+}
+
+/* Card principale */
+.login-card {
+    border: none;
+    box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+/* Inputs */
+.form-control {
+    border-radius: 20px;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid #e3e6f0;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--islamic-green);
+    box-shadow: 0 0 0 0.2rem rgba(0, 108, 53, 0.25);
+}
+
+.input-group-text {
+    border-radius: 20px 0 0 20px;
+    background-color: var(--islamic-green);
+    color: white;
+    border: none;
+}
+
+/* Décorations islamiques */
+.islamic-decoration {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    opacity: 0.1;
+    background-image: url('data:image/svg+xml;utf8,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><path d="M30 0 L60 30 L30 60 L0 30 Z" fill="none" stroke="white" stroke-width="2"/><path d="M30 10 L50 30 L30 50 L10 30 Z" fill="none" stroke="white" stroke-width="2"/><path d="M30 20 L40 30 L30 40 L20 30 Z" fill="none" stroke="white" stroke-width="2"/></svg>');
+}
+
+.decoration-1 {
+    top: 20px;
+    left: 20px;
+}
+
+.decoration-2 {
+    bottom: 20px;
+    right: 20px;
+}
+

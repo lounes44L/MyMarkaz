@@ -67,9 +67,9 @@
                                         <li class="list-group-item {% if choix.est_correct %}list-group-item-success{% else %}list-group-item-danger{% endif %}">
                                             {{ choix.texte }}
                                             {% if choix.est_correct %}
-                                                <span class="badge badge-success float-right"><i class="fas fa-check"></i></span>
+                                                <span class="badge badge-success text-white float-right"><i class="fas fa-check"></i></span>
                                             {% else %}
-                                                <span class="badge badge-danger float-right"><i class="fas fa-times"></i></span>
+                                                <span class="badge badge-danger text-white float-right"><i class="fas fa-times"></i></span>
                                             {% endif %}
                                         </li>
                                     {% empty %}
@@ -86,7 +86,7 @@
                                     {% for choix in resultat.choix_corrects %}
                                         <li class="list-group-item list-group-item-success">
                                             {{ choix.texte }}
-                                            <span class="badge badge-success float-right"><i class="fas fa-check"></i></span>
+                                            <span class="badge badge-success text-white float-right"><i class="fas fa-check"></i></span>
                                         </li>
                                     {% endfor %}
                                 </ul>

@@ -134,10 +134,13 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Configuration email pour l'envoi des identifiants
+
+# Configuration SMTP Gmail pour l'envoi de vrais emails
+import os
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'mymarkaz02@gmail.com'
-EMAIL_HOST_PASSWORD = 'tnzo vtmp kadr hori'  # À remplir avec le mot de passe de l'application Gmail
+EMAIL_HOST_PASSWORD = 'tnzo vtmp kadr hori'  # Mot de passe de l'application Gmail
 DEFAULT_FROM_EMAIL = 'mymarkaz02@gmail.com'

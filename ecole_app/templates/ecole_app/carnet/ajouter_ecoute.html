@@ -27,14 +27,6 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="{{ form.duree.id_for_label }}" class="form-label">Durée (minutes)</label>
-                            {{ form.duree }}
-                            {% if form.duree.errors %}
-                            <div class="text-danger">{{ form.duree.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mb-3">
                             <label for="{{ form.sourate.id_for_label }}" class="form-label">Sourate</label>
                             {{ form.sourate }}
                             <small class="form-text text-muted">Sélectionnez d'abord la sourate pour afficher les pages disponibles</small>
@@ -47,7 +39,9 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="{{ form.debut_page.id_for_label }}" class="form-label">Page de début</label>
-                                    {{ form.debut_page }}
+                                    <select name="debut_page" id="debut-page-select-ecoute" class="form-control" disabled aria-label="Page de début">
+                                        <option value="">Sélectionnez d'abord une sourate</option>
+                                    </select>
                                     {% if form.debut_page.errors %}
                                     <div class="text-danger">{{ form.debut_page.errors }}</div>
                                     {% endif %}
@@ -56,7 +50,9 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="{{ form.fin_page.id_for_label }}" class="form-label">Page de fin</label>
-                                    {{ form.fin_page }}
+                                    <select name="fin_page" id="fin-page-select-ecoute" class="form-control" disabled aria-label="Page de fin">
+                                        <option value="">Sélectionnez d'abord une sourate</option>
+                                    </select>
                                     {% if form.fin_page.errors %}
                                     <div class="text-danger">{{ form.fin_page.errors }}</div>
                                     {% endif %}

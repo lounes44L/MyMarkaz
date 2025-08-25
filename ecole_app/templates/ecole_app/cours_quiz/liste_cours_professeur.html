@@ -12,17 +12,7 @@
         </a>
     </div>
 
-    <!-- Messages -->
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        {% endfor %}
-    {% endif %}
+    <!-- Messages are now handled in the base template -->
 
     <!-- Liste des cours -->
     <div class="card shadow mb-4">
@@ -49,7 +39,7 @@
                                     <td>{{ c.description|truncatechars:50 }}</td>
                                     <td>
                                         {% for classe in c.classes.all %}
-                                            <span class="badge badge-info">{{ classe.nom }}</span>
+                                            <span class="badge-classe">{{ classe.nom }}</span>
                                         {% empty %}
                                             <span class="text-muted">Aucune classe</span>
                                         {% endfor %}

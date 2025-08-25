@@ -48,6 +48,24 @@ def get_pages_for_sourate(sourate_index):
     """Retourne les pages pour une sourate donnée"""
     try:
         sourate = SOURATES[int(sourate_index)]
-        return [(page, str(page)) for page in sourate.get_pages()]
-    except (IndexError, ValueError):
+        return [(page, str(page)) for page in range(sourate.page_debut, sourate.page_fin + 1)]
+    except (ValueError, IndexError):
         return []
+
+def get_sourate_for_page(page_number):
+    """Détermine à quelle sourate appartient une page donnée
+    
+    Args:
+        page_number: Le numéro de page à rechercher
+        
+    Returns:
+        L'index de la sourate contenant cette page, ou None si aucune sourate ne correspond
+    """
+    try:
+        page_number = int(page_number)
+        for i, sourate in enumerate(SOURATES):
+            if sourate.page_debut <= page_number <= sourate.page_fin:
+                return i
+        return None
+    except (ValueError, TypeError):
+        return None

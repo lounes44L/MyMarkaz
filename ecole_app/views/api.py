@@ -10,10 +10,48 @@ def get_sourate_pages(request):
         return JsonResponse({'error': 'Paramètre sourate_index requis'}, status=400)
     
     try:
+        # Convertir l'index en entier
+        sourate_index = int(sourate_index)
+        
+        # Vérifier que l'index est valide
+        if sourate_index < 0 or sourate_index >= len(SOURATES):
+            return JsonResponse({
+                'error': f'Index de sourate invalide: {sourate_index}. Doit être entre 0 et {len(SOURATES)-1}',
+                'sourate_count': len(SOURATES)
+            }, status=400)
+        
+        # Récupérer les pages
         pages = get_pages_for_sourate(sourate_index)
-        return JsonResponse({'pages': pages})
+        
+        # Vérifier qu'on a bien des pages
+        if not pages:
+            return JsonResponse({
+                'error': f'Aucune page trouvée pour la sourate {sourate_index}',
+                'sourate_info': {
+                    'nom': SOURATES[sourate_index].nom,
+                    'page_debut': SOURATES[sourate_index].page_debut,
+                    'page_fin': SOURATES[sourate_index].page_fin
+                }
+            }, status=404)
+        
+        # Retourner les pages avec des informations supplémentaires pour le débogage
+        return JsonResponse({
+            'pages': pages,
+            'sourate_info': {
+                'nom': SOURATES[sourate_index].nom,
+                'page_debut': SOURATES[sourate_index].page_debut,
+                'page_fin': SOURATES[sourate_index].page_fin,
+                'page_count': len(pages)
+            }
+        })
+    except ValueError:
+        return JsonResponse({'error': f'L\'index de sourate doit être un entier: {sourate_index}'}, status=400)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        import traceback
+        return JsonResponse({
+            'error': str(e),
+            'traceback': traceback.format_exc()
+        }, status=500)
 
 @require_GET
 def find_sourate_by_page(request):

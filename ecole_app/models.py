@@ -382,6 +382,7 @@ class Revision(models.Model):
     date = models.DateField()
     jour = models.CharField(max_length=10, choices=JOURS_SEMAINE)
     nombre_hizb = models.DecimalField(max_digits=4, decimal_places=2, default=0, help_text="Nombre de Hizb révisés (décimal autorisé)")
+    remarques = models.TextField(blank=True, null=True, help_text="Commentaires ou détails sur la révision")
     
     def __str__(self):
         return f"Révision {self.carnet.eleve} - {self.get_jour_display()} S{self.semaine} ({self.nombre_hizb} hizb)"

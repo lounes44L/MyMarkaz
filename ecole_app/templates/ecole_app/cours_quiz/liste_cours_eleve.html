@@ -37,7 +37,7 @@
                                     <p class="mt-2 mb-2">{{ c.description|truncatechars:100 }}</p>
                                     <div class="mt-3">
                                         {% for classe in c.classes.all %}
-                                            <span class="badge badge-info">{{ classe.nom }}</span>
+                                            <span class="badge-classe">{{ classe.nom }}</span>
                                         {% endfor %}
                                     </div>
                                 </div>

@@ -28,13 +28,13 @@ def liste_eleves_objectifs_nosidebar(request, classe_id):
         Prefetch('objectifs', queryset=ObjectifMensuel.objects.order_by('-mois'))
     ).order_by('nom', 'prenom')
     
-    # Récupérer toutes les classes des autres professeurs
-    classes_autres_profs = Classe.objects.exclude(professeur=request.user.professeur).select_related('professeur')
+    # Récupérer les classes de la même composante pour le transfert
+    classes_meme_composante = Classe.objects.filter(composante=classe.composante).exclude(id=classe.id).select_related('professeur')
     
     context = {
         'classe': classe,
         'eleves': eleves,
-        'classes_autres_profs': classes_autres_profs,
+        'classes_meme_composante': classes_meme_composante,
     }
     
     return render(request, 'ecole_app/eleves/liste_eleves_objectifs_nosidebar.html', context)

@@ -1,12 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Count, Q
 from django.http import HttpResponse, JsonResponse
+from django.db.models import Count, Q
 from .models import Eleve, PresenceEleve, Creneau, AnneeScolaire, Classe
 import datetime
 from django.utils import timezone
 from .utils import render_to_pdf
+import openpyxl
+from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+from openpyxl.utils import get_column_letter
+from io import BytesIO
 
 # Fonction pour calculer les statistiques de présence
 def calculate_attendance_stats(date, classe, composante_id):
@@ -183,10 +187,9 @@ def gestion_presence_eleve(request):
                 
                 if created:
                     message = f'Présence ajoutée pour {eleve}.'
-                    messages.success(request, message)
                 else:
                     message = f'Présence mise à jour pour {eleve}.'
-                    messages.success(request, message)
+                messages.success(request, message)
                 
                 response_data['success'] = True
                 response_data['message'] = message
@@ -401,11 +404,18 @@ def rapport_presence_eleve(request):
         'presences': presences,
         'stats': stats,
     }
+    
+    # Si c'est une requête AJAX, renvoyer les statistiques au format JSON
+    if request.GET.get('ajax') == '1':
+        return JsonResponse({'stats': stats})
+    
     return render(request, 'ecole_app/eleves/rapport_presence.html', context)
 
 @login_required
-def export_rapport_presence_pdf(request):
-    """Vue pour exporter le rapport des présences en PDF"""
+def export_rapport_presence_excel(request):
+    """Exporte le rapport de présence en Excel"""
+    
+    # Récupération de la classe et des données
     composante_id = request.session.get('composante_id')
     if not composante_id:
         messages.warning(request, "Veuillez sélectionner une composante pour accéder au rapport des présences.")
@@ -511,14 +521,16 @@ def export_rapport_presence_pdf(request):
     # Appliquer les filtres supplémentaires
     if selected_eleve:
         presences_query = presences_query.filter(eleve=selected_eleve)
+        eleves = [selected_eleve]  # Limiter aux élèves sélectionnés
     
     if selected_classe and not selected_eleve:
         presences_query = presences_query.filter(classe=selected_classe)
+        eleves = eleves.filter(classes=selected_classe)
     
     # Trier les résultats
     presences = presences_query.order_by('date', 'classe__nom')
     
-    # Statistiques
+    # Statistiques globales
     stats = {
         'total': presences.count(),
         'presents': presences.filter(present=True).count(),
@@ -531,27 +543,119 @@ def export_rapport_presence_pdf(request):
     else:
         stats['taux_presence'] = 0
     
-    context = {
-        'eleves': eleves,
-        'classes': classes,
-        'selected_eleve': selected_eleve,
-        'selected_classe': selected_classe,
-        'date_debut': date_debut,
-        'date_fin': date_fin,
-        'presences': presences,
-        'stats': stats,
-        'now': timezone.now(),
-    }
+    # Préparer les statistiques par élève pour le format Excel
+    eleves_stats = {}
     
-    # Générer le PDF
-    pdf = render_to_pdf('ecole_app/eleves/rapport_presence_pdf.html', context)
-    if pdf:
-        response = HttpResponse(pdf, content_type='application/pdf')
-        filename = f"rapport_presence_{date_debut.strftime('%Y%m%d')}_au_{date_fin.strftime('%Y%m%d')}.pdf"
-        content = f"attachment; filename={filename}"
-        response['Content-Disposition'] = content
-        return response
+    for eleve in eleves:
+        # Filtrer les présences pour cet élève
+        eleve_presences = presences_query.filter(eleve=eleve)
+        
+        # Calculer les statistiques pour cet élève
+        eleve_stats = {
+            'presents': eleve_presences.filter(present=True).count(),
+            'absents': eleve_presences.filter(present=False, justifie=False).count(),
+            'absents_justifies': eleve_presences.filter(present=False, justifie=True).count(),
+            'total': eleve_presences.count(),
+            'commentaires': []
+        }
+        
+        # Ajouter les commentaires pour l'historique
+        for presence in eleve_presences.exclude(commentaire='').exclude(commentaire__isnull=True).order_by('-date'):
+            eleve_stats['commentaires'].append(presence)
+        
+        # Calculer le taux de présence
+        if eleve_stats['total'] > 0:
+            eleve_stats['taux_presence'] = round((eleve_stats['presents'] / eleve_stats['total']) * 100, 1)
+        else:
+            eleve_stats['taux_presence'] = 0
+        
+        eleves_stats[eleve] = eleve_stats
     
-    # En cas d'erreur, rediriger vers la page normale
-    messages.error(request, "Une erreur est survenue lors de la génération du PDF.")
-    return redirect('rapport_presence_eleve')
+    # Création du classeur Excel
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = f"Présence {selected_classe.nom if selected_classe else 'Toutes les classes'}"
+    
+    # Styles
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+    center_alignment = Alignment(horizontal="center", vertical="center")
+    border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+    
+    # En-têtes
+    headers = [
+        'Nom',
+        'Prénom',
+        'Classe actuelle',
+        'Présences',
+        'Absences justifiées',
+        'Absences non justifiées',
+        'Taux de présence',
+        'Historique des commentaires'
+    ]
+    
+    # Ajout des en-têtes
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = center_alignment
+        cell.border = border
+    
+    # Ajout des données
+    row_num = 2
+    for eleve, stats in eleves_stats.items():
+        # Historique des commentaires formaté
+        historique = ""
+        if stats['commentaires']:
+            historique = "\n".join([f"{c.date.strftime('%d/%m/%Y')}: {c.commentaire}" for c in stats['commentaires']])
+        
+        data_row = [
+            eleve.nom,
+            eleve.prenom,
+            eleve.classes.first().nom if eleve.classes.first() else '',
+            stats['presents'],
+            stats['absents_justifies'],
+            stats['absents'],
+            f"{stats['taux_presence']:.1f}%",
+            historique
+        ]
+        
+        for col, value in enumerate(data_row, 1):
+            cell = ws.cell(row=row_num, column=col, value=value)
+            cell.alignment = Alignment(horizontal="left", vertical="top")
+            cell.border = border
+            
+            # Ajustement de la hauteur de ligne pour les commentaires
+            if col == 8 and historique:
+                ws.row_dimensions[row_num].height = len(historique.split('\n')) * 15
+        
+        row_num += 1
+    
+    # Ajustement des largeurs de colonnes
+    column_widths = [15, 15, 12, 10, 15, 18, 12, 50]
+    for col, width in enumerate(column_widths, 1):
+        ws.column_dimensions[get_column_letter(col)].width = width
+    
+    # Création de la réponse HTTP
+    buffer = BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+    
+    mois_fr = [
+        '', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+        'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+    ]
+    
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="rapport_presence_{selected_classe.nom if selected_classe else "toutes_les_classes"}_{date_debut.strftime("%Y%m%d")}_au_{date_fin.strftime("%Y%m%d")}.xlsx"'
+    
+    return response

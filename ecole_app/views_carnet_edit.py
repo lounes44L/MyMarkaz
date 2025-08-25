@@ -135,7 +135,14 @@ def modifier_revision(request, revision_id):
     if request.method == 'POST':
         form = RevisionForm(request.POST, instance=revision)
         if form.is_valid():
-            form.save()
+            revision = form.save(commit=False)
+            # Get the remarques from the form
+            remarques = form.cleaned_data.get('remarques')
+            if remarques:
+                revision.remarques = remarques
+            # Auto-calculate the week number from the date
+            revision.semaine = revision.date.isocalendar()[1]
+            revision.save()
             messages.success(request, "Révision modifiée avec succès.")
             return redirect('carnet_pedagogique', eleve_id=eleve.id)
     else:

@@ -33,6 +33,8 @@ class ComposanteFormMixin:
         
         if commit:
             instance.save()
-            self.save_m2m()
+            # N'appeler save_m2m que si l'instance a été sauvegardée
+            if hasattr(self, 'save_m2m'):
+                self.save_m2m()
         
         return instance

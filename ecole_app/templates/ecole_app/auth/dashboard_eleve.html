@@ -163,44 +163,7 @@
         </div>
     </div>
 
-    <!-- Paiements -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Mes paiements</h6>
-                </div>
-                <div class="card-body">
-                    {% if paiements %}
-                    <div class="table-responsive">
-                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Montant</th>
-                                    <th>Méthode</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for paiement in paiements %}
-                                <tr>
-                                    <td>{{ paiement.date|date:"d/m/Y" }}</td>
-                                    <td>{{ paiement.montant }} €</td>
-                                    <td>{{ paiement.get_methode_display }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <p class="text-muted">Aucun paiement enregistré pour le moment.</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Section des paiements supprimée -->
     
     <!-- Présences -->
     <div class="row">

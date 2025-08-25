@@ -103,9 +103,14 @@
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
             <h6 class="m-0 font-weight-bold text-primary">Historique de mes notes</h6>
-            <a href="{% url 'historique_quiz_eleve' %}" class="btn btn-sm btn-info">
-                <i class="fas fa-tasks"></i> Voir mes résultats de quiz
-            </a>
+            <div>
+                <a href="{% url 'export_notes_excel' %}{% if request.user.eleve %}?eleve={{ request.user.eleve.id }}{% endif %}" class="btn btn-sm btn-success mr-2">
+                    <i class="fas fa-file-excel"></i> Exporter en Excel
+                </a>
+                <a href="{% url 'historique_quiz_eleve' %}" class="btn btn-sm btn-info">
+                    <i class="fas fa-tasks"></i> Voir mes résultats de quiz
+                </a>
+            </div>
         </div>
         <div class="card-body">
             {% if notes %}
@@ -117,7 +122,6 @@
                             <th>Examen</th>
                             <th>Type</th>
                             <th>Note</th>
-                            <th>Mention</th>
                             <th>Professeur</th>
                             <th>Commentaire</th>
                         </tr>
@@ -129,11 +133,10 @@
                             <td>{{ note.titre }}</td>
                             <td>{{ note.get_type_examen_display }}</td>
                             <td>
-                                <span class="badge badge-{{ note.couleur_badge }} p-2">
+                                <span class="badge badge-{{ note.couleur_badge }} p-2 {% if note.couleur_badge == 'warning' or note.couleur_badge == 'light' %}text-dark{% else %}text-white{% endif %}">
                                     {{ note.note }}/{{ note.note_max }}
                                 </span>
                             </td>
-                            <td>{{ note.mention }}</td>
                             <td>{{ note.professeur.nom }}</td>
                             <td>
                                 {% if note.commentaire %}

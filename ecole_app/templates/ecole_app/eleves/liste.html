@@ -279,10 +279,10 @@
                         <th>Nom</th>
                         <th>Prénom</th>
                         <th>Classe</th>
-                        <th>Créneau</th>
                         <th>Âge</th>
                         <th>Téléphone</th>
                         <th>Email</th>
+                        {% if archives_tab %}<th>Motif d'archivage</th>{% endif %}
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -300,10 +300,10 @@
         {% endfor %}
     {% endif %}
 </td>
-                        <td>{% if eleve.creneau %}{{ eleve.creneau }}{% else %}-{% endif %}</td>
                         <td>{% if eleve.age %}{{ eleve.age }} ans{% else %}-{% endif %}</td>
                         <td>{{ eleve.telephone|default:"-" }}</td>
                         <td>{{ eleve.email|default:"-" }}</td>
+                        {% if archives_tab %}<td>{{ eleve.motif_archive|default:"-" }}</td>{% endif %}
                         <td>
                             <div class="btn-group btn-group-sm">
                                 <a class="btn btn-primary btn-sm" href="{% url 'detail_eleve' eleve.id %}" title="Voir les détails de l'élève">
@@ -338,7 +338,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="8" class="text-center">Aucun élève enregistré</td>
+                        <td colspan="{% if archives_tab %}8{% else %}7{% endif %}" class="text-center">Aucun élève enregistré</td>
                     </tr>
                     {% endfor %}
                 </tbody>

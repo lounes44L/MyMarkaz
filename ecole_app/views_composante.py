@@ -104,7 +104,13 @@ def creer_composante(request):
             active=True
         )
         
-        messages.success(request, f'Composante "{nom}" créée avec succès avec une année scolaire par défaut.')
+        # Associer automatiquement tous les professeurs existants à cette nouvelle composante
+        professeurs = Professeur.objects.all()
+        for professeur in professeurs:
+            professeur.composantes.add(composante)
+        
+        nb_professeurs = professeurs.count()
+        messages.success(request, f'Composante "{nom}" créée avec succès avec une année scolaire par défaut et {nb_professeurs} professeur(s) associé(s).')
         return redirect('gestion_composantes')
     
     return redirect('gestion_composantes')
@@ -155,17 +161,27 @@ def supprimer_composante(request, composante_id):
     nb_professeurs = composante.professeurs.count()
     nb_classes = composante.classes.count()
     
-    if nb_eleves > 0 or nb_professeurs > 0 or nb_classes > 0:
-        messages.error(request, 
-            f'Impossible de supprimer "{composante.nom}". '
-            f'Cette composante contient {nb_eleves} élève(s), '
-            f'{nb_professeurs} professeur(s) et {nb_classes} classe(s).')
+    # Récupérer la confirmation de suppression forcée
+    force_delete = request.POST.get('force_delete') == 'on'
+    
+    # Si des données sont liées et que la suppression forcée n'est pas confirmée
+    if (nb_eleves > 0 or nb_professeurs > 0 or nb_classes > 0) and not force_delete:
+        messages.warning(request, 
+            f'Attention: La suppression de "{composante.nom}" entraînera la suppression de '
+            f'{nb_eleves} élève(s), {nb_professeurs} professeur(s) et {nb_classes} classe(s). '
+            f'Cochez la case de confirmation pour continuer.')
         return redirect('gestion_composantes')
     
     nom_composante = composante.nom
     composante.delete()
     
-    messages.success(request, f'Composante "{nom_composante}" supprimée avec succès.')
+    if nb_eleves > 0 or nb_professeurs > 0 or nb_classes > 0:
+        messages.success(request, 
+            f'Composante "{nom_composante}" supprimée avec succès. '
+            f'{nb_eleves} élève(s), {nb_professeurs} professeur(s) et {nb_classes} classe(s) ont également été supprimés.')
+    else:
+        messages.success(request, f'Composante "{nom_composante}" supprimée avec succès.')
+    
     return redirect('gestion_composantes')
 
 @login_required

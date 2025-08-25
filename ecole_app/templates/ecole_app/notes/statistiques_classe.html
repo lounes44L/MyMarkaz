@@ -7,9 +7,14 @@
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Statistiques des Notes - {{ classe.nom }}</h1>
-        <a href="{% url 'liste_notes_professeur' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
-            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour à la liste
-        </a>
+        <div>
+            <a href="{% url 'export_notes_excel' %}?classe={{ classe.id }}" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm mr-2">
+                <i class="fas fa-file-excel fa-sm text-white-50"></i> Exporter en Excel
+            </a>
+            <a href="{% url 'liste_notes_professeur' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour à la liste
+            </a>
+        </div>
     </div>
 
     <!-- Résumé des statistiques -->
@@ -219,7 +224,6 @@
                                 <th>Élève</th>
                                 <th>Type d'examen</th>
                                 <th>Note</th>
-                                <th>Mention</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -228,8 +232,7 @@
                                     <td>{{ note.date_examen }}</td>
                                     <td>{{ note.eleve.nom }} {{ note.eleve.prenom }}</td>
                                     <td>{{ note.get_type_examen_display }}</td>
-                                    <td>{{ note.note }}/{{ note.note_max }}</td>
-                                    <td><span class="badge {{ note.get_couleur_badge }}">{{ note.get_mention }}</span></td>
+                                    <td><span class="badge {{ note.get_couleur_badge }} {% if note.get_couleur_badge == 'bg-warning' or note.get_couleur_badge == 'bg-light' %}text-dark{% else %}text-white{% endif %}">{{ note.note }}/{{ note.note_max }}</span></td>
                                 </tr>
                             {% endfor %}
                         </tbody>

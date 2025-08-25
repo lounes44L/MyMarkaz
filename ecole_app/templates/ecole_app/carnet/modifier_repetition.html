@@ -1,7 +1,7 @@
 {% extends "ecole_app/base.html" %}
 {% load static %}
 
-{% block title %}Modifier une répétition (Tikrar) - {{ repetition.eleve.nom }} {{ repetition.eleve.prenom }}{% endblock %}
+{% block title %}Modifier une répétition (Tikrar) - {{ repetition.carnet.eleve.nom }} {{ repetition.carnet.eleve.prenom }}{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
@@ -11,7 +11,7 @@
                 <div class="card-header bg-warning text-dark">
                     <h4 class="mb-0">
                         <i class="fas fa-redo me-2"></i>
-                        Modifier une répétition (Tikrar) pour {{ repetition.eleve.nom }} {{ repetition.eleve.prenom }}
+                        Modifier une répétition (Tikrar) pour {{ repetition.carnet.eleve.nom }} {{ repetition.carnet.eleve.prenom }}
                     </h4>
                 </div>
                 <div class="card-body">
@@ -29,8 +29,10 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="{{ form.page.id_for_label }}" class="form-label">Page</label>
-                            {{ form.page }}
+                            <label for="page-select-repetition" class="form-label">Page</label>
+                            <select name="page" id="page-select-repetition" class="form-control" aria-label="Page">
+                                <option value="">Sélectionnez d'abord une sourate</option>
+                            </select>
                             {% if form.page.errors %}
                             <div class="text-danger">{{ form.page.errors }}</div>
                             {% endif %}
@@ -45,7 +47,7 @@
                         </div>
                         
                         <div class="d-flex justify-content-between">
-                            <a href="{% url 'carnet_pedagogique' repetition.eleve.id %}" class="btn btn-outline-secondary">
+                            <a href="{% url 'carnet_pedagogique' repetition.carnet.eleve.id %}" class="btn btn-outline-secondary">
                                 <i class="fas fa-arrow-left me-1"></i> Retour
                             </a>
                             <button type="submit" class="btn btn-warning">
@@ -63,12 +65,21 @@
 {% block extra_js %}
 <script src="{% static 'js/sourate-pages.js' %}"></script>
 <script>
-    // Script pour initialiser la sourate en fonction de la page existante
     document.addEventListener('DOMContentLoaded', function() {
-        // Cette fonction sera appelée après le chargement de la page
-        // pour définir la sourate correspondant à la page actuelle
+        console.log('DOM loaded in modifier_repetition.html');
+        
+        // Configuration pour la répétition (tikrar)
+        setupSouratePageSelection(
+            'id_sourate_select',
+            'page-select-repetition',
+            null, // Pas de fin_page pour la répétition
+            true  // Mode page unique
+        );
+        
+        // Initialiser la sourate et la page en fonction des valeurs existantes
         function initSourate() {
-            var pageNum = {{ repetition.page }};
+            const pageNum = parseInt('{{ repetition.page }}', 10);
+            console.log('Initializing sourate for page:', pageNum);
             
             // Appel AJAX pour trouver la sourate correspondante
             fetch('/api/sourate-pages/find-sourate/?page=' + pageNum)
@@ -76,25 +87,42 @@
                     return response.json();
                 })
                 .then(function(data) {
+                    console.log('Found sourate data:', data);
                     if (data.sourate_index !== undefined) {
-                        var sourateSelect = document.getElementById('sourate-select-repetition');
+                        // Sélectionner la sourate dans le menu déroulant
+                        const sourateSelect = document.getElementById('id_sourate_select');
                         if (sourateSelect) {
                             sourateSelect.value = data.sourate_index;
-                            // Déclencher l'événement change pour charger les pages
-                            sourateSelect.dispatchEvent(new Event('change'));
+                            console.log('Set sourate select value to:', data.sourate_index);
                             
-                            // Sélectionner la page actuelle une fois les options chargées
+                            // Déclencher l'événement change pour charger les pages
+                            const event = new Event('change');
+                            sourateSelect.dispatchEvent(event);
+                            
+                            // Attendre que les pages soient chargées puis sélectionner la bonne valeur
                             setTimeout(function() {
-                                var pageSelect = document.getElementById('page-select-repetition');
-                                if (pageSelect) {
-                                    pageSelect.value = pageNum;
+                                const pageSelect = document.getElementById('page-select-repetition');
+                                
+                                // Fonction pour définir une valeur avec retries
+                                function setSelectValue(select, value, retries = 3) {
+                                    if (select && select.options.length > 1) {
+                                        select.value = value;
+                                        console.log(`Set ${select.id} to:`, value);
+                                        return true;
+                                    } else if (retries > 0) {
+                                        console.log(`${select ? select.id : 'select'} not ready, retrying in 500ms...`);
+                                        setTimeout(() => setSelectValue(select, value, retries - 1), 500);
+                                    }
+                                    return false;
                                 }
-                            }, 500);
+                                
+                                setSelectValue(pageSelect, pageNum);
+                            }, 1000); // Attendre 1000ms pour que les options soient chargées
                         }
                     }
                 })
                 .catch(function(error) {
-                    console.error('Erreur lors de la récupération de la sourate:', error);
+                    console.error('Error finding sourate:', error);
                 });
         }
         

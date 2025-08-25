@@ -1,0 +1,82 @@
+{% extends "ecole_app/base.html" %}
+{% load static %}
+
+{% block title %}{{ titre_page }} - {{ eleve.nom }} {{ eleve.prenom }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- En-tête -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="fas fa-sync me-2"></i> {{ titre_page }}
+            <small class="text-muted">{{ eleve.nom }} {{ eleve.prenom }}</small>
+        </h1>
+        
+        <div class="d-flex">
+            <a href="{% url 'carnet_pedagogique' eleve.id %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Retour au carnet
+            </a>
+        </div>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="card">
+        <div class="card-body">
+            <form method="post" class="row g-3">
+                {% csrf_token %}
+                <div class="col-md-12 mb-3">
+                    <label for="{{ form.date.id_for_label }}" class="form-label">Date</label>
+                    {{ form.date }}
+                    {% if form.date.help_text %}
+                    <div class="form-text text-muted">{{ form.date.help_text }}</div>
+                    {% endif %}
+                    {% if form.date.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.date.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="{{ form.jour.id_for_label }}" class="form-label">Jour</label>
+                    {{ form.jour }}
+                    {% if form.jour.help_text %}
+                    <div class="form-text text-muted">{{ form.jour.help_text }}</div>
+                    {% endif %}
+                    {% if form.jour.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.jour.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="{{ form.nombre_hizb.id_for_label }}" class="form-label">Nombre de Hizb</label>
+                    {{ form.nombre_hizb }}
+                    {% if form.nombre_hizb.help_text %}
+                    <div class="form-text text-muted">{{ form.nombre_hizb.help_text }}</div>
+                    {% endif %}
+                    {% if form.nombre_hizb.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.nombre_hizb.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-12 mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Enregistrer
+                    </button>
+                    <a href="{% url 'carnet_pedagogique' eleve.id %}" class="btn btn-outline-secondary ms-2">Annuler</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

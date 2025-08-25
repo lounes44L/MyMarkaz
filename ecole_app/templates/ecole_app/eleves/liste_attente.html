@@ -126,25 +126,8 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
         <div class="modal-body">
-          <div class="mb-3">
-            <label for="modalClasse" class="form-label">Classe</label>
-            <select name="classe" id="modalClasse" class="form-control" required>
-              <option value="">---------</option>
-              {% for classe in classes %}
-                <option value="{{ classe.id }}">{{ classe.nom }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="modalCreneau" class="form-label">Créneau</label>
-            <select name="creneau" id="modalCreneau" class="form-control" required>
-              <option value="">---------</option>
-              {% for creneau in creneaux %}
-                <option value="{{ creneau.id }}">{{ creneau.nom }}</option>
-              {% endfor %}
-            </select>
-          </div>
           <div class="alert alert-info" id="modalEleveNom"></div>
+          <p>Cet élève sera ajouté à la liste principale.</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>

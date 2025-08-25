@@ -29,8 +29,10 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="{{ form.page.id_for_label }}" class="form-label">Page</label>
-                            {{ form.page }}
+                            <label for="page-select-repetition" class="form-label">Page</label>
+                            <select name="page" id="page-select-repetition" class="form-control" disabled aria-label="Page">
+                                <option value="">Sélectionnez d'abord une sourate</option>
+                            </select>
                             {% if form.page.errors %}
                             <div class="text-danger">{{ form.page.errors }}</div>
                             {% endif %}
@@ -62,4 +64,17 @@
 
 {% block extra_js %}
 <script src="{% static 'js/sourate-pages.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded in ajouter_repetition.html');
+        
+        // Configuration pour la répétition (tikrar)
+        setupSouratePageSelection(
+            'id_sourate_select',
+            'page-select-repetition',
+            null, // Pas de fin_page pour la répétition
+            true  // Mode page unique
+        );
+    });
+</script>
 {% endblock %}
