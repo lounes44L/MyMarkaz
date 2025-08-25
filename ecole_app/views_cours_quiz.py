@@ -190,13 +190,39 @@ def telecharger_cours(request, cours_id):
     """Permet à un élève de télécharger un cours partagé"""
     eleve = request.user.eleve
     # Vérifier que le cours existe et que l'élève a accès à ce cours
-    cours = get_object_or_404(CoursPartage, id=cours_id, classes__in=eleve.classes.all())
+    cours = CoursPartage.objects.filter(id=cours_id, classes__in=eleve.classes.all()).first()
+    
+    if not cours:
+        messages.error(request, "Ce cours n'existe pas ou n'est pas disponible pour votre classe.")
+        return redirect('liste_cours_eleve')
     
     # Renvoyer le fichier pour téléchargement
     if cours.fichier:
-        response = HttpResponse(cours.fichier, content_type='application/force-download')
-        response['Content-Disposition'] = f'attachment; filename="{cours.fichier.name.split("/")[-1]}"'
-        return response
+        try:
+            # Vérifier si le fichier existe dans le système de fichiers
+            if cours.fichier.storage.exists(cours.fichier.name):
+                response = FileResponse(cours.fichier.open('rb'), content_type='application/force-download')
+                response['Content-Disposition'] = f'attachment; filename="{cours.fichier.name.split("/")[-1]}"'
+                return response
+            else:
+                # Si le fichier n'existe pas dans media/, essayer dans cours_partages/
+                import os
+                from django.conf import settings
+                
+                filename = cours.fichier.name.split("/")[-1]
+                alternative_path = os.path.join(settings.BASE_DIR, 'cours_partages', filename)
+                
+                if os.path.exists(alternative_path):
+                    with open(alternative_path, 'rb') as f:
+                        response = HttpResponse(f.read(), content_type='application/force-download')
+                        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+                        return response
+                else:
+                    messages.error(request, f'Le fichier "{filename}" est introuvable sur le serveur.')
+                    return redirect('liste_cours_eleve')
+        except Exception as e:
+            messages.error(request, f'Erreur lors du téléchargement du fichier: {str(e)}')
+            return redirect('liste_cours_eleve')
     else:
         messages.error(request, 'Ce cours ne contient pas de fichier à télécharger.')
         return redirect('liste_cours_eleve')

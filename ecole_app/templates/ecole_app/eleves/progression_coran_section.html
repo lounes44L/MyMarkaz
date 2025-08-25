@@ -188,7 +188,7 @@
                                         <div class="mt-3">
                                             <h4 class="small font-weight-bold">Progression du Coran <span class="float-right">{{ progression_pourcentage|default:"0" }}%</span></h4>
                                             <div class="progress mb-4">
-                                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ progression_pourcentage|default:'0' }}%" aria-valuemin="0" aria-valuemax="100" aria-label="Progression Coran {{ progression_pourcentage|default:'0' }}%">{{ progression_pourcentage|default:'0' }}%</div>
+                                                <div class="progress-bar bg-info" role="progressbar" style="width: {{ progression_pourcentage|default:'0' }}%" aria-valuenow="{{ progression_pourcentage|default:'0' }}" aria-valuemin="0" aria-valuemax="100"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -305,20 +305,22 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialiser la sourate actuelle si elle existe
     {% if progression_coran %}
-    var sourateSelect = document.getElementById('sourate');
-    for (var i = 0; i < sourateSelect.options.length; i++) {
-        if (sourateSelect.options[i].value === "{{ progression_coran.sourate_actuelle }}") {
-            sourateSelect.selectedIndex = i;
-            break;
+    (function() {
+        var sourateSelect = document.getElementById('sourate');
+        for (var i = 0; i < sourateSelect.options.length; i++) {
+            if (sourateSelect.options[i].value === "{{ progression_coran.sourate_actuelle }}") {
+                sourateSelect.selectedIndex = i;
+                break;
+            }
         }
-    }
-    updatePageRange();
-    
-    // Sélectionner la page de début et la page actuelle
-    var pageDebutSourateSelect = document.getElementById('page_debut_sourate');
-    var pageObjectifSelect = document.getElementById('page_objectif');
-    pageDebutSourateSelect.value = "{{ progression_coran.page_debut_sourate }}";
-    pageObjectifSelect.value = "{{ progression_coran.page_actuelle }}";
+        updatePageRange();
+        
+        // Sélectionner la page de début et la page actuelle
+        var pageDebutSourateSelect = document.getElementById('page_debut_sourate');
+        var pageObjectifSelect = document.getElementById('page_objectif');
+        pageDebutSourateSelect.value = "{{ progression_coran.page_debut_sourate }}";
+        pageObjectifSelect.value = "{{ progression_coran.page_actuelle }}";
+    })();
     {% endif %}
 });
 </script>

@@ -117,7 +117,18 @@
                                     <td>{{ type_stats.moyenne|floatformat:2 }}/20</td>
                                     <td>
                                         <div class="progress">
-                                            <div class="progress-bar bg-info" role="progressbar" style="width: {{ type_stats.moyenne|floatformat:0 }}%" aria-valuenow="{{ type_stats.moyenne|default:0|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100" aria-label="Moyenne: {{ type_stats.moyenne|default:0|floatformat:0 }}%">{{ type_stats.moyenne|floatformat:0 }}%</div>
+                                            <div class="progress-bar 
+                                                {% if type_stats.moyenne >= 14 %}bg-success
+                                                {% elif type_stats.moyenne >= 10 %}bg-info
+                                                {% elif type_stats.moyenne >= 7 %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                                role="progressbar" 
+                                                style="width: {{ type_stats.moyenne|floatformat:0 }}0%" 
+                                                aria-valuenow="{{ type_stats.moyenne|floatformat:0 }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="20">
+                                                {{ type_stats.moyenne|floatformat:1 }}/20
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -171,7 +182,18 @@
                                     </td>
                                     <td>
                                         <div class="progress">
-                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ eleve_stats.moyenne|floatformat:0 }}%" aria-valuenow="{{ eleve_stats.moyenne|default:0|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100" aria-label="Moyenne élève: {{ eleve_stats.moyenne|default:0|floatformat:0 }}%">{{ eleve_stats.moyenne|floatformat:0 }}%</div>
+                                            <div class="progress-bar 
+                                                {% if eleve_stats.moyenne >= 14 %}bg-success
+                                                {% elif eleve_stats.moyenne >= 10 %}bg-info
+                                                {% elif eleve_stats.moyenne >= 7 %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                                role="progressbar" 
+                                                style="width: {{ eleve_stats.moyenne|floatformat:0 }}0%" 
+                                                aria-valuenow="{{ eleve_stats.moyenne|floatformat:0 }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="20">
+                                                {{ eleve_stats.moyenne|floatformat:1 }}/20
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>

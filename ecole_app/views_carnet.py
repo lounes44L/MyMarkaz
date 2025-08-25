@@ -90,10 +90,8 @@ def carnet_pedagogique(request, eleve_id=None):
     competences = CompetenceLivre.objects.all().order_by('lecon', 'ordre')
     evaluations = EvaluationCompetence.objects.filter(eleve=eleve).select_related('competence')
     
-    # Debug: Afficher les évaluations trouvées
-    print(f"DEBUG: Élève {eleve.id}, {evaluations.count()} évaluations trouvées")
-    for eval in evaluations:
-        print(f"DEBUG: Compétence {eval.competence_id} -> {eval.statut}")
+    # Créer un dictionnaire des évaluations par competence_id pour un accès plus rapide
+    evaluations_dict = {eval.competence_id: eval for eval in evaluations}
     
     # Organiser les compétences par leçon avec leurs évaluations
     competences_par_lecon = {}
@@ -103,15 +101,12 @@ def carnet_pedagogique(request, eleve_id=None):
         if competence.lecon not in competences_par_lecon:
             competences_par_lecon[competence.lecon] = []
         
-        # Chercher l'évaluation pour cette compétence
-        evaluation = next((e for e in evaluations if e.competence_id == competence.id), None)
+        # Récupérer l'évaluation pour cette compétence
+        evaluation = evaluations_dict.get(competence.id)
         
-        # Debug: Afficher le résultat de la recherche
+        # Ajouter le statut de la compétence au dictionnaire
         if evaluation:
-            print(f"DEBUG: Compétence {competence.id} trouvée avec statut {evaluation.statut}")
             competences_status[str(competence.id)] = evaluation.statut
-        else:
-            print(f"DEBUG: Aucune évaluation pour compétence {competence.id}")
         
         competences_par_lecon[competence.lecon].append({
             'competence': competence,
@@ -316,13 +311,23 @@ def evaluation_competences_batch(request):
                 # Chercher la compétence
                 competence = CompetenceLivre.objects.get(id=competence_id)
                 
+                # Convertir la date si elle est fournie sous forme de string
+                if date_annotation and isinstance(date_annotation, str):
+                    from datetime import datetime
+                    try:
+                        date_eval = datetime.strptime(date_annotation, '%Y-%m-%d').date()
+                    except ValueError:
+                        date_eval = timezone.now().date()
+                else:
+                    date_eval = date_annotation if date_annotation else timezone.now().date()
+                
                 # Créer ou mettre à jour l'évaluation
                 evaluation, created = EvaluationCompetence.objects.update_or_create(
                     eleve=eleve,
                     competence=competence,
                     defaults={
                         'statut': statut,
-                        'date_evaluation': timezone.now().date() if date_annotation else timezone.now().date()
+                        'date_evaluation': date_eval
                     }
                 )
                 evaluations_created += 1
@@ -335,7 +340,9 @@ def evaluation_competences_batch(request):
             'message': f'{evaluations_created} évaluations enregistrées avec succès'
         })
         
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': 'Données JSON invalides'})
+    except json.JSONDecodeError as e:
+        return JsonResponse({'success': False, 'error': f'Données JSON invalides: {str(e)}'})
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)})
+        import traceback
+        error_details = traceback.format_exc()
+        return JsonResponse({'success': False, 'error': f'Erreur serveur: {str(e)}', 'details': error_details})
