@@ -600,15 +600,16 @@
                             </div>
                         </div>
 
-                        <!-- Sixième tableau: Bilan de progression - Règles de base -->
+                        <!-- Tableaux dynamiques générés à partir des compétences de la base de données -->
+                        {% for lecon, competences_list in competences_par_lecon.items %}
                         <div class="card mt-4">
-                            <div class="card-header bg-info text-white">
-                                <h5 class="mb-0">Bilan de progression - Règles de base</h5>
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">Bilan de progression - {{ lecon }}</h5>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
                                     <table class="table table-bordered">
-                                        <thead class="table-info">
+                                        <thead class="table-success">
                                             <tr>
                                                 <th class="w-60">Objectifs</th>
                                                 <th class="text-center">Acquis</th>
@@ -617,39 +618,52 @@
                                             </tr>
                                         </thead>
                                         <tbody>
+                                            {% for comp_data in competences_list %}
+                                            {% with competence=comp_data.competence evaluation=comp_data.evaluation %}
                                             <tr>
-                                                <td>Capacité à appliquer la nasalisation (الغُنَّة) sur le noun ;</td>
-                                                <td class="text-center"><input type="radio" name="bilan_regles_1" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_1" data-tableau="6" title="Acquis - Appliquer la nasalisation" aria-label="Acquis - Appliquer la nasalisation" {% if competences_status.regles_1 == 'acquis' %}checked{% endif %}></td>
-                                                <td class="text-center"><input type="radio" name="bilan_regles_1" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_1" data-tableau="6" title="Non Acquis - Appliquer la nasalisation" aria-label="Non Acquis - Appliquer la nasalisation" {% if competences_status.regles_1 == 'non_acquis' %}checked{% endif %}></td>
-                                                <td class="text-center"><input type="radio" name="bilan_regles_1" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_1" data-tableau="6" title="En cours - Appliquer la nasalisation" aria-label="En cours - Appliquer la nasalisation" {% if competences_status.regles_1 == 'en_cours' %}checked{% endif %}></td>
+                                                <td>{{ competence.description }}</td>
+                                                <td class="text-center">
+                                                    <input type="radio" name="bilan_{{ competence.id }}" value="acquis" 
+                                                           class="form-check-input competence-check" 
+                                                           data-eleve="{{ eleve.id }}" 
+                                                           data-competence="{{ competence.id }}" 
+                                                           data-tableau="{{ forloop.parentloop.counter }}"
+                                                           title="Acquis - {{ competence.description|truncatechars:50 }}" 
+                                                           aria-label="Acquis - {{ competence.description|truncatechars:50 }}" 
+                                                           {% if evaluation and evaluation.statut == 'acquis' %}checked{% endif %}>
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="radio" name="bilan_{{ competence.id }}" value="non_acquis" 
+                                                           class="form-check-input competence-check" 
+                                                           data-eleve="{{ eleve.id }}" 
+                                                           data-competence="{{ competence.id }}" 
+                                                           data-tableau="{{ forloop.parentloop.counter }}"
+                                                           title="Non Acquis - {{ competence.description|truncatechars:50 }}" 
+                                                           aria-label="Non Acquis - {{ competence.description|truncatechars:50 }}" 
+                                                           {% if evaluation and evaluation.statut == 'non_acquis' %}checked{% endif %}>
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="radio" name="bilan_{{ competence.id }}" value="en_cours" 
+                                                           class="form-check-input competence-check" 
+                                                           data-eleve="{{ eleve.id }}" 
+                                                           data-competence="{{ competence.id }}" 
+                                                           data-tableau="{{ forloop.parentloop.counter }}"
+                                                           title="En cours - {{ competence.description|truncatechars:50 }}" 
+                                                           aria-label="En cours - {{ competence.description|truncatechars:50 }}" 
+                                                           {% if evaluation and evaluation.statut == 'en_cours' %}checked{% endif %}>
+                                                </td>
                                             </tr>
-                                            <tr>
-                                                <td>Maîtrise des différentes déclinaisons de ن ;</td>
-                                                <td class="text-center"><input type="radio" name="bilan_regles_2" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_2" data-tableau="6" title="Acquis - Déclinaisons de ن" aria-label="Acquis - Déclinaisons de ن" {% if competences_status.regles_2 == 'acquis' %}checked{% endif %}></td>
-                                                <td class="text-center"><input type="radio" name="bilan_regles_2" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_2" data-tableau="6" title="Non Acquis - Déclinaisons de ن" aria-label="Non Acquis - Déclinaisons de ن" {% if competences_status.regles_2 == 'non_acquis' %}checked{% endif %}></td>
-                                                <td class="text-center"><input type="radio" name="bilan_regles_2" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_2" data-tableau="6" title="En cours - Déclinaisons de ن" aria-label="En cours - Déclinaisons de ن" {% if competences_status.regles_2 == 'en_cours' %}checked{% endif %}></td>
-                                            </tr>
-                                            <tr>
-                                                <td>Capacité à distinguer les différents types de prolongement plus de 2 temps ;</td>
-                                                <td class="text-center"><input type="radio" name="bilan_regles_3" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_3" data-tableau="6" title="Acquis - Types de prolongement" aria-label="Acquis - Types de prolongement" {% if competences_status.regles_3 == 'acquis' %}checked{% endif %}></td>
-                                                <td class="text-center"><input type="radio" name="bilan_regles_3" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_3" data-tableau="6" title="Non Acquis - Types de prolongement" aria-label="Non Acquis - Types de prolongement" {% if competences_status.regles_3 == 'non_acquis' %}checked{% endif %}></td>
-                                                <td class="text-center"><input type="radio" name="bilan_regles_3" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_3" data-tableau="6" title="En cours - Types de prolongement" aria-label="En cours - Types de prolongement" {% if competences_status.regles_3 == 'en_cours' %}checked{% endif %}></td>
-                                            </tr>
-                                            <tr>
-                                                <td>Maîtrise les types de القَلْقَلَة.</td>
-                                                <td class="text-center"><input type="radio" name="bilan_regles_4" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_4" data-tableau="6" title="Acquis - Types de القَلْقَلَة" aria-label="Acquis - Types de القَلْقَلَة" {% if competences_status.regles_4 == 'acquis' %}checked{% endif %}></td>
-                                                <td class="text-center"><input type="radio" name="bilan_regles_4" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_4" data-tableau="6" title="Non Acquis - Types de القَلْقَلَة" aria-label="Non Acquis - Types de القَلْقَلَة" {% if competences_status.regles_4 == 'non_acquis' %}checked{% endif %}></td>
-                                                <td class="text-center"><input type="radio" name="bilan_regles_4" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_4" data-tableau="6" title="En cours - Types de القَلْقَلَة" aria-label="En cours - Types de القَلْقَلَة" {% if competences_status.regles_4 == 'en_cours' %}checked{% endif %}></td>
-                                            </tr>
+                                            {% endwith %}
+                                            {% endfor %}
                                         </tbody>
                                     </table>
                                     <div class="row mt-3">
                                         <div class="col-md-6">
-                                            <label for="date_annotation_6" class="form-label">Date d'annotation :</label>
-                                            <input type="date" id="date_annotation_6" name="date_annotation_6" class="form-control date-annotation" data-tableau="6" value="{% now 'Y-m-d' %}">
+                                            <label for="date_annotation_{{ forloop.counter }}" class="form-label">Date d'annotation :</label>
+                                            <input type="date" id="date_annotation_{{ forloop.counter }}" name="date_annotation_{{ forloop.counter }}" class="form-control date-annotation" data-tableau="{{ forloop.counter }}" value="{% now 'Y-m-d' %}">
                                         </div>
                                         <div class="col-md-6 text-end">
-                                            <button class="btn btn-primary save-progression" data-tableau="6">
+                                            <button class="btn btn-primary save-progression" data-tableau="{{ forloop.counter }}">
                                                 <i class="fas fa-save me-2"></i>Enregistrer la progression
                                             </button>
                                         </div>
@@ -657,6 +671,7 @@
                                 </div>
                             </div>
                         </div>
+                        {% endfor %}
 
                     </div>
                 </div>
@@ -770,24 +785,7 @@
                         el.textContent = '0';
                     });
                     
-                    // Afficher un message discret dans l'interface
-                    const messageContainer = document.createElement('div');
-                    messageContainer.className = 'alert alert-warning alert-dismissible fade show mt-3';
-                    messageContainer.innerHTML = `
-                        <strong>Information :</strong> Aucune donnée disponible pour ${mois}/${annee}.
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
-                    `;
-                    
-                    // Insérer le message après le premier .row
-                    const firstRow = document.querySelector('.row');
-                    if (firstRow && firstRow.parentNode) {
-                        firstRow.parentNode.insertBefore(messageContainer, firstRow.nextSibling);
-                        
-                        // Supprimer automatiquement après 5 secondes
-                        setTimeout(() => {
-                            messageContainer.remove();
-                        }, 5000);
-                    }
+                    // Message supprimé - pas d'affichage d'alerte
                 });
         }
         
@@ -1229,8 +1227,8 @@
             });
         });
         
-        // Initialiser les données du carnet au chargement de la page
-        updateCarnetData();
+        // Ne plus charger automatiquement les données AJAX au démarrage
+        // Les données seront chargées seulement quand l'utilisateur clique sur "Afficher"
     });
     
     // Fonction pour récupérer le token CSRF

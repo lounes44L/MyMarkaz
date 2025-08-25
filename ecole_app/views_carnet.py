@@ -90,6 +90,11 @@ def carnet_pedagogique(request, eleve_id=None):
     competences = CompetenceLivre.objects.all().order_by('lecon', 'ordre')
     evaluations = EvaluationCompetence.objects.filter(eleve=eleve).select_related('competence')
     
+    # Debug: Afficher les évaluations trouvées
+    print(f"DEBUG: Élève {eleve.id}, {evaluations.count()} évaluations trouvées")
+    for eval in evaluations:
+        print(f"DEBUG: Compétence {eval.competence_id} -> {eval.statut}")
+    
     # Organiser les compétences par leçon avec leurs évaluations
     competences_par_lecon = {}
     competences_status = {}
@@ -101,9 +106,12 @@ def carnet_pedagogique(request, eleve_id=None):
         # Chercher l'évaluation pour cette compétence
         evaluation = next((e for e in evaluations if e.competence_id == competence.id), None)
         
-        # Ajouter le statut de la compétence au dictionnaire
+        # Debug: Afficher le résultat de la recherche
         if evaluation:
+            print(f"DEBUG: Compétence {competence.id} trouvée avec statut {evaluation.statut}")
             competences_status[str(competence.id)] = evaluation.statut
+        else:
+            print(f"DEBUG: Aucune évaluation pour compétence {competence.id}")
         
         competences_par_lecon[competence.lecon].append({
             'competence': competence,
@@ -119,6 +127,7 @@ def carnet_pedagogique(request, eleve_id=None):
         'repetitions': repetitions,
         'total_pages_memo': total_pages_memo,
         'competences_par_lecon': competences_par_lecon,
+        'competences_status': competences_status,
         'mois': mois,
         'annee': annee,
         'mois_actuel': date_actuelle.month,  # Mois actuel pour le bouton "Mois courant"

@@ -128,17 +128,17 @@
                                     <div class="progress" style="height: 20px;">
                                         {% with taux=classe.taux_occupation %}
                                         {% if taux > 85 %}
-                                            <div class="progress-bar bg-danger" role="progressbar" style="width: {{ taux }}%;" aria-valuenow="{{ taux }}" aria-valuemin="0" aria-valuemax="100">{{ taux }}%</div>
+                                            <div class="progress-bar bg-danger" role="progressbar" style="width: {{ taux }}%;" aria-valuenow="{{ taux|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100" aria-label="Taux d'occupation: {{ taux|floatformat:0 }}%">{{ taux }}%</div>
                                         {% elif taux > 60 %}
-                                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ taux }}%;" aria-valuenow="{{ taux }}" aria-valuemin="0" aria-valuemax="100">{{ taux }}%</div>
+                                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ taux }}%;" aria-valuenow="{{ taux|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100" aria-label="Taux d'occupation: {{ taux|floatformat:0 }}%">{{ taux }}%</div>
                                         {% else %}
-                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ taux }}%;" aria-valuenow="{{ taux }}" aria-valuemin="0" aria-valuemax="100">{{ taux }}%</div>
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ taux }}%;" aria-valuenow="{{ taux|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100" aria-label="Taux d'occupation: {{ taux|floatformat:0 }}%">{{ taux }}%</div>
                                         {% endif %}
                                         {% endwith %}
                                     </div>
                                 </td>
                                 <td>
-                                    <a href="{% url 'detail_classe' classe.id %}" class="btn btn-sm btn-outline-primary">
+                                    <a href="{% url 'detail_classe' classe.id %}" class="btn btn-sm btn-outline-primary" title="Voir les détails de la classe">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                 </td>
@@ -181,7 +181,7 @@
                                 <td>{{ eleve.telephone|default:"-" }}</td>
                                 <td>{{ eleve.email|default:"-" }}</td>
                                 <td>
-                                    <a href="{% url 'detail_eleve' eleve.id %}" class="btn btn-sm btn-outline-primary">
+                                    <a href="{% url 'detail_eleve' eleve.id %}" class="btn btn-sm btn-outline-primary" title="Voir les détails de l'élève">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                 </td>
@@ -220,7 +220,7 @@
                                 <td>{{ prof.classes.count }}</td>
                                 <td>{{ prof.date_creation|date:"d/m/Y" }}</td>
                                 <td>
-                                    <a href="{% url 'detail_professeur' prof.id %}" class="btn btn-sm btn-outline-primary">
+                                    <a href="{% url 'detail_professeur' prof.id %}" class="btn btn-sm btn-outline-primary" title="Voir les détails du professeur">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                 </td>
