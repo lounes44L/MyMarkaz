@@ -172,7 +172,7 @@ def carnet_pedagogique(request, eleve_id=None):
         'total_pages_memo': total_pages_memo,
         'competences_par_lecon': competences_par_lecon,
         'competences_status': competences_statiques_status,  # Utiliser le mapping statique
-        'competences_id_mapping': competences_id_mapping,  # Mapping pour JavaScript
+        'competences_id_mapping': json.dumps(competences_id_mapping),  # Mapping pour JavaScript (JSON)
         'dates_annotation': dates_annotation,
         'mois': mois,
         'annee': annee,

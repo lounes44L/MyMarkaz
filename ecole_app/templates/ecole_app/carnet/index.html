@@ -646,6 +646,9 @@
 
 {% block extra_js %}
 <script>
+    // Initialisation du mapping des compétences
+    window.competencesIdMapping = JSON.parse('{{ competences_id_mapping|escapejs }}');
+    
     // Initialisation de l'application
     document.addEventListener('DOMContentLoaded', function() {
         // Activer les onglets Bootstrap
@@ -1190,9 +1193,8 @@
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         return new Date(dateString).toLocaleDateString('fr-FR', options);
     }
-    }
     
-        // Gérer les boutons d'incrément/décrément des répétitions
+    // Gérer les boutons d'incrément/décrément des répétitions
         document.querySelectorAll('.increment-btn').forEach(function(button) {
             button.addEventListener('click', function() {
                 const repetitionId = this.getAttribute('data-repetition-id');
