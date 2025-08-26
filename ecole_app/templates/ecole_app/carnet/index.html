@@ -387,16 +387,46 @@
                                         </thead>
                                         <tbody>
                                             <tr>
+                                                <td>Capacité à reconnaître et lire les lettres fortes ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_1" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_1" data-tableau="2" title="Acquis - Reconnaître et lire les lettres fortes" aria-label="Acquis - Reconnaître et lire les lettres fortes" {% if competences_status.3_1 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_1" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_1" data-tableau="2" title="Non Acquis - Reconnaître et lire les lettres fortes" aria-label="Non Acquis - Reconnaître et lire les lettres fortes" {% if competences_status.3_1 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_1" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_1" data-tableau="2" title="En cours - Reconnaître et lire les lettres fortes" aria-label="En cours - Reconnaître et lire les lettres fortes" {% if competences_status.3_1 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à identifier la position des lettres dans un mot ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_2" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_2" data-tableau="2" title="Acquis - Identifier la position des lettres dans un mot" aria-label="Acquis - Identifier la position des lettres dans un mot" {% if competences_status.3_2 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_2" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_2" data-tableau="2" title="Non Acquis - Identifier la position des lettres dans un mot" aria-label="Non Acquis - Identifier la position des lettres dans un mot" {% if competences_status.3_2 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_2" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_2" data-tableau="2" title="En cours - Identifier la position des lettres dans un mot" aria-label="En cours - Identifier la position des lettres dans un mot" {% if competences_status.3_2 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à identifier et lire les lettres qui nécessitent de tirer le bout de la langue ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_3" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_3" data-tableau="2" title="Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" aria-label="Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" {% if competences_status.3_3 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_3" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_3" data-tableau="2" title="Non Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" aria-label="Non Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" {% if competences_status.3_3 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_3" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_3" data-tableau="2" title="En cours - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" aria-label="En cours - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" {% if competences_status.3_3 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à lire les lettres mises dans le désordre ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_4" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_4" data-tableau="2" title="Acquis - Lire les lettres mises dans le désordre" aria-label="Acquis - Lire les lettres mises dans le désordre" {% if competences_status.3_4 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_4" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_4" data-tableau="2" title="Non Acquis - Lire les lettres mises dans le désordre" aria-label="Non Acquis - Lire les lettres mises dans le désordre" {% if competences_status.3_4 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_4" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_4" data-tableau="2" title="En cours - Lire les lettres mises dans le désordre" aria-label="En cours - Lire les lettres mises dans le désordre" {% if competences_status.3_4 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Compétences générales en prononciation ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_5" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_5" data-tableau="2" title="Acquis - Compétences générales en prononciation" aria-label="Acquis - Compétences générales en prononciation" {% if competences_status.3_5 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_5" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_5" data-tableau="2" title="Non Acquis - Compétences générales en prononciation" aria-label="Non Acquis - Compétences générales en prononciation" {% if competences_status.3_5 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_5" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_5" data-tableau="2" title="En cours - Compétences générales en prononciation" aria-label="En cours - Compétences générales en prononciation" {% if competences_status.3_5 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
                                                 <td>Capacité à lire fluidement les mots des exercices 1 à 5 ;</td>
-                                                <td class="text-center"><input type="radio" name="bilan_3_1" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_1" data-tableau="2" title="Acquis - Lire fluidement les mots des exercices 1 à 5" aria-label="Acquis - Lire fluidement les mots des exercices 1 à 5" {% if competences_status.3_1 == 'acquis' %}checked{% endif %}></td>
-                                                <td class="text-center"><input type="radio" name="bilan_3_1" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_1" data-tableau="2" title="Non Acquis - Lire fluidement les mots des exercices 1 à 5" aria-label="Non Acquis - Lire fluidement les mots des exercices 1 à 5" {% if competences_status.3_1 == 'non_acquis' %}checked{% endif %}></td>
-                                                <td class="text-center"><input type="radio" name="bilan_3_1" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_1" data-tableau="2" title="En cours - Lire fluidement les mots des exercices 1 à 5" aria-label="En cours - Lire fluidement les mots des exercices 1 à 5" {% if competences_status.3_1 == 'en_cours' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_6" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_6" data-tableau="2" title="Acquis - Lire fluidement les mots des exercices 1 à 5" aria-label="Acquis - Lire fluidement les mots des exercices 1 à 5" {% if competences_status.3_6 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_6" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_6" data-tableau="2" title="Non Acquis - Lire fluidement les mots des exercices 1 à 5" aria-label="Non Acquis - Lire fluidement les mots des exercices 1 à 5" {% if competences_status.3_6 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_6" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_6" data-tableau="2" title="En cours - Lire fluidement les mots des exercices 1 à 5" aria-label="En cours - Lire fluidement les mots des exercices 1 à 5" {% if competences_status.3_6 == 'en_cours' %}checked{% endif %}></td>
                                             </tr>
                                             <tr>
                                                 <td>Capacité à bien prononcer les 3 voyelles courtes.</td>
-                                                <td class="text-center"><input type="radio" name="bilan_3_2" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_2" data-tableau="2" title="Acquis - Bien prononcer les 3 voyelles courtes" aria-label="Acquis - Bien prononcer les 3 voyelles courtes" {% if competences_status.3_2 == 'acquis' %}checked{% endif %}></td>
-                                                <td class="text-center"><input type="radio" name="bilan_3_2" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_2" data-tableau="2" title="Non Acquis - Bien prononcer les 3 voyelles courtes" aria-label="Non Acquis - Bien prononcer les 3 voyelles courtes" {% if competences_status.3_2 == 'non_acquis' %}checked{% endif %}></td>
-                                                <td class="text-center"><input type="radio" name="bilan_3_2" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_2" data-tableau="2" title="En cours - Bien prononcer les 3 voyelles courtes" aria-label="En cours - Bien prononcer les 3 voyelles courtes" {% if competences_status.3_2 == 'en_cours' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_7" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_7" data-tableau="2" title="Acquis - Bien prononcer les 3 voyelles courtes" aria-label="Acquis - Bien prononcer les 3 voyelles courtes" {% if competences_status.3_7 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_7" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_7" data-tableau="2" title="Non Acquis - Bien prononcer les 3 voyelles courtes" aria-label="Non Acquis - Bien prononcer les 3 voyelles courtes" {% if competences_status.3_7 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_7" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_7" data-tableau="2" title="En cours - Bien prononcer les 3 voyelles courtes" aria-label="En cours - Bien prononcer les 3 voyelles courtes" {% if competences_status.3_7 == 'en_cours' %}checked{% endif %}></td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -428,10 +458,10 @@
                                         </thead>
                                         <tbody>
                                             <tr>
-                                                <td>Capacité à lire fluidement les mots des exercices 6 et 7 ;</td>
-                                                <td class="text-center"><input type="radio" name="bilan_7_1" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_1" data-tableau="3" title="Acquis - Lire fluidement les mots des exercices 6 et 7" aria-label="Acquis - Lire fluidement les mots des exercices 6 et 7" {% if competences_status.7_1 == 'acquis' %}checked{% endif %}></td>
-                                                <td class="text-center"><input type="radio" name="bilan_7_1" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_1" data-tableau="3" title="Non Acquis - Lire fluidement les mots des exercices 6 et 7" aria-label="Non Acquis - Lire fluidement les mots des exercices 6 et 7" {% if competences_status.7_1 == 'non_acquis' %}checked{% endif %}></td>
-                                                <td class="text-center"><input type="radio" name="bilan_7_1" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_1" data-tableau="3" title="En cours - Lire fluidement les mots des exercices 6 et 7" aria-label="En cours - Lire fluidement les mots des exercices 6 et 7" {% if competences_status.7_1 == 'en_cours' %}checked{% endif %}></td>
+                                                <td>Capacité à reconnaître et lire les lettres qui sortent avec l'air ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_1" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_1" data-tableau="3" title="Acquis - Reconnaître et lire les lettres qui sortent avec l'air" aria-label="Acquis - Reconnaître et lire les lettres qui sortent avec l'air" {% if competences_status.7_1 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_1" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_1" data-tableau="3" title="Non Acquis - Reconnaître et lire les lettres qui sortent avec l'air" aria-label="Non Acquis - Reconnaître et lire les lettres qui sortent avec l'air" {% if competences_status.7_1 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_1" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_1" data-tableau="3" title="En cours - Reconnaître et lire les lettres qui sortent avec l'air" aria-label="En cours - Reconnaître et lire les lettres qui sortent avec l'air" {% if competences_status.7_1 == 'en_cours' %}checked{% endif %}></td>
                                             </tr>
                                             <tr>
                                                 <td>Capacité à reconnaître et lire les lettres qui sont appelées القَلْقَلَة ;</td>
@@ -444,6 +474,30 @@
                                                 <td class="text-center"><input type="radio" name="bilan_7_3" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_3" data-tableau="3" title="Acquis - Reconnaître et lire les lettres qui sont appelées اللِّينِيَّة" aria-label="Acquis - Reconnaître et lire les lettres qui sont appelées اللِّينِيَّة" {% if competences_status.7_3 == 'acquis' %}checked{% endif %}></td>
                                                 <td class="text-center"><input type="radio" name="bilan_7_3" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_3" data-tableau="3" title="Non Acquis - Reconnaître et lire les lettres qui sont appelées اللِّينِيَّة" aria-label="Non Acquis - Reconnaître et lire les lettres qui sont appelées اللِّينِيَّة" {% if competences_status.7_3 == 'non_acquis' %}checked{% endif %}></td>
                                                 <td class="text-center"><input type="radio" name="bilan_7_3" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_3" data-tableau="3" title="En cours - Reconnaître et lire les lettres qui sont appelées اللِّينِيَّة" aria-label="En cours - Reconnaître et lire les lettres qui sont appelées اللِّينِيَّة" {% if competences_status.7_3 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à reconnaître et lire les lettres fortes ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_4" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_4" data-tableau="3" title="Acquis - Reconnaître et lire les lettres fortes" aria-label="Acquis - Reconnaître et lire les lettres fortes" {% if competences_status.7_4 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_4" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_4" data-tableau="3" title="Non Acquis - Reconnaître et lire les lettres fortes" aria-label="Non Acquis - Reconnaître et lire les lettres fortes" {% if competences_status.7_4 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_4" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_4" data-tableau="3" title="En cours - Reconnaître et lire les lettres fortes" aria-label="En cours - Reconnaître et lire les lettres fortes" {% if competences_status.7_4 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Compétences générales en prononciation ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_5" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_5" data-tableau="3" title="Acquis - Compétences générales en prononciation" aria-label="Acquis - Compétences générales en prononciation" {% if competences_status.7_5 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_5" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_5" data-tableau="3" title="Non Acquis - Compétences générales en prononciation" aria-label="Non Acquis - Compétences générales en prononciation" {% if competences_status.7_5 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_5" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_5" data-tableau="3" title="En cours - Compétences générales en prononciation" aria-label="En cours - Compétences générales en prononciation" {% if competences_status.7_5 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à lire fluidement les mots des exercices 6 et 7 ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_6" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_6" data-tableau="3" title="Acquis - Lire fluidement les mots des exercices 6 et 7" aria-label="Acquis - Lire fluidement les mots des exercices 6 et 7" {% if competences_status.7_6 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_6" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_6" data-tableau="3" title="Non Acquis - Lire fluidement les mots des exercices 6 et 7" aria-label="Non Acquis - Lire fluidement les mots des exercices 6 et 7" {% if competences_status.7_6 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_6" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_6" data-tableau="3" title="En cours - Lire fluidement les mots des exercices 6 et 7" aria-label="En cours - Lire fluidement les mots des exercices 6 et 7" {% if competences_status.7_6 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à identifier et lire les lettres qui nécessitent de tirer le bout de la langue.</td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_7" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_7" data-tableau="3" title="Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" aria-label="Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" {% if competences_status.7_7 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_7" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_7" data-tableau="3" title="Non Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" aria-label="Non Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" {% if competences_status.7_7 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_7" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_7" data-tableau="3" title="En cours - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" aria-label="En cours - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" {% if competences_status.7_7 == 'en_cours' %}checked{% endif %}></td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -646,9 +700,6 @@
 
 {% block extra_js %}
 <script>
-    // Initialisation du mapping des compétences
-    window.competencesIdMapping = JSON.parse('{{ competences_id_mapping|escapejs }}');
-    
     // Initialisation de l'application
     document.addEventListener('DOMContentLoaded', function() {
         // Activer les onglets Bootstrap
@@ -1147,15 +1198,86 @@
             });
         }
 
-        // Sauvegarde auto sur radio
-        document.querySelectorAll('.competence-check').forEach(function(radio) {
-            radio.addEventListener('change', function() {
-                const staticCompetenceId = this.getAttribute('data-competence');
-                const eleveId = this.getAttribute('data-eleve');
-                const statut = this.value;
-                const tableauId = this.getAttribute('data-tableau');
-                saveCompetenceAjax(eleveId, staticCompetenceId, statut, tableauId);
+        // Fonction pour supprimer une évaluation de compétence
+        function deleteCompetenceAjax(eleveId, staticCompetenceId, tableauId) {
+            const competenceId = window.competencesIdMapping[staticCompetenceId] || staticCompetenceId;
+            const row = document.querySelector(`.competence-check[data-competence="${staticCompetenceId}"][data-tableau="${tableauId}"]`)?.closest('tr');
+            if (row) row.style.backgroundColor = '#fff3cd';
+            
+            fetch(`/eleves/evaluation-competence/${competenceId}/delete/`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && row) {
+                    row.style.backgroundColor = '#d4edda';
+                    setTimeout(() => { row.style.backgroundColor = ''; }, 1500);
+                } else if (row) {
+                    row.style.backgroundColor = '#f8d7da';
+                    setTimeout(() => { row.style.backgroundColor = ''; }, 3000);
+                }
+            })
+            .catch(() => {
+                if (row) {
+                    row.style.backgroundColor = '#f8d7da';
+                    setTimeout(() => { row.style.backgroundColor = ''; }, 3000);
+                }
             });
+        }
+
+        // Sauvegarde auto sur radio avec possibilité de décocher
+        document.querySelectorAll('.competence-check').forEach(function(radio) {
+            radio.addEventListener('click', function(e) {
+                const wasChecked = this.dataset.wasChecked === 'true';
+                
+                // Si le radio était déjà coché, le décocher
+                if (wasChecked) {
+                    e.preventDefault();
+                    this.checked = false;
+                    this.dataset.wasChecked = 'false';
+                    // Décocher tous les radios du même groupe
+                    const groupName = this.getAttribute('name');
+                    document.querySelectorAll(`input[name="${groupName}"]`).forEach(function(r) {
+                        r.checked = false;
+                        r.dataset.wasChecked = 'false';
+                    });
+                    // Supprimer l'évaluation
+                    const staticCompetenceId = this.getAttribute('data-competence');
+                    const eleveId = this.getAttribute('data-eleve');
+                    const tableauId = this.getAttribute('data-tableau');
+                    deleteCompetenceAjax(eleveId, staticCompetenceId, tableauId);
+                } else {
+                    // Laisser le comportement normal se produire, puis marquer comme coché
+                    setTimeout(() => {
+                        // Décocher tous les autres radios du même groupe
+                        const groupName = this.getAttribute('name');
+                        document.querySelectorAll(`input[name="${groupName}"]`).forEach(function(r) {
+                            if (r !== this) {
+                                r.dataset.wasChecked = 'false';
+                            }
+                        }.bind(this));
+                        // Marquer celui-ci comme coché
+                        this.dataset.wasChecked = 'true';
+                        // Sauvegarder normalement
+                        const staticCompetenceId = this.getAttribute('data-competence');
+                        const eleveId = this.getAttribute('data-eleve');
+                        const statut = this.value;
+                        const tableauId = this.getAttribute('data-tableau');
+                        saveCompetenceAjax(eleveId, staticCompetenceId, statut, tableauId);
+                    }, 0);
+                }
+            });
+            
+            // Initialiser l'état wasChecked
+            if (radio.checked) {
+                radio.dataset.wasChecked = 'true';
+            } else {
+                radio.dataset.wasChecked = 'false';
+            }
         });
         // Sauvegarde auto sur changement de date d'annotation
         document.querySelectorAll('.date-annotation').forEach(function(dateInput) {
@@ -1193,8 +1315,7 @@
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         return new Date(dateString).toLocaleDateString('fr-FR', options);
     }
-    
-    // Gérer les boutons d'incrément/décrément des répétitions
+        // Gérer les boutons d'incrément/décrément des répétitions
         document.querySelectorAll('.increment-btn').forEach(function(button) {
             button.addEventListener('click', function() {
                 const repetitionId = this.getAttribute('data-repetition-id');
@@ -1243,6 +1364,7 @@
             alert('Une erreur est survenue lors de la mise à jour.');
         });
     }
+    });
 </script>
 
 <!-- Styles moved to carnet.css -->

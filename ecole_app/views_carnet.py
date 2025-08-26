@@ -117,6 +117,27 @@ def carnet_pedagogique(request, eleve_id=None):
             'evaluation': evaluation
         })
     
+    # Ajouter des mappings spéciaux pour les tableaux qui regroupent plusieurs leçons
+    # Tableau 1: Leçons 1-2 -> utiliser leçon 1 ou 2 selon disponibilité
+    if 1 not in dates_annotation and 2 in dates_annotation:
+        dates_annotation[1] = dates_annotation[2]
+    elif 2 not in dates_annotation and 1 in dates_annotation:
+        dates_annotation[2] = dates_annotation[1]
+    
+    # Tableau 2: Leçons 3-6 -> utiliser la première date disponible
+    for lecon in [3, 4, 5, 6]:
+        if lecon in dates_annotation:
+            dates_annotation[3] = dates_annotation[lecon]  # Le template utilise dates_annotation.3
+            break
+    
+    # Tableau 6: Règles de base -> chercher dans les compétences "regles"
+    for competence in competences:
+        if competence.description.startswith('Capacité à appliquer la nasalisation'):
+            evaluation = evaluations_dict.get(competence.id)
+            if evaluation:
+                dates_annotation['regles'] = evaluation.date_evaluation
+                break
+    
     # Créer un mapping des compétences statiques vers les vraies compétences
     competences_mapping = {
         # Leçon 1 et 2
@@ -126,12 +147,21 @@ def carnet_pedagogique(request, eleve_id=None):
         '1_4': 'Capacité à lire les lettres mises dans le désordre ;',
         '1_5': 'Compétences générales en prononciation.',
         # Leçon 3 à 6
-        '3_1': 'Capacité à lire fluidement les mots des exercices 1 à 5 ;',
-        '3_2': 'Capacité à bien prononcer les 3 voyelles courtes.',
+        '3_1': 'Capacité à reconnaître et lire les lettres fortes ;',
+        '3_2': 'Capacité à identifier la position des lettres dans un mot ;',
+        '3_3': 'Capacité à identifier et lire les lettres qui nécessitent de tirer le bout de la langue ;',
+        '3_4': 'Capacité à lire les lettres mises dans le désordre ;',
+        '3_5': 'Compétences générales en prononciation ;',
+        '3_6': 'Capacité à lire fluidement les mots des exercices 1 à 5 ;',
+        '3_7': 'Capacité à bien prononcer les 3 voyelles courtes.',
         # Leçon 7
-        '7_1': 'Capacité à lire fluidement les mots des exercices 6 et 7 ;',
+        '7_1': 'Capacité à reconnaître et lire les lettres qui sortent avec l\'air ;',
         '7_2': 'Capacité à reconnaître et lire les lettres qui sont appelées القَلْقَلَة ;',
         '7_3': 'Capacité à reconnaître et lire les lettres qui sont appelées اللِّينِيَّة ;',
+        '7_4': 'Capacité à reconnaître et lire les lettres fortes ;',
+        '7_5': 'Compétences générales en prononciation ;',
+        '7_6': 'Capacité à lire fluidement les mots des exercices 6 et 7 ;',
+        '7_7': 'Capacité à identifier et lire les lettres qui nécessitent de tirer le bout de la langue.',
         # Leçon 8
         '8_1': 'Capacité à reconnaître les lettres de prolongement ;',
         '8_2': 'Capacité à distinguer les voyelles courtes des voyelles longues ;',
@@ -172,7 +202,7 @@ def carnet_pedagogique(request, eleve_id=None):
         'total_pages_memo': total_pages_memo,
         'competences_par_lecon': competences_par_lecon,
         'competences_status': competences_statiques_status,  # Utiliser le mapping statique
-        'competences_id_mapping': json.dumps(competences_id_mapping),  # Mapping pour JavaScript (JSON)
+        'competences_id_mapping': competences_id_mapping,  # Mapping pour JavaScript
         'dates_annotation': dates_annotation,
         'mois': mois,
         'annee': annee,
