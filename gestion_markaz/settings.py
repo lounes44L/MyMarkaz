@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,10 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-3k4ad-xui)q4+z$q33rbg(b3qp%kom&sbhay6)i(3!g=+3z(ce'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-3k4ad-xui)q4+z$q33rbg(b3qp%kom&sbhay6)i(3!g=+3z(ce')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = ['*']
 
@@ -78,12 +82,26 @@ WSGI_APPLICATION = 'gestion_markaz.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Configuration base de données avec support Cloudflare D1
+USE_CLOUDFLARE_D1 = os.getenv('USE_CLOUDFLARE_D1', 'False').lower() == 'true'
+
+if USE_CLOUDFLARE_D1:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'cloudflare_d1',
+            'ACCOUNT_ID': os.getenv('CLOUDFLARE_ACCOUNT_ID'),
+            'DATABASE_ID': os.getenv('CLOUDFLARE_DATABASE_ID'),
+            'API_TOKEN': os.getenv('CLOUDFLARE_API_TOKEN'),
+        }
     }
-}
+else:
+    # Configuration SQLite pour développement local
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation

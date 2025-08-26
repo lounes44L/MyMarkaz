@@ -96,6 +96,7 @@ def carnet_pedagogique(request, eleve_id=None):
     # Organiser les compétences par leçon avec leurs évaluations
     competences_par_lecon = {}
     competences_status = {}
+    dates_annotation = {}
     
     for competence in competences:
         if competence.lecon not in competences_par_lecon:
@@ -104,14 +105,62 @@ def carnet_pedagogique(request, eleve_id=None):
         # Récupérer l'évaluation pour cette compétence
         evaluation = evaluations_dict.get(competence.id)
         
-        # Ajouter le statut de la compétence au dictionnaire
+        # Ajouter le statut de la compétence au dictionnaire avec l'ID réel
         if evaluation:
             competences_status[str(competence.id)] = evaluation.statut
+            # Sauvegarder la date d'évaluation par leçon
+            if competence.lecon not in dates_annotation:
+                dates_annotation[competence.lecon] = evaluation.date_evaluation
         
         competences_par_lecon[competence.lecon].append({
             'competence': competence,
             'evaluation': evaluation
         })
+    
+    # Créer un mapping des compétences statiques vers les vraies compétences
+    competences_mapping = {
+        # Leçon 1 et 2
+        '1_1': 'Capacité à reconnaître et lire les lettres fortes ;',
+        '1_2': 'Capacité à identifier la position des lettres dans un mot ;',
+        '1_3': 'Capacité à identifier et lire les lettres qui nécessitent de tirer le bout de la langue ;',
+        '1_4': 'Capacité à lire les lettres mises dans le désordre ;',
+        '1_5': 'Compétences générales en prononciation.',
+        # Leçon 3 à 6
+        '3_1': 'Capacité à lire fluidement les mots des exercices 1 à 5 ;',
+        '3_2': 'Capacité à bien prononcer les 3 voyelles courtes.',
+        # Leçon 7
+        '7_1': 'Capacité à lire fluidement les mots des exercices 6 et 7 ;',
+        '7_2': 'Capacité à reconnaître et lire les lettres qui sont appelées القَلْقَلَة ;',
+        '7_3': 'Capacité à reconnaître et lire les lettres qui sont appelées اللِّينِيَّة ;',
+        # Leçon 8
+        '8_1': 'Capacité à reconnaître les lettres de prolongement ;',
+        '8_2': 'Capacité à distinguer les voyelles courtes des voyelles longues ;',
+        '8_3': 'Capacité à distinguer les lettres de line des lettres de prolongement ;',
+        '8_4': 'Compétences générales en prononciation ;',
+        '8_5': 'Capacité à lire fluidement le texte, les exemples et l\'exercice 8.',
+        # Leçon 9
+        '9_1': 'Capacité à identifier les différents types de doubles voyelles ;',
+        '9_2': 'Capacité à maîtriser l\'arrêt sur les doubles voyelles ;',
+        '9_3': 'Compétences générales en prononciation ;',
+        '9_4': 'Capacité à lire fluidement le texte, les exemples et l\'exercice 9.',
+        '9_5': 'Capacité à distinguer la particularité des doubles voyelles fathatayn par rapport aux autres doubles voyelles.',
+        # Règles de base
+        'regles_1': 'Capacité à appliquer la nasalisation (الْغُنَّة) sur le noun ;',
+        'regles_2': 'Maîtrise des différentes déclinaisons de ن ;',
+        'regles_3': 'Capacité à distinguer les différents types de prolongement plus de 2 temps ;',
+        'regles_4': 'Maîtrise les types de الْقَلْقَلَة.'
+    }
+    
+    # Créer un mapping inverse pour retrouver les IDs réels
+    competences_statiques_status = {}
+    competences_id_mapping = {}  # Mapping static_id -> real_id
+    for static_id, description in competences_mapping.items():
+        for competence in competences:
+            if competence.description.strip() == description.strip():
+                competences_id_mapping[static_id] = competence.id
+                if str(competence.id) in competences_status:
+                    competences_statiques_status[static_id] = competences_status[str(competence.id)]
+                break
     
     context = {
         'eleve': eleve,
@@ -122,7 +171,9 @@ def carnet_pedagogique(request, eleve_id=None):
         'repetitions': repetitions,
         'total_pages_memo': total_pages_memo,
         'competences_par_lecon': competences_par_lecon,
-        'competences_status': competences_status,
+        'competences_status': competences_statiques_status,  # Utiliser le mapping statique
+        'competences_id_mapping': competences_id_mapping,  # Mapping pour JavaScript
+        'dates_annotation': dates_annotation,
         'mois': mois,
         'annee': annee,
         'mois_actuel': date_actuelle.month,  # Mois actuel pour le bouton "Mois courant"
