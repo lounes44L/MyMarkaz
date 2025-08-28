@@ -1,0 +1,63 @@
+/* Fichier CSS personnalisé pour l'interface d'administration */
+
+/* Ajustements généraux de largeur */
+#container, #content, .dashboard, .module, .inline-group {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+/* Ajustement des tableaux */
+#result_list {
+    width: 100% !important;
+    table-layout: auto;
+}
+
+/* Ajustement des champs de formulaire */
+.form-row {
+    overflow: visible;
+}
+
+/* Correction pour les champs de date/heure */
+.datetime {
+    white-space: nowrap;
+}
+
+/* Ajustement pour les filtres latéraux */
+#changelist-filter {
+    width: 200px;
+}
+
+/* Ajustement pour le contenu principal */
+#content-main {
+    margin-right: 220px; /* Laisser de l'espace pour les filtres */
+}
+
+/* Ajustement pour les écrans plus petits */
+@media (max-width: 1024px) {
+    #content-main {
+        margin-right: 0;
+    }
+    #changelist-filter {
+        position: relative;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+}
+
+/* Ajustement pour les tableaux de données */
+.change-list .results {
+    overflow-x: auto;
+    width: 100%;
+}
+
+/* Ajustement pour les champs de formulaire larges */
+.vTextField, .vLargeTextField, .vURLField {
+    width: 100%;
+    max-width: 800px;
+}
+
+/* Ajustement pour les champs de texte riche */
+.mce-tinymce, .mce-edit-area iframe {
+    width: 100% !important;
+    max-width: 1000px !important;
+}

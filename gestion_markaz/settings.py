@@ -163,8 +163,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 import os
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_PORT = 465  # Port SSL
+EMAIL_USE_SSL = True  # Utilisation de SSL au lieu de TLS
+EMAIL_USE_TLS = False  # Désactivation de TLS
 EMAIL_HOST_USER = 'mymarkaz02@gmail.com'
 EMAIL_HOST_PASSWORD = 'tnzo vtmp kadr hori'  # Mot de passe de l'application Gmail
 DEFAULT_FROM_EMAIL = 'mymarkaz02@gmail.com'
