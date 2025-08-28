@@ -1,0 +1,8 @@
+name = "mymarkaz-django"
+compatibility_date = "2024-01-15"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mymarkaz-db"
+database_id = "ceb7a18d-a912-4db5-955e-94bdaad8f18c"
