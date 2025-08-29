@@ -344,7 +344,9 @@ def liste_eleves(request):
                     ws = wb.active
                     
                     # Colonnes attendues
-                    expected_columns = ['Nom', 'Prénom', 'Classe', 'Créneau', 'Date de naissance', 'Téléphone', 'Email', 'Adresse']
+                    required_columns = ['Nom', 'Prénom']
+                    optional_columns = ['Classe', 'Date de naissance', 'Téléphone', 'Email', 'Adresse']
+                    expected_columns = required_columns + optional_columns
 
                     import unicodedata
                     def normalize(s):
@@ -357,14 +359,20 @@ def liste_eleves(request):
                     norm_headers = [normalize(h) for h in headers]
                     norm_expected = [normalize(c) for c in expected_columns]
 
-                    # Vérifier les colonnes manquantes
-                    missing_columns = [expected_columns[i] for i, col in enumerate(norm_expected) if col not in norm_headers]
-                    if missing_columns:
-                        messages.error(request, f"Colonnes manquantes dans le fichier Excel : {', '.join(missing_columns)}.\nColonnes trouvées : {headers}")
+                    # Vérifier les colonnes obligatoires manquantes
+                    missing_required = [col for col in required_columns if normalize(col) not in norm_headers]
+                    if missing_required:
+                        messages.error(request, f"Colonnes obligatoires manquantes dans le fichier Excel : {', '.join(missing_required)}.\nColonnes trouvées : {headers}")
                         return redirect('liste_eleves')
 
-                    # Mapper les indices des colonnes
-                    column_indices = {col: norm_headers.index(normalize(col)) for col in expected_columns}
+                    # Mapper les indices des colonnes (uniquement pour les colonnes présentes dans le fichier)
+                    column_indices = {}
+                    for col in expected_columns:
+                        try:
+                            column_indices[col] = norm_headers.index(normalize(col))
+                        except ValueError:
+                            # La colonne n'est pas dans le fichier, on l'ignore
+                            pass
                     
                     # Compteurs pour le suivi
                     count_created = 0
@@ -373,9 +381,14 @@ def liste_eleves(request):
                     
                     # Parcourir les lignes (en commençant par la deuxième ligne)
                     for row_idx, row in enumerate(ws.iter_rows(min_row=2), start=2):
-                        # Récupérer les valeurs
-                        nom = row[column_indices['Nom']].value
-                        prenom = row[column_indices['Prénom']].value
+                        # Récupérer les valeurs (vérifier que les colonnes obligatoires sont présentes)
+                        try:
+                            nom = row[column_indices['Nom']].value
+                            prenom = row[column_indices['Prénom']].value
+                        except KeyError as e:
+                            errors.append(f"Ligne {row_idx}: Colonne manquante - {str(e)}")
+                            count_skipped += 1
+                            continue
                         
                         # Vérifier que nom et prénom sont présents
                         if not nom or not prenom:
@@ -383,13 +396,12 @@ def liste_eleves(request):
                             count_skipped += 1
                             continue
                         
-                        # Récupérer les autres valeurs
-                        classe_nom = row[column_indices['Classe']].value
-                        creneau_nom = row[column_indices['Créneau']].value
-                        date_naissance_val = row[column_indices['Date de naissance']].value
-                        telephone = row[column_indices['Téléphone']].value
-                        email = row[column_indices['Email']].value
-                        adresse = row[column_indices['Adresse']].value
+                        # Récupérer les autres valeurs (toutes optionnelles sauf Nom et Prénom)
+                        classe_nom = row[column_indices.get('Classe')].value if 'Classe' in column_indices else None
+                        date_naissance_val = row[column_indices.get('Date de naissance')].value if 'Date de naissance' in column_indices else None
+                        telephone = row[column_indices.get('Téléphone')].value if 'Téléphone' in column_indices else ''
+                        email = row[column_indices.get('Email')].value if 'Email' in column_indices else ''
+                        adresse = row[column_indices.get('Adresse')].value if 'Adresse' in column_indices else ''
                         
                         # Initialiser la date de naissance par défaut
                         date_naissance = None
@@ -414,18 +426,20 @@ def liste_eleves(request):
                                     count_skipped += 1
                                     continue
                         
-                        # Vérifier si l'élève existe déjà (nom, prénom ET date de naissance)
+                        # Vérifier si l'élève existe déjà dans la même composante (nom, prénom ET date de naissance)
                         if date_naissance is not None:
                             existe = Eleve.objects.filter(
                                 nom__iexact=str(nom).strip(),
                                 prenom__iexact=str(prenom).strip(),
-                                date_naissance=date_naissance
+                                date_naissance=date_naissance,
+                                composante_id=composante_id
                             )
                         else:
                             existe = Eleve.objects.filter(
                                 nom__iexact=str(nom).strip(),
                                 prenom__iexact=str(prenom).strip(),
-                                date_naissance__isnull=True
+                                date_naissance__isnull=True,
+                                composante_id=composante_id
                             )
                         if existe.exists():
                             print('[DEBUG] Doublon détecté:', list(existe.values('id', 'nom', 'prenom', 'date_naissance')))
@@ -441,12 +455,7 @@ def liste_eleves(request):
                             except Classe.DoesNotExist:
                                 pass  # La classe est facultative
                         
-                        creneau = None
-                        if creneau_nom:
-                            try:
-                                creneau = Creneau.objects.get(nom=creneau_nom)
-                            except Creneau.DoesNotExist:
-                                pass  # Le créneau est facultatif
+                        creneau = None  # Le créneau n'est plus utilisé
                         
                         # Créer un utilisateur pour cet élève
                         username = generate_username('eleve', f"{nom}{prenom}")
@@ -460,18 +469,17 @@ def liste_eleves(request):
                         user = User.objects.create_user(username=username, password=password)
                         
                         # Créer l'élève
-                        eleve = Eleve(
+                        Eleve.objects.create(
                             nom=nom,
                             prenom=prenom,
                             classe=classe,
-                            creneau=creneau,
                             date_naissance=date_naissance,
                             telephone=telephone,
                             email=email,
                             adresse=adresse,
-                            user=user
+                            user=user,
+                            composante_id=composante_id
                         )
-                        eleve.save()
                         count_created += 1
                     
                     # Afficher un résumé

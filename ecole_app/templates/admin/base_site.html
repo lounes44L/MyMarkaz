@@ -6,6 +6,73 @@
 <!-- Ajout du CSS personnalisé pour l'administration -->
 <link rel="stylesheet" type="text/css" href="{% static 'ecole_app/css/admin-custom.css' %}">
 <style>
+    /* Ensure the sidebar is properly positioned */
+    body {
+        padding-top: 60px; /* Height of the header */
+    }
+    
+    /* Adjust the main content area */
+    #content {
+        margin-left: 60px; /* Collapsed sidebar width */
+        transition: margin-left 0.3s ease;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    
+    /* Style the sidebar */
+    #sidebar {
+        position: fixed;
+        left: 0;
+        top: 60px; /* Height of the header */
+        width: 250px;
+        height: calc(100% - 60px);
+        background: #417690;
+        color: #ffc;
+        overflow-y: auto;
+        z-index: 1000;
+        transition: all 0.3s ease;
+        transform: translateX(-190px); /* Hide most of the sidebar */
+    }
+    
+    #sidebar:hover {
+        transform: translateX(0); /* Show full sidebar on hover */
+        box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+    }
+    
+    /* Adjust content when sidebar is hovered */
+    #sidebar:hover + #content {
+        margin-left: 250px;
+    }
+    
+    /* Style the sidebar links */
+    #sidebar a {
+        color: #fff;
+        padding: 10px 15px;
+        display: block;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    #sidebar a:hover {
+        background: rgba(255,255,255,0.1);
+    }
+    
+    /* Adjust for mobile */
+    @media (max-width: 1024px) {
+        #sidebar {
+            transform: translateX(-250px);
+        }
+        
+        #sidebar:hover {
+            transform: translateX(0);
+        }
+        
+        #content {
+            margin-left: 0 !important;
+        }
+    }
+</style>
+<style>
     /* Réinitialisation des styles de largeur fixe */
     body {
         width: 100% !important;
@@ -135,6 +202,30 @@
         }
     }
 </style>
+{% endblock %}
+
+{% block content %}
+<div id="sidebar">
+    {% if user.is_active and user.is_staff %}
+        {% load admin_menu %}
+        {% get_admin_menu as menu %}
+        {% for item in menu %}
+            <a href="{{ item.url }}"{% if item.selected %} class="selected"{% endif %}>
+                {{ item.title }}
+            </a>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<div id="content" class="{% block coltype %}colM{% endblock %}">
+    {% block pretitle %}{% endblock %}
+    {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
+    {% block content %}
+    {{ content }}
+    {% endblock %}
+    {% block sidebar %}{% endblock %}
+    <br class="clear">
+</div>
 {% endblock %}
 
 {% block extrahead %}

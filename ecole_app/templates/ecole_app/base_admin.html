@@ -39,8 +39,13 @@
             box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
             background-color: var(--primary-green);
             color: var(--text-light);
+            width: 60px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar:hover {
             width: 250px;
-            transition: all 0.3s;
         }
         
         .sidebar-sticky {
@@ -60,6 +65,12 @@
             align-items: center;
             gap: 0.75rem;
             transition: all 0.2s;
+            white-space: nowrap;
+        }
+        
+        .sidebar .nav-link i {
+            min-width: 20px;
+            text-align: center;
         }
         
         .sidebar .nav-link:hover {
@@ -76,10 +87,30 @@
             text-transform: uppercase;
             padding: 1rem 1.5rem;
             color: rgba(255, 255, 255, 0.6);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
         
-        .content {
+        .sidebar:hover .sidebar-heading {
+            opacity: 1;
+        }
+        
+        .main-content {
             padding: 20px;
+            margin-left: 60px !important; /* Forcer la marge */
+            transition: margin-left 0.3s ease;
+            min-height: calc(100vh - 60px);
+            width: calc(100vw - 60px) !important; /* Utiliser la largeur de la fenêtre */
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* Remove the spacer styles as they're no longer needed */
+        
+        .sidebar:hover ~ .container-fluid .main-content {
+            margin-left: 250px !important;
+            width: calc(100vw - 250px) !important;
         }
         
         .dashboard-header {
@@ -452,22 +483,21 @@
             display: none;
         }
         
+        .sidebar .dropdown-menu {
+            position: static !important;
+            transform: none !important;
+            border: none;
+            background-color: var(--light-green);
+            margin-left: 20px;
+            width: calc(100% - 20px);
+            display: none;
+        }
+        
         .sidebar .dropdown-menu.show {
             display: block;
         }
         
-        .sidebar .nav-item.dropdown {
-            position: relative;
-        }
-        
         .sidebar .dropdown-toggle::after {
-            display: inline-block;
-            margin-left: 0.5rem;
-            vertical-align: middle;
-            content: "";
-            border-top: 0.3em solid;
-            border-right: 0.3em solid transparent;
-            border-bottom: 0;
             border-left: 0.3em solid transparent;
             position: absolute;
             right: 1rem;
@@ -635,8 +665,8 @@
         </div>
     </nav>
 
-    <div class="container-fluid">
-        <div class="row">
+    <div class="container-fluid p-0">
+        <div class="row g-0 m-0">
             <!-- Main Content -->
             <main class="col-12 px-md-4 main-content">
                 <div class="dashboard-header">
