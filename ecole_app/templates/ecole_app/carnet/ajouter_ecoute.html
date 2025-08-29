@@ -27,8 +27,12 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="{{ form.sourate.id_for_label }}" class="form-label">Sourate</label>
-                            {{ form.sourate }}
+                            <label for="sourate-select-ecoute" class="form-label">Sourate</label>
+                            <select name="{{ form.sourate.name }}" id="sourate-select-ecoute" class="form-select" title="Sélectionnez une sourate">
+                                {% for value, label in form.sourate.field.choices %}
+                                    <option value="{{ value }}" {% if form.sourate.value == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
                             <small class="form-text text-muted">Sélectionnez d'abord la sourate pour afficher les pages disponibles</small>
                             {% if form.sourate.errors %}
                             <div class="text-danger">{{ form.sourate.errors }}</div>
@@ -39,7 +43,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="{{ form.debut_page.id_for_label }}" class="form-label">Page de début</label>
-                                    <select name="debut_page" id="debut-page-select-ecoute" class="form-control" disabled aria-label="Page de début">
+                                    <select name="debut_page" id="debut-page-select-ecoute" class="form-select" disabled aria-label="Page de début" title="Page de début">
                                         <option value="">Sélectionnez d'abord une sourate</option>
                                     </select>
                                     {% if form.debut_page.errors %}
@@ -50,7 +54,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="{{ form.fin_page.id_for_label }}" class="form-label">Page de fin</label>
-                                    <select name="fin_page" id="fin-page-select-ecoute" class="form-control" disabled aria-label="Page de fin">
+                                    <select name="fin_page" id="fin-page-select-ecoute" class="form-select" disabled aria-label="Page de fin" title="Page de fin">
                                         <option value="">Sélectionnez d'abord une sourate</option>
                                     </select>
                                     {% if form.fin_page.errors %}
@@ -95,4 +99,26 @@
 
 {% block extra_js %}
 <script src="{% static 'js/sourate-pages.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Page loaded - debug info:');
+        console.log('sourate-select-ecoute:', document.getElementById('sourate-select-ecoute'));
+        console.log('debut-page-select-ecoute:', document.getElementById('debut-page-select-ecoute'));
+        console.log('fin-page-select-ecoute:', document.getElementById('fin-page-select-ecoute'));
+        
+        // Vérifier si la fonction setupSouratePageSelection existe
+        console.log('setupSouratePageSelection exists:', typeof setupSouratePageSelection === 'function');
+        
+        // Essayer d'appeler manuellement la fonction
+        if (typeof setupSouratePageSelection === 'function') {
+            console.log('Calling setupSouratePageSelection');
+            setupSouratePageSelection(
+                'sourate-select-ecoute',
+                'debut-page-select-ecoute',
+                'fin-page-select-ecoute',
+                false
+            );
+        }
+    });
+</script>
 {% endblock %}
