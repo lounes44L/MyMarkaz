@@ -17,6 +17,20 @@ class CreneauForm(ComposanteFormMixin, forms.ModelForm):
             'heure_debut': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
             'heure_fin': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
         }
+    
+    def clean_nom(self):
+        nom = self.cleaned_data['nom']
+        composante_id = self.request.session.get('composante_id') if hasattr(self, 'request') else None
+        
+        # Vérifier si un créneau avec ce nom existe déjà dans cette composante
+        if composante_id:
+            existing = Creneau.objects.filter(nom=nom, composante_id=composante_id)
+            if self.instance.pk:
+                existing = existing.exclude(pk=self.instance.pk)
+            if existing.exists():
+                raise forms.ValidationError(f"Un créneau avec le nom '{nom}' existe déjà dans cette composante.")
+        
+        return nom
 
 class ProfesseurForm(ComposanteFormMixin, forms.ModelForm):
     nom_complet = forms.CharField(
@@ -145,6 +159,20 @@ class ClasseForm(ComposanteFormMixin, forms.ModelForm):
             'capacite': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 100, 'value': 20}),
             'annee_scolaire': forms.Select(attrs={'class': 'form-control'}),
         }
+    
+    def clean_nom(self):
+        nom = self.cleaned_data['nom']
+        composante_id = self.request.session.get('composante_id') if hasattr(self, 'request') else None
+        
+        # Vérifier si une classe avec ce nom existe déjà dans cette composante
+        if composante_id:
+            existing = Classe.objects.filter(nom=nom, composante_id=composante_id)
+            if self.instance.pk:
+                existing = existing.exclude(pk=self.instance.pk)
+            if existing.exists():
+                raise forms.ValidationError(f"Une classe avec le nom '{nom}' existe déjà dans cette composante.")
+        
+        return nom
 
 class EleveForm(ComposanteFormMixin, forms.ModelForm):
     classes = forms.ModelMultipleChoiceField(
@@ -173,6 +201,9 @@ class EleveForm(ComposanteFormMixin, forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        # Récupérer la request pour accéder à la session
+        request = kwargs.pop('request', None)
+        
         # Définir le montant par défaut avant d'initialiser le formulaire
         if 'initial' not in kwargs:
             kwargs['initial'] = {}
@@ -184,23 +215,21 @@ class EleveForm(ComposanteFormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Rendre le champ montant_total optionnel
         self.fields['montant_total'].required = False
+        
+        # Filtrer les classes par composante
         composante_id = None
-        if 'request' in kwargs:
-            request = kwargs['request']
+        if request:
             composante_id = request.session.get('composante_id')
-        if not composante_id:
-            composante_id = self.initial.get('composante_id') or self.data.get('composante')
+        
         if composante_id:
-            # Filtrer les classes par composante
-            qs_classes = Classe.objects.filter(composante_id=composante_id).order_by('nom')
-            if qs_classes.exists():
-                self.fields['classes'].queryset = qs_classes
-            else:
-                self.fields['classes'].queryset = Classe.objects.all().order_by('nom')
-                self.fields['classes'].help_text = "Aucune classe pour la composante active. Toutes les classes sont proposées."
+            # Filtrer les classes par composante uniquement
+            self.fields['classes'].queryset = Classe.objects.filter(composante_id=composante_id).order_by('nom')
+            self.fields['annee_scolaire'].queryset = AnneeScolaire.objects.filter(composante_id=composante_id).order_by('-nom')
         else:
-            self.fields['classes'].queryset = Classe.objects.all().order_by('nom')
-            self.fields['classes'].help_text = "Sélectionnez une ou plusieurs classes."
+            # Si pas de composante, ne proposer aucune classe
+            self.fields['classes'].queryset = Classe.objects.none()
+            self.fields['annee_scolaire'].queryset = AnneeScolaire.objects.none()
+            self.fields['classes'].help_text = "Veuillez sélectionner une composante pour voir les classes disponibles."
 
 class ListeAttenteForm(forms.ModelForm):
     class Meta:
@@ -244,24 +273,24 @@ class EleveRapideForm(ComposanteFormMixin, forms.ModelForm):
             'telephone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Téléphone'}),
             'telephone_secondaire': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Téléphone secondaire'}),
         }
-        
+    
     def __init__(self, *args, **kwargs):
+        # Récupérer la request pour accéder à la session
+        request = kwargs.pop('request', None)
         super().__init__(*args, **kwargs)
+        
+        # Filtrer les classes par composante
         composante_id = None
-        if 'request' in kwargs:
-            request = kwargs['request']
+        if request:
             composante_id = request.session.get('composante_id')
-        if not composante_id:
-            composante_id = self.initial.get('composante_id') or self.data.get('composante')
+        
         if composante_id:
-            # Filtrer les classes par composante
-            qs_classes = Classe.objects.filter(composante_id=composante_id).order_by('nom')
-            if qs_classes.exists():
-                self.fields['classes'].queryset = qs_classes
-            else:
-                self.fields['classes'].queryset = Classe.objects.all().order_by('nom')
+            # Filtrer les classes par composante uniquement
+            self.fields['classes'].queryset = Classe.objects.filter(composante_id=composante_id).order_by('nom')
         else:
-            self.fields['classes'].queryset = Classe.objects.all().order_by('nom')
+            # Si pas de composante, ne proposer aucune classe
+            self.fields['classes'].queryset = Classe.objects.none()
+            self.fields['classes'].help_text = "Veuillez sélectionner une composante pour voir les classes disponibles."
 
 class PaiementForm(ComposanteFormMixin, forms.ModelForm):
     class Meta:

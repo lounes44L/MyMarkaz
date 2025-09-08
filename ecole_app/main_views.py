@@ -304,6 +304,9 @@ def archives_eleves(request):
 
 @login_required
 def liste_eleves(request):
+    # Import des modèles nécessaires
+    from .models import Classe, Creneau
+    
     # Vérifier si une composante est sélectionnée
     composante_id = request.session.get('composante_id')
     if not composante_id:
@@ -326,7 +329,7 @@ def liste_eleves(request):
     # Exécuter la requête finale
     eleves = Eleve.objects.filter(query).order_by('nom', 'prenom').distinct()
     form = EleveForm(request=request)  # Utiliser le formulaire complet par défaut
-    form_rapide = EleveRapideForm()  # Formulaire rapide comme alternative
+    form_rapide = EleveRapideForm(request=request)  # Formulaire rapide comme alternative
     
     if request.method == 'POST':
         # Traitement de l'import Excel
@@ -448,12 +451,37 @@ def liste_eleves(request):
                             continue
                         
                         # Trouver la classe et le créneau correspondants
-                        classe = None
+                        classe_obj = None
                         if classe_nom:
                             try:
-                                classe = Classe.objects.get(nom=classe_nom)
+                                # Recherche exacte d'abord
+                                classe_obj = Classe.objects.get(nom=classe_nom, composante_id=composante_id)
                             except Classe.DoesNotExist:
-                                pass  # La classe est facultative
+                                try:
+                                    # Recherche insensible à la casse
+                                    classe_obj = Classe.objects.get(nom__iexact=classe_nom, composante_id=composante_id)
+                                except Classe.DoesNotExist:
+                                    try:
+                                        # Recherche avec remplacement espace par underscore
+                                        classe_nom_underscore = classe_nom.replace(' ', '_')
+                                        classe_obj = Classe.objects.get(nom__iexact=classe_nom_underscore, composante_id=composante_id)
+                                    except Classe.DoesNotExist:
+                                        try:
+                                            # Recherche sans filtre composante (au cas où)
+                                            classe_obj = Classe.objects.get(nom__iexact=classe_nom)
+                                        except Classe.DoesNotExist:
+                                            try:
+                                                # Recherche avec underscore sans composante
+                                                classe_obj = Classe.objects.get(nom__iexact=classe_nom_underscore)
+                                            except Classe.DoesNotExist:
+                                                # Debug: afficher les classes disponibles (toutes les classes, pas seulement de la composante)
+                                                classes_disponibles = list(Classe.objects.all().values_list('nom', flat=True))
+                                                classes_composante = list(Classe.objects.filter(composante_id=composante_id).values_list('nom', flat=True))
+                                                errors.append(f"Ligne {row_idx}: Classe '{classe_nom}' non trouvée. Classes de cette composante: {classes_composante}. Toutes classes: {classes_disponibles}")
+                                                print(f"[DEBUG] Classe '{classe_nom}' non trouvée pour l'élève {nom} {prenom}")
+                                                print(f"[DEBUG] Composante ID: {composante_id}")
+                                                print(f"[DEBUG] Classes de cette composante: {classes_composante}")
+                                                print(f"[DEBUG] Toutes les classes: {classes_disponibles}")
                         
                         creneau = None  # Le créneau n'est plus utilisé
                         
@@ -469,17 +497,24 @@ def liste_eleves(request):
                         user = User.objects.create_user(username=username, password=password)
                         
                         # Créer l'élève
-                        Eleve.objects.create(
+                        eleve = Eleve.objects.create(
                             nom=nom,
                             prenom=prenom,
-                            classe=classe,
                             date_naissance=date_naissance,
                             telephone=telephone,
                             email=email,
                             adresse=adresse,
                             user=user,
-                            composante_id=composante_id
+                            composante_id=composante_id,
+                            mot_de_passe_en_clair=password
                         )
+                        
+                        # Assigner la classe si trouvée (relation ManyToMany)
+                        if classe_obj:
+                            eleve.classes.add(classe_obj)
+                            print(f"[DEBUG] Élève {nom} {prenom} assigné à la classe {classe_obj.nom}")
+                        else:
+                            print(f"[DEBUG] Aucune classe assignée pour {nom} {prenom}")
                         count_created += 1
                     
                     # Afficher un résumé
@@ -600,7 +635,6 @@ def liste_eleves(request):
                 messages.success(request, f"L'élève {prenom} {nom} a été ajouté rapidement avec succès ! Identifiants : {username} / {password}")
                 return redirect('liste_eleves')
     
-    from .models import Classe, Creneau
     context = {
         'eleves': eleves,
         'form': form,
@@ -927,8 +961,8 @@ def liste_creneaux(request):
             nom = form.cleaned_data.get('nom', '').strip()
             if not nom:
                 messages.error(request, "Le nom du créneau est obligatoire.")
-            elif Creneau.objects.filter(nom__iexact=nom).exists():
-                messages.error(request, f"Un créneau nommé '{nom}' existe déjà.")
+            elif Creneau.objects.filter(nom__iexact=nom, composante_id=composante_id).exists():
+                messages.error(request, f"Un créneau nommé '{nom}' existe déjà dans cette composante.")
             else:
                 form.save()
                 messages.success(request, 'Le créneau a été ajouté avec succès !')
