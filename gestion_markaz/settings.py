@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # Quick-start development settings - unsuitable for production
@@ -82,26 +82,12 @@ WSGI_APPLICATION = 'gestion_markaz.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# Configuration base de données avec support Cloudflare D1
-USE_CLOUDFLARE_D1 = os.getenv('USE_CLOUDFLARE_D1', 'False').lower() == 'true'
-
-if USE_CLOUDFLARE_D1:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'cloudflare_d1',
-            'ACCOUNT_ID': os.getenv('CLOUDFLARE_ACCOUNT_ID'),
-            'DATABASE_ID': os.getenv('CLOUDFLARE_DATABASE_ID'),
-            'API_TOKEN': os.getenv('CLOUDFLARE_API_TOKEN'),
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
-else:
-    # Configuration SQLite pour développement local
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
 
 # Password validation
