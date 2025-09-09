@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: mymarkaz
+    env: python
+    buildCommand: pip install -r requirements.txt && python Gestion_Markaz_Django/manage.py collectstatic --noinput
+    startCommand: gunicorn Gestion_Markaz_Django.wsgi:application
