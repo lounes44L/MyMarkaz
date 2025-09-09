@@ -19,6 +19,8 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Import dj-database-url
+import dj_database_url
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -83,25 +85,23 @@ WSGI_APPLICATION = 'gestion_markaz.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 # Configuration base de données avec support Cloudflare D1
-USE_CLOUDFLARE_D1 = os.getenv('USE_CLOUDFLARE_D1', 'False').lower() == 'true'
+# Configuration de la base de données
+DATABASES = {
+    'default': dj_database_url.config(
+        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+}
 
-if USE_CLOUDFLARE_D1:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'cloudflare_d1',
-            'ACCOUNT_ID': os.getenv('CLOUDFLARE_ACCOUNT_ID'),
-            'DATABASE_ID': os.getenv('CLOUDFLARE_DATABASE_ID'),
-            'API_TOKEN': os.getenv('CLOUDFLARE_API_TOKEN'),
-        }
-    }
-else:
-    # Configuration SQLite pour développement local
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+# Configuration spécifique pour Cloudflare D1 si nécessaire
+if os.getenv('USE_CLOUDFLARE_D1', 'False').lower() == 'true':
+    DATABASES['default'].update({
+        'ENGINE': 'cloudflare_d1',
+        'ACCOUNT_ID': os.getenv('CLOUDFLARE_ACCOUNT_ID'),
+        'DATABASE_ID': os.getenv('CLOUDFLARE_DATABASE_ID'),
+        'API_TOKEN': os.getenv('CLOUDFLARE_API_TOKEN'),
+    })
 
 
 # Password validation
