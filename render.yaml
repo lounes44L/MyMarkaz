@@ -2,5 +2,14 @@ services:
   - type: web
     name: mymarkaz
     env: python
-    buildCommand: pip install -r requirements.txt && python Gestion_Markaz_Django/manage.py collectstatic --noinput
+    buildCommand: |
+      chmod +x setup.sh
+      ./setup.sh
     startCommand: gunicorn Gestion_Markaz_Django.wsgi:application
+    envVars:
+      - key: PYTHONPATH
+        value: /opt/render/project/src
+      - key: PYTHONUNBUFFERED
+        value: true
+      - key: DJANGO_SETTINGS_MODULE
+        value: Gestion_Markaz_Django.settings
