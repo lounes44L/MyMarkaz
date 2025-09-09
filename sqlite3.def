@@ -1,4 +1,0 @@
-EXPORTS 
-sqlite3_data_directory
-sqlite3_temp_directory
-sqlite3_version
