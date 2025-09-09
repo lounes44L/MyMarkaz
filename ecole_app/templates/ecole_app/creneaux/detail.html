@@ -1,0 +1,271 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Détail du créneau - {{ creneau.nom }} - Gestion Markaz{% endblock %}
+
+{% block page_title %}Détail du créneau : {{ creneau.nom }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Informations du créneau -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Informations du créneau</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="{{ form.nom.id_for_label }}" class="form-label">Nom</label>
+                            {{ form.nom }}
+                            {% if form.nom.errors %}
+                            <div class="invalid-feedback d-block">{{ form.nom.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.jour.id_for_label }}" class="form-label">Jour</label>
+                            {{ form.jour }}
+                            {% if form.jour.errors %}
+                            <div class="invalid-feedback d-block">{{ form.jour.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.heure.id_for_label }}" class="form-label">Heure</label>
+                            {{ form.heure }}
+                            {% if form.heure.errors %}
+                            <div class="invalid-feedback d-block">{{ form.heure.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'liste_creneaux' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Retour
+                        </a>
+                        <div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Enregistrer
+                            </button>
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="fas fa-trash me-1"></i> Supprimer
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques du créneau -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Statistiques</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Classes
+                        <span class="badge bg-primary rounded-pill">{{ classes|length }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Élèves
+                        <span class="badge bg-primary rounded-pill">{{ eleves|length }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Professeurs
+                        <span class="badge bg-primary rounded-pill">{{ professeurs|length }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Date de création
+                        <span>{{ creneau.date_creation|date:"d/m/Y" }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Onglets pour les classes, élèves et professeurs -->
+<div class="card">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" id="creneauTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="classes-tab" data-bs-toggle="tab" data-bs-target="#classes" type="button" role="tab" aria-controls="classes" aria-selected="true">Classes ({{ classes|length }})</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="eleves-tab" data-bs-toggle="tab" data-bs-target="#eleves" type="button" role="tab" aria-controls="eleves" aria-selected="false">Élèves ({{ eleves|length }})</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="professeurs-tab" data-bs-toggle="tab" data-bs-target="#professeurs" type="button" role="tab" aria-controls="professeurs" aria-selected="false">Professeurs ({{ professeurs|length }})</button>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="creneauTabsContent">
+            <!-- Onglet Classes -->
+            <div class="tab-pane fade show active" id="classes" role="tabpanel" aria-labelledby="classes-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Professeur</th>
+                                <th>Capacité</th>
+                                <th>Élèves</th>
+                                <th>Taux d'occupation</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for classe in classes %}
+                            <tr>
+                                <td>{{ classe.nom }}</td>
+                                <td>{{ classe.professeur.nom|default:"-" }}</td>
+                                <td>{{ classe.capacite }}</td>
+                                <td>{{ classe.get_total_eleves }}</td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        {% with taux=classe.taux_occupation %}
+                                        {% if taux > 85 %}
+                                            <div class="progress-bar bg-danger" role="progressbar" style="width: {{ taux }}%;" aria-valuenow="{{ taux }}" aria-valuemin="0" aria-valuemax="100">{{ taux }}%</div>
+                                        {% elif taux > 60 %}
+                                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ taux }}%;" aria-valuenow="{{ taux }}" aria-valuemin="0" aria-valuemax="100">{{ taux }}%</div>
+                                        {% else %}
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ taux }}%;" aria-valuenow="{{ taux }}" aria-valuemin="0" aria-valuemax="100">{{ taux }}%</div>
+                                        {% endif %}
+                                        {% endwith %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{% url 'detail_classe' classe.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">Aucune classe associée à ce créneau</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-3">
+                    <a href="{% url 'liste_classes' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-plus-circle me-1"></i> Ajouter une classe
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Onglet Élèves -->
+            <div class="tab-pane fade" id="eleves" role="tabpanel" aria-labelledby="eleves-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Classe</th>
+                                <th>Téléphone</th>
+                                <th>Email</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for eleve in eleves %}
+                            <tr>
+                                <td>{{ eleve.nom }}</td>
+                                <td>{{ eleve.prenom }}</td>
+                                <td>{{ eleve.classe.nom|default:"-" }}</td>
+                                <td>{{ eleve.telephone|default:"-" }}</td>
+                                <td>{{ eleve.email|default:"-" }}</td>
+                                <td>
+                                    <a href="{% url 'detail_eleve' eleve.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">Aucun élève associé à ce créneau</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-3">
+                    <a href="{% url 'ajout_rapide_eleve' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-plus-circle me-1"></i> Ajouter un élève
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Onglet Professeurs -->
+            <div class="tab-pane fade" id="professeurs" role="tabpanel" aria-labelledby="professeurs-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Classes</th>
+                                <th>Date d'ajout</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prof in professeurs %}
+                            <tr>
+                                <td>{{ prof.nom }}</td>
+                                <td>{{ prof.classes.count }}</td>
+                                <td>{{ prof.date_creation|date:"d/m/Y" }}</td>
+                                <td>
+                                    <a href="{% url 'detail_professeur' prof.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">Aucun professeur associé à ce créneau</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-3">
+                    <a href="{% url 'liste_professeurs' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-plus-circle me-1"></i> Ajouter un professeur
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer le créneau <strong>{{ creneau.nom }}</strong> ?</p>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Attention : Les classes, élèves et professeurs associés à ce créneau n'auront plus de créneau assigné.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="{% url 'supprimer_creneau' creneau.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

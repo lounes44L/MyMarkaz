@@ -1,0 +1,250 @@
+{% extends 'ecole_app/base.html' %}
+{% load static %}
+
+{% block title %}Liste des paiements - Gestion Markaz{% endblock %}
+
+{% block page_title %}Liste des paiements{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ecole_app/css/progress-bars.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Statistiques financières Markaz -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Montant collecté</h5>
+    </div>
+    <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+            <span class="fs-6 text-secondary">
+                {{ total_collecte|floatformat:2 }} € / {{ total_attendu|floatformat:2 }} € ({{ pourcentage_collecte }}%)
+            </span>
+        </div>
+        <div class="progress">
+            {% if pourcentage_collecte > 85 %}
+                {% with pourcentage=pourcentage_collecte|floatformat:0|default:"0" %}
+                <div class="progress-bar bg-danger" role="progressbar" data-width="{{ pourcentage }}" aria-valuemin="0" aria-valuemax="100" title="{{ pourcentage }}% collecté">
+                    <span class="visually-hidden">{{ pourcentage }}% collecté</span>
+                </div>
+                {% endwith %}
+            {% elif pourcentage_collecte > 60 %}
+                {% with pourcentage=pourcentage_collecte|floatformat:0|default:"0" %}
+                <div class="progress-bar bg-warning" role="progressbar" data-width="{{ pourcentage }}" aria-valuemin="0" aria-valuemax="100" title="{{ pourcentage }}% collecté">
+                    <span class="visually-hidden">{{ pourcentage }}% collecté</span>
+                </div>
+                {% endwith %}
+            {% else %}
+                {% with pourcentage=pourcentage_collecte|floatformat:0|default:"0" %}
+                <div class="progress-bar bg-success" role="progressbar" data-width="{{ pourcentage }}" aria-valuemin="0" aria-valuemax="100" title="{{ pourcentage }}% collecté">
+                    <span class="visually-hidden">{{ pourcentage }}% collecté</span>
+                </div>
+                {% endwith %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Formulaire d'ajout -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Ajouter un paiement</h5>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="{{ form.eleve.id_for_label }}" class="form-label">Élève</label>
+                    {{ form.eleve }}
+                    {% if form.eleve.errors %}
+                    <div class="invalid-feedback d-block">{{ form.eleve.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label for="{{ form.montant.id_for_label }}" class="form-label">Montant (€)</label>
+                    {{ form.montant }}
+                    {% if form.montant.errors %}
+                    <div class="invalid-feedback d-block">{{ form.montant.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label for="{{ form.date.id_for_label }}" class="form-label">Date</label>
+                    {{ form.date }}
+                    {% if form.date.errors %}
+                    <div class="invalid-feedback d-block">{{ form.date.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label for="{{ form.methode.id_for_label }}" class="form-label">Méthode</label>
+                    {{ form.methode }}
+                    {% if form.methode.errors %}
+                    <div class="invalid-feedback d-block">{{ form.methode.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label for="{{ form.commentaire.id_for_label }}" class="form-label">Commentaire</label>
+                    {{ form.commentaire }}
+                    {% if form.commentaire.errors %}
+                    <div class="invalid-feedback d-block">{{ form.commentaire.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-1 mb-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100" title="Ajouter un paiement">
+                        <i class="fas fa-plus-circle" aria-hidden="true"></i>
+                        <span class="visually-hidden">Ajouter un paiement</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Liste des paiements -->
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="card-title mb-0">
+                    Paiements ({{ paiements|length }})
+                    {% if total_montant %}
+                    <span class="badge bg-success ms-2">Total: {{ total_montant }} €</span>
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="col-auto">
+                <div class="input-group">
+                    <input type="text" id="searchPaiements" class="form-control" placeholder="Rechercher...">
+                    <button class="btn btn-outline-secondary" type="button" title="Rechercher">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        <span class="visually-hidden">Rechercher</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="tablePaiements">
+                <thead>
+                    <tr>
+                        <th>Élève</th>
+                        <th>Montant</th>
+                        <th>Date</th>
+                        <th>Méthode</th>
+                        <th>Commentaire</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for paiement in paiements %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'detail_eleve' paiement.eleve.id %}">
+                                {{ paiement.eleve.nom }} {{ paiement.eleve.prenom }}
+                            </a>
+                        </td>
+                        <td>{{ paiement.montant }} €</td>
+                        <td>{{ paiement.date|date:"d/m/Y" }}</td>
+                        <td>{{ paiement.get_methode_display }}</td>
+                        <td>{{ paiement.commentaire|default:"-" }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'detail_paiement' paiement.id %}" class="btn btn-outline-primary" title="Détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" title="Supprimer" 
+                                        data-bs-toggle="modal" data-bs-target="#deletePaiementModal" 
+                                        data-id="{{ paiement.id }}" 
+                                        data-eleve="{{ paiement.eleve.nom }} {{ paiement.eleve.prenom }}"
+                                        data-montant="{{ paiement.montant }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">Aucun paiement enregistré</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="row">
+            <div class="col-md-6">
+                <a href="{% url 'export_paiements' %}?format=csv{% if request.GET.eleve %}&eleve={{ request.GET.eleve }}{% endif %}{% if request.GET.methode %}&methode={{ request.GET.methode }}{% endif %}{% if request.GET.date_debut %}&date_debut={{ request.GET.date_debut }}{% endif %}{% if request.GET.date_fin %}&date_fin={{ request.GET.date_fin }}{% endif %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-file-csv me-1"></i> Exporter en CSV
+                </a>
+                <a href="{% url 'export_paiements' %}?format=json{% if request.GET.eleve %}&eleve={{ request.GET.eleve }}{% endif %}{% if request.GET.methode %}&methode={{ request.GET.methode }}{% endif %}{% if request.GET.date_debut %}&date_debut={{ request.GET.date_debut }}{% endif %}{% if request.GET.date_fin %}&date_fin={{ request.GET.date_fin }}{% endif %}" class="btn btn-outline-secondary btn-sm ms-2">
+                    <i class="fas fa-file-code me-1"></i> Exporter en JSON
+                </a>
+            </div>
+            <div class="col-md-6 text-end">
+                <span class="text-muted">Dernière mise à jour: {{ now|date:"d/m/Y H:i" }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deletePaiementModal" tabindex="-1" aria-labelledby="deletePaiementModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deletePaiementModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer le paiement de <strong id="deleteEleve"></strong> d'un montant de <strong id="deleteMontant"></strong> € ?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="deleteForm" method="post" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Recherche dans le tableau
+    document.getElementById('searchPaiements').addEventListener('keyup', function() {
+        const searchValue = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#tablePaiements tbody tr');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchValue) ? '' : 'none';
+        });
+    });
+    
+    // Configuration du modal de suppression
+    const deleteModal = document.getElementById('deletePaiementModal');
+    if (deleteModal) {
+        deleteModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const id = button.getAttribute('data-id');
+            const eleve = button.getAttribute('data-eleve');
+            const montant = button.getAttribute('data-montant');
+            
+            document.getElementById('deleteEleve').textContent = eleve;
+            document.getElementById('deleteMontant').textContent = montant;
+            document.getElementById('deleteForm').action = `/paiements/${id}/supprimer/`;
+        });
+    }
+    
+    // Soumission automatique du formulaire de filtre lors du changement de valeur
+    document.querySelectorAll('#filterForm select').forEach(select => {
+        select.addEventListener('change', function() {
+            document.getElementById('filterForm').submit();
+        });
+    });
+</script>
+{% endblock %}

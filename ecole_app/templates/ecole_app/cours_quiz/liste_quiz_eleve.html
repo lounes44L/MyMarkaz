@@ -1,0 +1,106 @@
+{% extends 'ecole_app/base.html' %}
+{% load quiz_extras %}
+
+{% block title %}Quiz Disponibles{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Quiz Disponibles</h1>
+    </div>
+
+    <!-- Messages are now handled in the base template -->
+
+    <!-- Liste des quiz -->
+    <div class="row">
+        {% if quiz_disponibles %}
+            {% for quiz in quiz_disponibles %}
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="h5 mb-0 font-weight-bold text-dark">{{ quiz.titre }}</div>
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Par {{ quiz.professeur.nom }}
+                                    </div>
+                                    <p class="mt-2 mb-2">{{ quiz.description|truncatechars:100 }}</p>
+                                    
+                                    <!-- Informations sur les dates -->
+                                    {% if quiz.date_debut or quiz.date_fin %}
+                                        <div class="mt-2 small">
+                                            {% if quiz.date_debut %}
+                                                <div><i class="fas fa-calendar-plus"></i> Début: {{ quiz.date_debut|date:"d/m/Y H:i" }}</div>
+                                            {% endif %}
+                                            {% if quiz.date_fin %}
+                                                <div><i class="fas fa-calendar-times"></i> Fin: {{ quiz.date_fin|date:"d/m/Y H:i" }}</div>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Informations sur les tentatives -->
+                                    {% if quiz.id in tentatives_par_quiz %}
+                                        {% with tentative=tentatives_par_quiz|get_item:quiz.id %}
+                                            {% if tentative.terminee %}
+                                                <div class="mt-3">
+                                                    <span class="badge bg-success text-white p-2">Terminé</span>
+                                                    <span class="badge bg-info text-white p-2">Score: {{ tentative.score|floatformat:1 }}%</span>
+                                                    <div class="mt-2">
+                                                        <a href="{% url 'resultats_quiz' tentative.id %}" class="btn btn-sm btn-outline-primary">
+                                                            Voir les résultats
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            {% else %}
+                                                <div class="mt-3">
+                                                    <span class="badge bg-warning text-dark p-2">En cours</span>
+                                                    <div class="mt-2">
+                                                        <a href="{% url 'repondre_quiz' tentative.id %}" class="btn btn-sm btn-warning">
+                                                            Continuer
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% else %}
+                                        <div class="mt-3">
+                                            <a href="{% url 'demarrer_quiz' quiz.id %}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-play"></i> Démarrer le quiz
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-question-circle fa-2x text-primary"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="card shadow mb-4">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-question-circle fa-3x text-primary mb-3"></i>
+                        <p class="text-dark">Aucun quiz n'est disponible pour le moment.</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Filtre personnalisé pour accéder aux éléments d'un dictionnaire par clé
+    if (!window.django) window.django = {};
+    if (!window.django.jsi18n) window.django.jsi18n = {};
+    
+    django.jsi18n.get_item = function(dict, key) {
+        return dict[key];
+    };
+</script>
+{% endblock %}

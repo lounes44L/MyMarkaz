@@ -1,0 +1,272 @@
+{% extends 'ecole_app/base_admin.html' %}
+
+{% block title %}Liste des élèves et objectifs | {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Override sidebar styles for this page */
+    .sidebar {
+        display: none !important;
+    }
+    
+    .navbar-nav {
+        width: 100%;
+    }
+    
+    #content {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    
+    .container-fluid {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Élèves et objectifs - {{ classe.nom }}</h1>
+        <div>
+            {% if is_admin %}
+            <a href="{% url 'admin_liste_eleves_objectifs' %}" class="btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-list fa-sm text-white-50"></i> Retour à la liste des classes
+            </a>
+            <a href="{% url 'dashboard' %}" class="btn btn-sm btn-primary shadow-sm ms-2">
+                <i class="fas fa-home fa-sm text-white-50"></i> Tableau de bord
+            </a>
+            {% else %}
+            <a href="{% url 'dashboard_professeur' %}" class="btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-home fa-sm text-white-50"></i> Tableau de bord
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Liste des élèves avec leurs objectifs -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Liste des élèves et leurs objectifs</h6>
+        </div>
+        <div class="card-body">
+            {% if eleves %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Contact</th>
+                            <th>Objectif actuel</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for eleve in eleves %}
+                        <tr>
+                            <td>{{ eleve.nom }}</td>
+                            <td>{{ eleve.prenom }}</td>
+                            <td>
+                                {% if eleve.telephone %}<div><i class="fas fa-phone"></i> {{ eleve.telephone }}</div>{% endif %}
+                                {% if eleve.email %}<div><i class="fas fa-envelope"></i> {{ eleve.email }}</div>{% endif %}
+                            </td>
+                            <td>
+                                {% with objectif_actuel=eleve.objectifs.first %}
+                                {% if objectif_actuel %}
+                                    <div class="mb-1">
+                                        <strong>Mois:</strong> {{ objectif_actuel.mois|date:"F Y" }}
+                                    </div>
+                                    {% if objectif_actuel.sourate %}
+                                    <div class="mb-1">
+                                        <strong>Sourate:</strong> {{ objectif_actuel.sourate }}
+                                        {% if objectif_actuel.page_debut and objectif_actuel.page_fin %}
+                                        (pages {{ objectif_actuel.page_debut }} à {{ objectif_actuel.page_fin }})
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                    {% if objectif_actuel.numero_exercice %}
+                                    <div class="mb-1">
+                                        <strong>Exercice:</strong> {{ objectif_actuel.numero_exercice }}
+                                    </div>
+                                    {% endif %}
+                                    {% if objectif_actuel.description_libre %}
+                                    <div class="mb-1">
+                                        <strong>Description:</strong> {{ objectif_actuel.description_libre }}
+                                    </div>
+                                    {% endif %}
+                                    {% if objectif_actuel.commentaire %}
+                                    <div class="mb-1">
+                                        <strong>Commentaire:</strong> {{ objectif_actuel.commentaire }}
+                                    </div>
+                                    {% endif %}
+                                {% else %}
+                                    <em class="text-muted">Aucun objectif défini</em>
+                                {% endif %}
+                                {% endwith %}
+                            </td>
+                            <td>
+                                {% with objectif_actuel=eleve.objectifs.first %}
+                                {% if objectif_actuel %}
+                                    {% if objectif_actuel.statut == 'en_cours' %}
+                                    <span class="badge bg-warning text-dark">En cours</span>
+                                    {% elif objectif_actuel.statut == 'atteint' %}
+                                    <span class="badge bg-success">Atteint</span>
+                                    {% elif objectif_actuel.statut == 'non_atteint' %}
+                                    <span class="badge bg-danger">Non atteint</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">Non défini</span>
+                                {% endif %}
+                                {% endwith %}
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center gap-2">
+                                    <button type="button" class="btn btn-primary btn-sm rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#objectifsModal{{ eleve.id }}">
+                                        <i class="fas fa-list me-1"></i> Objectifs
+                                    </button>
+                                    <a href="{% url 'carnet_pedagogique' eleve.id %}" class="btn btn-success btn-sm rounded-pill shadow-sm">
+                                        <i class="fas fa-book me-1"></i> Carnet
+                                    </a>
+                                    <button type="button" class="btn btn-info btn-sm rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#transferModal{{ eleve.id }}">
+                                        <i class="fas fa-exchange-alt me-1"></i> Transférer
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <p class="text-muted">Aucun élève n'est inscrit dans cette classe.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modals pour afficher tous les objectifs de chaque élève -->
+{% for eleve in eleves %}
+<div class="modal fade" id="objectifsModal{{ eleve.id }}" tabindex="-1" aria-labelledby="objectifsModalLabel{{ eleve.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="objectifsModalLabel{{ eleve.id }}">Objectifs de {{ eleve.prenom }} {{ eleve.nom }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% if eleve.objectifs.all %}
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Mois</th>
+                                <th>Objectif</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for objectif in eleve.objectifs.all %}
+                            <tr>
+                                <td>{{ objectif.mois|date:"F Y" }}</td>
+                                <td>
+                                    {% if objectif.sourate %}
+                                    <div class="mb-1">
+                                        <strong>Sourate:</strong> {{ objectif.sourate }}
+                                        {% if objectif.page_debut and objectif.page_fin %}
+                                        (pages {{ objectif.page_debut }} à {{ objectif.page_fin }})
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                    {% if objectif.numero_exercice %}
+                                    <div class="mb-1">
+                                        <strong>Exercice:</strong> {{ objectif.numero_exercice }}
+                                    </div>
+                                    {% endif %}
+                                    {% if objectif.description_libre %}
+                                    <div class="mb-1">
+                                        <strong>Description:</strong> {{ objectif.description_libre }}
+                                    </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if objectif.statut == 'en_cours' %}
+                                    <span class="badge bg-warning text-dark">En cours</span>
+                                    {% elif objectif.statut == 'atteint' %}
+                                    <span class="badge bg-success">Atteint</span>
+                                    {% elif objectif.statut == 'non_atteint' %}
+                                    <span class="badge bg-danger">Non atteint</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center text-muted">Cet élève n'a pas encore défini d'objectifs.</p>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal de transfert pour chaque élève -->
+<div class="modal fade" id="transferModal{{ eleve.id }}" tabindex="-1" aria-labelledby="transferModalLabel{{ eleve.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transferModalLabel{{ eleve.id }}">Transférer {{ eleve.prenom }} {{ eleve.nom }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'transferer_eleve' eleve.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="classes_destination{{ eleve.id }}" class="form-label">Choisir la classe de destination</label>
+                        <select class="form-select" id="classes_destination{{ eleve.id }}" name="classe_destination" required>
+                            <option value="">Sélectionner une classe</option>
+                            {% for classe_dest in classes_meme_composante %}
+                                <option value="{{ classe_dest.id }}">{{ classe_dest.nom }} (Prof: {{ classe_dest.professeur.nom }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <input type="hidden" name="classe_origine" value="{{ classe.id }}">
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="conserver_copie{{ eleve.id }}" name="conserver_copie">
+                        <label class="form-check-label" for="conserver_copie{{ eleve.id }}">
+                            Garder également l'élève dans ma classe
+                        </label>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Transférer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            },
+            "order": [[0, "asc"]]
+        });
+    });
+</script>
+{% endblock %}

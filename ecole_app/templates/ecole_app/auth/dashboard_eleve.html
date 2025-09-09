@@ -1,0 +1,341 @@
+{% extends 'ecole_app/base_eleve.html' %}
+
+{% block title %}Tableau de bord Élève | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Mon espace élève</h1>
+    </div>
+
+
+    <!-- Informations élève -->
+    <div class="row mb-4">
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Mon profil</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ eleve.nom }} {{ eleve.prenom }}</div>
+                            {% if eleve.email %}
+                            <div class="mt-2 text-gray-600">
+                                <i class="fas fa-envelope" aria-hidden="true"></i> {{ eleve.email }}
+                            </div>
+                            {% endif %}
+                            {% if eleve.telephone %}
+                            <div class="mt-2 text-gray-600">
+                                <i class="fas fa-phone" aria-hidden="true"></i> {{ eleve.telephone }}
+                            </div>
+                            {% endif %}
+                            {% if eleve.date_naissance %}
+                            <div class="mt-2 text-gray-600">
+                                <i class="fas fa-calendar" aria-hidden="true"></i> {{ eleve.date_naissance|date:"d/m/Y" }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex flex-column">
+                    <a href="{% url 'reset_password' %}" class="btn btn-sm btn-primary mb-2" title="Modifier mon mot de passe" aria-label="Modifier mon mot de passe">
+                        <i class="fas fa-key" aria-hidden="true"></i> Changer de mot de passe
+                    </a>
+                    <a href="{% url 'profile' %}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-user" aria-hidden="true"></i> Voir mon profil
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Mes classes
+                            </div>
+                            <div>
+    {% if eleve.classes.all %}
+        {% for classe in eleve.classes.all %}
+            <div class="mb-2">
+                <span class="badge bg-success me-1 mb-1">{{ classe.nom }}</span><br>
+                {% if classe.professeur %}
+                    <span class="text-muted small">
+                        <i class="fas fa-chalkboard-teacher" aria-hidden="true"></i> Professeur : {{ classe.professeur.get_full_name|default:classe.professeur }}
+                    </span>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <span class="text-muted">Non assigné</span>
+    {% endif %}
+</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-school fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1 d-flex align-items-center justify-content-between">
+                                <span>Mon objectif du mois</span>
+                                <div>
+                                    <a href="{% url 'gestion_objectifs' %}" class="text-primary ml-2 me-3" title="Modifier mon objectif" aria-label="Modifier mon objectif">
+                                        <span class="d-inline-block border border-primary p-1">
+                                            <i class="fas fa-pencil-alt fa-sm"></i>
+                                        </span>
+                                    </a>
+                                    <a href="{% url 'gestion_objectifs' %}" class="btn btn-sm btn-outline-info border-0 p-0" title="Voir l'historique de mes objectifs">
+                                        <i class="fas fa-history"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            {% if objectif_actuel %}
+                                <div class="mt-2">
+                                    <h5 class="card-title">
+                                        {% if objectif_actuel.sourate %}
+                                            Sourate: {{ objectif_actuel.sourate }}
+                                            {% if objectif_actuel.page_debut %}
+                                                <span class="badge bg-info">Page {{ objectif_actuel.page_debut }}</span>
+                                            {% endif %}
+                                        {% elif objectif_actuel.numero_exercice %}
+                                            Exercice #{{ objectif_actuel.numero_exercice }}
+                                        {% endif %}
+                                    </h5>
+                                    <p class="card-text">{{ objectif_actuel.description_libre|default:"" }}</p>
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <span class="badge bg-{{ objectif_actuel.statut|yesno:'success,warning,danger' }} p-2">
+                                            {{ objectif_actuel.get_statut_display }}
+                                        </span>
+                                        <small class="text-muted">Défini le {{ objectif_actuel.date_creation|date:"d/m/Y" }}</small>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <p class="text-muted">Aucun objectif défini pour ce mois.</p>
+                                    <a href="{% url 'gestion_objectifs' %}" class="btn btn-sm btn-outline-primary border-0 p-0" title="Modifier mon objectif">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-bullseye fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progression de mémorisation du Coran -->
+    {% include 'ecole_app/eleves/progression_coran_section.html' %}
+    
+    <!-- Section objectifs supprimée -->
+
+    <!-- Carnet pédagogique -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Mon carnet pédagogique</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-4">
+                        <p class="text-muted">Consultez votre carnet pédagogique.</p>
+                        <a href="{% url 'carnet_pedagogique' eleve.id %}" class="btn btn-info">
+                            <i class="fas fa-book" aria-hidden="true"></i> Voir mon carnet pédagogique
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section des paiements supprimée -->
+    
+    <!-- Présences -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Mes présences</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-4">
+                        <p class="text-muted">Consultez votre historique de présences.</p>
+                        <a href="{% url 'presences_eleve' eleve.id %}" class="btn btn-primary">
+                            <i class="fas fa-clipboard-check" aria-hidden="true"></i> Voir mes présences
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Cours partagés -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Mes cours partagés</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-4">
+                        <p class="text-muted">Consultez les cours partagés par vos professeurs.</p>
+                        <a href="{% url 'liste_cours_eleve' %}" class="btn btn-warning">
+                            <i class="fas fa-book-reader" aria-hidden="true"></i> Voir mes cours partagés
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notes d'examen -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Mes notes d'examen</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-4">
+                        <p class="text-muted">Consultez vos notes d'examen et résultats de quiz.</p>
+                        <div class="mb-3">
+                            <a href="{% url 'liste_quiz_eleve' %}" class="btn btn-primary">
+                                <i class="fas fa-question-circle" aria-hidden="true"></i> Quiz disponibles
+                            </a>
+                        </div>
+                        <div>
+                            <a href="{% url 'mes_notes' %}" class="btn btn-success">
+                                <i class="fas fa-graduation-cap" aria-hidden="true"></i> Voir mes notes
+                            </a>
+                            <a href="{% url 'historique_quiz_eleve' %}" class="btn btn-info ml-2">
+                                <i class="fas fa-tasks" aria-hidden="true"></i> Historique des quiz
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        // DataTable pour les paiements
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            },
+            "order": [[0, "desc"]]
+        });
+        
+        // Initialisation du graphique de progression des objectifs si l'élément existe
+        if (document.getElementById('progressionChart')) {
+            const ctx = document.getElementById('progressionChart').getContext('2d');
+            // Récupération des données depuis des attributs data pour éviter les problèmes de syntaxe
+            const progressionChart = document.getElementById('progressionChart');
+            const progressionPourcentage = parseFloat(progressionChart.dataset.progression || 0);
+            const remainingPourcentage = 100 - progressionPourcentage;
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [progressionPourcentage, remainingPourcentage],
+                        backgroundColor: [
+                            '#4e73df',
+                            '#eaecf4'
+                        ],
+                        borderWidth: 0
+                    }],
+                    labels: ['Progression', 'Restant']
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '80%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Initialisation du graphique de progression du Coran si l'élément existe
+        if (document.getElementById('coranProgressionChart')) {
+            const ctxCoran = document.getElementById('coranProgressionChart').getContext('2d');
+            // Récupération des données depuis des attributs data
+            const coranProgressionChart = document.getElementById('coranProgressionChart');
+            const coranProgressionPourcentage = parseFloat(coranProgressionChart.dataset.progression || 0);
+            const coranRemainingPourcentage = 100 - coranProgressionPourcentage;
+            
+            new Chart(ctxCoran, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [coranProgressionPourcentage, coranRemainingPourcentage],
+                        backgroundColor: [
+                            '#36b9cc', // Couleur différente pour distinguer du premier graphique
+                            '#eaecf4'
+                        ],
+                        borderWidth: 0
+                    }],
+                    labels: ['Mémorisé', 'Restant']
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '80%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Gestion du formulaire d'objectif
+        $('#type_objectif').change(function() {
+            const selectedType = $(this).val();
+            $('.objectif-field').hide();
+            if (selectedType === 'sourate') {
+                $('#sourate_field').show();
+            } else if (selectedType === 'exercice') {
+                $('#exercice_field').show();
+            } else if (selectedType === 'libre') {
+                $('#description_field').show();
+            }
+        });
+        
+        // Déclencher le changement au chargement pour initialiser l'affichage
+        $('#type_objectif').trigger('change');
+    });
+</script>
+{% endblock %}

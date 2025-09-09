@@ -1,0 +1,183 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Exportation de données - Gestion Markaz{% endblock %}
+
+{% block page_title %}Exportation de données{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Exporter des données</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.model_type.id_for_label }}" class="form-label">Type de données</label>
+                        {{ form.model_type }}
+                        {% if form.model_type.errors %}
+                        <div class="invalid-feedback d-block">{{ form.model_type.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">Sélectionnez le type de données que vous souhaitez exporter.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.format.id_for_label }}" class="form-label">Format d'exportation</label>
+                        {{ form.format }}
+                        {% if form.format.errors %}
+                        <div class="invalid-feedback d-block">{{ form.format.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">Choisissez le format dans lequel vous souhaitez exporter les données.</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.include_related }}
+                            <label class="form-check-label" for="{{ form.include_related.id_for_label }}">
+                                Inclure les données liées
+                            </label>
+                            {% if form.include_related.errors %}
+                            <div class="invalid-feedback d-block">{{ form.include_related.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-text">Si coché, les données liées (comme les classes pour les élèves) seront incluses dans l'exportation.</div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Retour
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-file-export me-1"></i> Exporter
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Exportations récentes -->
+        {% if exports_recents %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Exportations récentes</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Format</th>
+                                <th>Date</th>
+                                <th>Taille</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for export in exports_recents %}
+                            <tr>
+                                <td>{{ export.model_type_display }}</td>
+                                <td>{{ export.format|upper }}</td>
+                                <td>{{ export.date_creation|date:"d/m/Y H:i" }}</td>
+                                <td>{{ export.taille_fichier }}</td>
+                                <td>
+                                    <a href="{{ export.fichier.url }}" class="btn btn-sm btn-outline-primary" download>
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Informations</h5>
+            </div>
+            <div class="card-body">
+                <h6>Formats d'exportation</h6>
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong>CSV</strong>
+                            <div class="small text-muted">Format texte avec valeurs séparées par des virgules</div>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">Excel</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong>JSON</strong>
+                            <div class="small text-muted">Format structuré pour les développeurs</div>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">API</span>
+                    </li>
+                </ul>
+                
+                <h6>Données disponibles</h6>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Élèves</span>
+                        <span class="badge bg-primary rounded-pill">{{ nb_eleves }}</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Professeurs</span>
+                        <span class="badge bg-primary rounded-pill">{{ nb_professeurs }}</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Classes</span>
+                        <span class="badge bg-primary rounded-pill">{{ nb_classes }}</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Créneaux</span>
+                        <span class="badge bg-primary rounded-pill">{{ nb_creneaux }}</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Paiements</span>
+                        <span class="badge bg-primary rounded-pill">{{ nb_paiements }}</span>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Les exportations sont générées à la demande et peuvent prendre quelques instants pour les grands volumes de données.
+                </div>
+                
+                <div class="alert alert-warning mt-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Les fichiers exportés peuvent contenir des données personnelles. Assurez-vous de les traiter conformément au RGPD.
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Exportations rapides</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="{% url 'export_data' %}?model=eleve&format=csv&quick=1" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-csv me-2"></i> Tous les élèves (CSV)
+                    </a>
+                    <a href="{% url 'export_data' %}?model=professeur&format=csv&quick=1" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-csv me-2"></i> Tous les professeurs (CSV)
+                    </a>
+                    <a href="{% url 'export_data' %}?model=classe&format=csv&quick=1" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-csv me-2"></i> Toutes les classes (CSV)
+                    </a>
+                    <a href="{% url 'export_data' %}?model=paiement&format=csv&quick=1" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-csv me-2"></i> Tous les paiements (CSV)
+                    </a>
+                    <a href="{% url 'export_data' %}?model=all&format=json&quick=1" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-code me-2"></i> Toutes les données (JSON)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

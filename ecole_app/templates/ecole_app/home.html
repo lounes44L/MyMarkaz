@@ -1,0 +1,65 @@
+{% extends 'ecole_app/base_auth.html' %}
+
+{% block title %}Accueil - Gestion Markaz{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-lg-8 text-center">
+            <div class="mb-5">
+                <h1 class="display-4 fw-bold text-primary">Gestion Markaz</h1>
+                <p class="lead">Plateforme de gestion scolaire pour votre établissement</p>
+            </div>
+            
+            <div class="card shadow mb-5">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-school fa-4x text-primary mb-3"></i>
+                        <h2 class="mb-3">Bienvenue sur Gestion Markaz</h2>
+                        <p class="text-muted">
+                            Votre solution complète pour gérer efficacement votre établissement scolaire.
+                            Connectez-vous pour accéder à toutes les fonctionnalités.
+                        </p>
+                    </div>
+                    
+                    <div class="d-grid gap-2 col-md-6 mx-auto">
+                        <a href="{% url 'login' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-user-graduate fa-3x text-primary mb-3"></i>
+                            <h5 class="card-title">Gestion des élèves</h5>
+                            <p class="card-text">Inscriptions, suivi des paiements et informations personnelles.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chalkboard-teacher fa-3x text-success mb-3"></i>
+                            <h5 class="card-title">Gestion des professeurs</h5>
+                            <p class="card-text">Affectation des classes et créneaux horaires.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-bar fa-3x text-warning mb-3"></i>
+                            <h5 class="card-title">Statistiques</h5>
+                            <p class="card-text">Suivi des taux d'occupation et des paiements.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

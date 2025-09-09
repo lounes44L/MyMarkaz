@@ -1,0 +1,65 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Tentatives de Quiz - {{ classe.nom }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Tentatives de Quiz - {{ classe.nom }}</h2>
+            
+            {% if tentatives %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Élève</th>
+                                <th>Quiz</th>
+                                <th>Date</th>
+                                <th>Score</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tentative in tentatives %}
+                                <tr>
+                                    <td>{{ tentative.eleve.nom }} {{ tentative.eleve.prenom }}</td>
+                                    <td>{{ tentative.quiz.titre }}</td>
+                                    <td>{{ tentative.date_fin|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <span class="badge badge-info text-white">{{ tentative.score|floatformat:2 }}%</span>
+                                    </td>
+                                    <td>
+                                        {% if tentative.note_associee %}
+                                            <span class="badge badge-success text-white">Noté ({{ tentative.note_associee.note|floatformat:2 }}/20)</span>
+                                        {% else %}
+                                            <span class="badge badge-warning text-dark">Non noté</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'resultats_quiz_classe' tentative.quiz.id %}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i> Voir
+                                            </a>
+                                            {% if not tentative.note_associee %}
+                                                <a href="{% url 'convertir_quiz_en_note' tentative.id %}" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-plus"></i> Créer note
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <p>Aucune tentative de quiz trouvée pour cette classe.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

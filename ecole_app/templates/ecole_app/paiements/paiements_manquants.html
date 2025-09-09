@@ -1,0 +1,150 @@
+{% extends 'ecole_app/base.html' %}
+{% load static %}
+
+{% block title %}Paiements manquants - Gestion Markaz{% endblock %}
+
+{% block page_title %}Paiements manquants{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ecole_app/css/progress-bars.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Statistiques -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Élèves sans paiement</h5>
+    </div>
+    <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+            <span class="fs-6 text-secondary">
+                {{ total_eleves_sans_paiements }} élèves sur {{ total_eleves_actifs }} n'ont pas effectué de paiement ({{ pourcentage_sans_paiements }}%)
+            </span>
+        </div>
+        <div class="progress">
+            {% if pourcentage_sans_paiements > 50 %}
+                {% with pourcentage=pourcentage_sans_paiements|floatformat:0|default:"0" %}
+                <div class="progress-bar bg-danger" role="progressbar" data-width="{{ pourcentage }}" aria-valuemin="0" aria-valuemax="100" title="{{ pourcentage }}% sans paiement">
+                    <span class="visually-hidden">{{ pourcentage }}% sans paiement</span>
+                </div>
+                {% endwith %}
+            {% elif pourcentage_sans_paiements > 25 %}
+                {% with pourcentage=pourcentage_sans_paiements|floatformat:0|default:"0" %}
+                <div class="progress-bar bg-warning" role="progressbar" data-width="{{ pourcentage }}" aria-valuemin="0" aria-valuemax="100" title="{{ pourcentage }}% sans paiement">
+                    <span class="visually-hidden">{{ pourcentage }}% sans paiement</span>
+                </div>
+                {% endwith %}
+            {% else %}
+                {% with pourcentage=pourcentage_sans_paiements|floatformat:0|default:"0" %}
+                <div class="progress-bar bg-success" role="progressbar" data-width="{{ pourcentage }}" aria-valuemin="0" aria-valuemax="100" title="{{ pourcentage }}% sans paiement">
+                    <span class="visually-hidden">{{ pourcentage }}% sans paiement</span>
+                </div>
+                {% endwith %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Liste des élèves sans paiement -->
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="card-title mb-0">
+                    Élèves sans paiement ({{ eleves_sans_paiements|length }})
+                </h5>
+            </div>
+            <div class="col-auto">
+                <div class="input-group">
+                    <input type="text" id="searchEleves" class="form-control" placeholder="Rechercher...">
+                    <button class="btn btn-outline-secondary" type="button" title="Rechercher">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        <span class="visually-hidden">Rechercher</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="tableEleves">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Classe</th>
+                        <th>Montant attendu</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for eleve in eleves_sans_paiements %}
+                    <tr>
+                        <td>{{ eleve.nom }}</td>
+                        <td>{{ eleve.prenom }}</td>
+                        <td>
+                            {% for classe in eleve.classes.all %}
+                                {{ classe.nom }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                                -
+                            {% endfor %}
+                        </td>
+                        <td>{{ eleve.montant_total|default:"0" }} €</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'detail_eleve' eleve.id %}" class="btn btn-outline-primary" title="Détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'liste_paiements' %}?eleve={{ eleve.id }}" class="btn btn-outline-success" title="Ajouter un paiement">
+                                    <i class="fas fa-plus-circle"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">Tous les élèves ont effectué au moins un paiement</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="row">
+            <div class="col-md-6">
+                <a href="{% url 'liste_paiements' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-list me-1"></i> Liste des paiements
+                </a>
+            </div>
+            <div class="col-md-6 text-end">
+                <span class="text-muted">Dernière mise à jour: {{ now|date:"d/m/Y H:i" }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Recherche dans le tableau
+    document.getElementById('searchEleves').addEventListener('keyup', function() {
+        const searchValue = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#tableEleves tbody tr');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchValue) ? '' : 'none';
+        });
+    });
+    
+    // Initialisation de la barre de progression
+    document.addEventListener('DOMContentLoaded', function() {
+        const progressBars = document.querySelectorAll('.progress-bar');
+        progressBars.forEach(bar => {
+            const width = bar.getAttribute('data-width') + '%';
+            bar.style.width = width;
+        });
+    });
+</script>
+{% endblock %}

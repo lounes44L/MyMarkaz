@@ -1,0 +1,128 @@
+{% extends "ecole_app/base.html" %}
+{% load static %}
+
+{% block title %}Modifier une écoute avant mémorisation - {{ eleve.nom }} {{ eleve.prenom }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-headphones me-2"></i>
+                        Modifier une écoute avant mémorisation pour {{ eleve.nom }} {{ eleve.prenom }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.date.id_for_label }}" class="form-label">Date</label>
+                            {{ form.date }}
+                            {% if form.date.errors %}
+                            <div class="text-danger">{{ form.date.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.sourate.id_for_label }}" class="form-label">Sourate</label>
+                            {{ form.sourate }}
+                            <small class="form-text text-muted">Sélectionnez d'abord la sourate pour afficher les pages disponibles</small>
+                            {% if form.sourate.errors %}
+                            <div class="text-danger">{{ form.sourate.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.debut_page.id_for_label }}" class="form-label">Page de début</label>
+                                    {{ form.debut_page }}
+                                    {% if form.debut_page.errors %}
+                                    <div class="text-danger">{{ form.debut_page.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.fin_page.id_for_label }}" class="form-label">Page de fin</label>
+                                    {{ form.fin_page }}
+                                    {% if form.fin_page.errors %}
+                                    <div class="text-danger">{{ form.fin_page.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.enseignant.id_for_label }}" class="form-label">Enseignant</label>
+                            {{ form.enseignant }}
+                            {% if form.enseignant.errors %}
+                            <div class="text-danger">{{ form.enseignant.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.remarques.id_for_label }}" class="form-label">Remarques</label>
+                            {{ form.remarques }}
+                            <small class="form-text text-muted">Facultatif</small>
+                            {% if form.remarques.errors %}
+                            <div class="text-danger">{{ form.remarques.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'carnet_pedagogique' eleve_id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Retour
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Enregistrer les modifications
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/sourate-pages.js' %}"></script>
+<script>
+    // Script pour initialiser la sourate en fonction des pages existantes
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cette fonction sera appelée après le chargement de la page
+        // pour définir la sourate correspondant aux pages actuelles
+        function initSourate() {
+            var debutPage = "{{ ecoute.debut_page }}";
+            var finPage = "{{ ecoute.fin_page }}";
+            
+            // Appel AJAX pour trouver la sourate correspondante
+            fetch('/api/sourate-pages/find-sourate/?debut_page=' + debutPage + '&fin_page=' + finPage)
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.sourate_index !== undefined) {
+                        var sourateSelect = document.getElementById('sourate-select-ecoute');
+                        if (sourateSelect) {
+                            sourateSelect.value = data.sourate_index;
+                            // Déclencher l'événement change pour charger les pages
+                            sourateSelect.dispatchEvent(new Event('change'));
+                        }
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Erreur lors de la récupération de la sourate:', error);
+                });
+        }
+        
+        // Attendre un peu pour s'assurer que tout est chargé
+        setTimeout(initSourate, 500);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends 'ecole_app/base_auth.html' %}
+{% load static %}
+
+{% block title %}Connexion - Gestion Markaz{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ecole_app/css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-10 col-lg-9">
+            <div class="card shadow login-card">
+                <div class="row g-0">
+                    <!-- Partie gauche avec le hadith -->                    
+                    <div class="col-md-6 hadith-section">
+                        <div class="p-5 d-flex flex-column justify-content-center h-100 text-center">
+                            <div class="hadith-container">
+                                <h3 class="hadith-title">الحديث الشريف</h3>
+                                <div class="arabic-text">
+                                    خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ
+                                </div>
+                                <div class="hadith-translation">
+                                    "Le meilleur d'entre vous est celui qui a appris le Coran et l'enseigne"
+                                </div>
+                                <div class="hadith-source">
+                                    رواه البخاري
+                                </div>
+                            </div>
+                            <div class="logo-container">
+                                <img src="{% static 'img/logo_almahir.png' %}" alt="Logo Al Mahir" class="img-fluid mx-auto">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Partie droite avec le formulaire de connexion -->
+                    <div class="col-md-6">
+                        <div class="card-header login-header">
+                            <h4 class="login-title">Gestion Markaz</h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <h5 class="card-title text-center mb-4">Connexion</h5>
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Nom d'utilisateur ou mot de passe incorrect. Veuillez réessayer.
+                    </div>
+                    {% endif %}
+                    
+                    {% if next %}
+                        {% if user.is_authenticated %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Votre compte n'a pas accès à cette page. Pour continuer, veuillez vous connecter avec un compte ayant les permissions nécessaires.
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Veuillez vous connecter pour accéder à cette page.
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <form method="post" action="{% url 'login' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">Nom d'utilisateur</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <input type="text" name="username" id="id_username" class="form-control" placeholder="Nom d'utilisateur" required autofocus>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_password" class="form-label">Mot de passe</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" name="password" id="id_password" class="form-control" placeholder="Mot de passe" required>
+                            </div>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="remember_me">
+                            <label class="form-check-label" for="remember_me">Se souvenir de moi</label>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg shadow-sm btn-login">
+                                <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                            </button>
+                        </div>
+                        <input type="hidden" name="next" value="{{ next }}">
+                    </form>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{% url 'password_reset' %}" class="text-decoration-none">Mot de passe oublié ?</a>
+                    </div>
+                </div>
+                <div class="card-footer login-footer">
+                    <div class="small text-muted">
+                        © {% now "Y" %} Gestion Markaz - Tous droits réservés
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "ecole_app/base.html" %}
+{% load static %}
+
+{% block title %}Modifier une révision - {{ revision.carnet.eleve.nom }} {{ revision.carnet.eleve.prenom }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-sync me-2"></i>
+                        Modifier une révision pour {{ revision.carnet.eleve.nom }} {{ revision.carnet.eleve.prenom }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3 row">
+                            <label for="{{ form.date.id_for_label }}" class="col-sm-3 col-form-label">Date</label>
+                            <div class="col-sm-9">
+                                {{ form.date }}
+                                {% if form.date.errors %}
+                                <div class="text-danger">{{ form.date.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="mb-3 row">
+                            <label for="{{ form.nombre_hizb.id_for_label }}" class="col-sm-3 col-form-label">Nombre de Hizbs</label>
+                            <div class="col-sm-9">
+                                {{ form.nombre_hizb }}
+                                {% if form.nombre_hizb.errors %}
+                                <div class="text-danger">{{ form.nombre_hizb.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Section remarques supprimée pour éviter l'erreur de colonne manquante -->
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'carnet_pedagogique' revision.carnet.eleve.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Retour
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i> Enregistrer les modifications
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

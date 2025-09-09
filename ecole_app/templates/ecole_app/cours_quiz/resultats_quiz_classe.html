@@ -1,0 +1,177 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Résultats du Quiz par Classe{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Résultats: {{ quiz.titre }}</h1>
+        <a href="{% url 'liste_quiz_professeur' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour aux quiz
+        </a>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Statistiques générales -->
+    <div class="row">
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Nombre de tentatives
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ tentatives.count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Score moyen
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% if tentatives %}
+                                    {% with total_score=0 count=0 %}
+                                        {% for tentative in tentatives %}
+                                            {% with total_score=total_score|add:tentative.score count=count|add:1 %}
+                                                {% if forloop.last %}
+                                                    {% widthratio total_score count 1 as avg_score %}
+                                                    {{ avg_score|floatformat:1 }}%
+                                                {% endif %}
+                                            {% endwith %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Meilleur score
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% if tentatives %}
+                                    {{ tentatives.first.score|floatformat:1 }}%
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-trophy fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des tentatives -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Résultats par élève</h6>
+        </div>
+        <div class="card-body">
+            {% if tentatives %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Élève</th>
+                                <th>Classe</th>
+                                <th>Score</th>
+                                <th>Date</th>
+                                <th>Durée</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tentative in tentatives %}
+                                <tr>
+                                    <td>{{ tentative.eleve.prenom }} {{ tentative.eleve.nom }}</td>
+                                    <td>
+                                        {% for classe in tentative.eleve.classes.all %}
+                                            <span class="badge badge-primary text-white">{{ classe.nom }}</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-{% if tentative.score >= 80 %}success{% elif tentative.score >= 50 %}warning{% else %}danger{% endif %} {% if tentative.score >= 50 and tentative.score < 80 %}text-dark{% else %}text-white{% endif %}" 
+                                                 role="progressbar" 
+                                                 aria-valuenow="0" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100"
+                                                 title="Score: {{ tentative.score|floatformat:1 }}%"
+                                                 data-width="{{ tentative.score }}">
+                                                {{ tentative.score|floatformat:1 }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ tentative.date_fin|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        {% with duree=tentative.date_fin|timeuntil:tentative.date_debut %}
+                                            {{ duree }}
+                                        {% endwith %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <p class="text-muted">Aucun élève n'a encore terminé ce quiz.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            },
+            "order": [[2, "desc"]]  // Trier par score décroissant
+        });
+    });
+</script>
+{% endblock %}

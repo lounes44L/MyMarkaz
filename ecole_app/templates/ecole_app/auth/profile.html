@@ -1,0 +1,223 @@
+{% extends 'ecole_app/base_admin.html' %}
+
+{% block title %}Mon Profil | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Mon Profil</h1>
+    </div>
+
+    <!-- Les messages sont déjà affichés dans le template parent (base_admin.html) -->
+
+    <div class="row">
+        <!-- Informations utilisateur -->
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Informations personnelles</h6>
+                    <a href="{% url 'reset_password' %}" class="btn btn-primary btn-sm" title="Modifier mon mot de passe" aria-label="Modifier mon mot de passe">
+                        <i class="fas fa-key" aria-hidden="true"></i> Changer mon mot de passe
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th>Nom d'utilisateur</th>
+                                    <td>{{ user.username }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Nom complet</th>
+                                    <td>
+                                        {% if user.get_full_name %}
+                                            {{ user.get_full_name }}
+                                        {% else %}
+                                            {% if user_type == 'professeur' %}
+                                                {{ profile_data.nom }}
+                                            {% elif user_type == 'eleve' %}
+                                                {{ profile_data.nom }} {{ profile_data.prenom }}
+                                            {% else %}
+                                                <em>Non spécifié</em>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Email</th>
+                                    <td>
+                                        {% if profile_data.email %}
+                                            {{ profile_data.email }}
+                                        {% else %}
+                                            <em>Non spécifié</em>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Téléphone</th>
+                                    <td>
+                                        {% if profile_data.telephone %}
+                                            {{ profile_data.telephone }}
+                                        {% else %}
+                                            <em>Non spécifié</em>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Rôle</th>
+                                    <td>
+                                        {% if user_type == 'professeur' %}
+                                            <span class="badge badge-primary">Professeur</span>
+                                        {% elif user_type == 'eleve' %}
+                                            <span class="badge badge-info">Élève</span>
+                                        {% elif user.is_superuser %}
+                                            <span class="badge badge-danger">Administrateur</span>
+                                        {% elif user.is_staff %}
+                                            <span class="badge badge-warning">Personnel</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">Utilisateur</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations spécifiques selon le type d'utilisateur -->
+        <div class="col-lg-6">
+            {% if user_type == 'professeur' %}
+            <!-- Informations professeur -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Détails Professeur</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th>Créneau</th>
+                                    <td>
+                                        {% if profile_data.creneau %}
+                                            {{ profile_data.creneau }}
+                                            {% if profile_data.creneau.jour %}
+                                                <br>
+                                                <small class="text-muted">
+                                                    {{ profile_data.creneau.get_jour_display }} 
+                                                    {% if profile_data.creneau.heure_debut and profile_data.creneau.heure_fin %}
+                                                        {{ profile_data.creneau.heure_debut|time:"H:i" }} - {{ profile_data.creneau.heure_fin|time:"H:i" }}
+                                                    {% endif %}
+                                                </small>
+                                            {% endif %}
+                                        {% else %}
+                                            <em>Non assigné</em>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Indemnisation</th>
+                                    <td>
+                                        {% if profile_data.indemnisation %}
+                                            {{ profile_data.indemnisation }} €
+                                        {% else %}
+                                            <em>Non définie</em>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Classes</th>
+                                    <td>
+                                        {% if profile_data.classes_actives.exists %}
+                                            {% for classe in profile_data.classes_actives %}
+                                                <span class="badge badge-light">{{ classe.nom }}</span>
+                                            {% endfor %}
+                                        {% else %}
+                                            {% if profile_data.classes.exists %}
+                                                <em>Vous avez des classes assignées, mais aucune pour l'année scolaire active</em>
+                                            {% else %}
+                                                <em>Aucune classe ne vous est assignée</em>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{% url 'dashboard_professeur' %}" class="btn btn-info btn-block">
+                            <i class="fas fa-tachometer-alt" aria-hidden="true"></i> Accéder à mon tableau de bord
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% elif user_type == 'eleve' %}
+            <!-- Informations élève -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Détails Élève</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th>Classe</th>
+                                    <td>
+                                        {% if profile_data.classe %}
+                                            {{ profile_data.classe.nom }}
+                                        {% else %}
+                                            <em>Non assigné</em>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Créneau</th>
+                                    <td>
+                                        {% if profile_data.creneau %}
+                                            {{ profile_data.creneau }}
+                                            {% if profile_data.creneau.jour %}
+                                                <br>
+                                                <small class="text-muted">
+                                                    {{ profile_data.creneau.get_jour_display }} 
+                                                    {% if profile_data.creneau.heure_debut and profile_data.creneau.heure_fin %}
+                                                        {{ profile_data.creneau.heure_debut|time:"H:i" }} - {{ profile_data.creneau.heure_fin|time:"H:i" }}
+                                                    {% endif %}
+                                                </small>
+                                            {% endif %}
+                                        {% else %}
+                                            <em>Non assigné</em>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Date de naissance</th>
+                                    <td>
+                                        {% if profile_data.date_naissance %}
+                                            {{ profile_data.date_naissance|date:"d/m/Y" }}
+                                        {% else %}
+                                            <em>Non spécifiée</em>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{% url 'dashboard_eleve' %}" class="btn btn-info btn-block">
+                            <i class="fas fa-tachometer-alt" aria-hidden="true"></i> Accéder à mon tableau de bord
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

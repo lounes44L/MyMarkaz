@@ -1,0 +1,137 @@
+/* Fichier CSS personnalisé pour l'interface d'administration */
+
+/* Sidebar Collapse Effect */
+#header, #branding, #user-tools, #content, .dashboard, .module, .inline-group {
+    transition: all 0.3s ease;
+}
+
+/* Sidebar Styling */
+#header {
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#content {
+    margin-left: 60px; /* Collapsed width */
+    padding-top: 60px; /* Height of the header */
+    transition: margin-left 0.3s ease;
+}
+
+/* Sidebar Collapse Effect */
+#sidebar {
+    position: fixed;
+    width: 250px; /* Expanded width */
+    height: 100%;
+    left: -200px; /* Hide most of the sidebar */
+    top: 0;
+    padding-top: 60px; /* Height of the header */
+    transition: all 0.3s ease;
+    z-index: 900;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#sidebar:hover {
+    left: 0;
+    width: 250px;
+}
+
+#sidebar:hover + #content {
+    margin-left: 250px; /* Expanded width */
+}
+
+/* Adjust branding and user tools for collapsed state */
+#branding {
+    padding-left: 60px; /* Match collapsed sidebar width */
+}
+
+#user-tools {
+    padding-right: 20px;
+}
+
+/* Adjust main content when sidebar is hovered */
+#content.shift-right {
+    margin-left: 250px;
+}
+
+/* Ajustements généraux de largeur */
+#container, .dashboard, .module, .inline-group {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+/* Ajustement des tableaux */
+#result_list {
+    width: 100% !important;
+    table-layout: auto;
+}
+
+/* Ajustement des champs de formulaire */
+.form-row {
+    overflow: visible;
+}
+
+/* Correction pour les champs de date/heure */
+.datetime {
+    white-space: nowrap;
+}
+
+/* Ajustement pour les filtres latéraux */
+#changelist-filter {
+    width: 200px;
+}
+
+/* Ajustement pour le contenu principal */
+#content-main {
+    margin-right: 20px; /* Reduced from 220px to account for collapsed sidebar */
+    transition: margin-right 0.3s ease;
+}
+
+/* Adjust content when sidebar is hovered */
+#sidebar:hover ~ #content #content-main {
+    margin-right: 220px;
+}
+
+/* Ajustement pour les écrans plus petits */
+@media (max-width: 1024px) {
+    #content {
+        margin-left: 0 !important;
+    }
+    
+    #sidebar {
+        left: -250px;
+    }
+    
+    #sidebar:hover {
+        left: 0;
+    }
+    
+    #content-main {
+        margin-right: 0;
+    }
+    
+    #changelist-filter {
+        position: relative;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+}
+
+/* Ajustement pour les tableaux de données */
+.change-list .results {
+    overflow-x: auto;
+    width: 100%;
+}
+
+/* Ajustement pour les champs de formulaire larges */
+.vTextField, .vLargeTextField, .vURLField {
+    width: 100%;
+    max-width: 800px;
+}
+
+/* Ajustement pour les champs de texte riche */
+.mce-tinymce, .mce-edit-area iframe {
+    width: 100% !important;
+    max-width: 1000px !important;
+}

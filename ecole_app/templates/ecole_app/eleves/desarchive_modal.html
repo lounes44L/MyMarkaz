@@ -1,0 +1,22 @@
+<!-- Modal de désarchivage élève -->
+<div class="modal fade" id="desarchiveModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'desarchiver_eleve' %}" id="desarchivageForm">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Désarchiver l'élève</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="eleve_id" id="desarchiveEleveId">
+          <div class="alert alert-info" id="desarchiveEleveName"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">Désarchiver</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

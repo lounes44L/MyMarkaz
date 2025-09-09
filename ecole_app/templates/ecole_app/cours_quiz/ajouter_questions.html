@@ -1,0 +1,302 @@
+{% extends 'ecole_app/base.html' %}
+{% load static %}
+
+{% block title %}Ajouter des questions au quiz{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ecole_app/css/quiz.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-3 text-gray-800">Ajouter des questions au quiz : {{ quiz.titre }}</h1>
+        </div>
+    </div>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Ajouter une nouvelle question</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="questionForm">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="intitule">Intitulé de la question <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="intitule" name="intitule" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="type_question">Type de question <span class="text-danger">*</span></label>
+                                <select class="form-control" id="type_question" name="type_question" required>
+                                    <option value="choix_unique">Choix unique (QCM)</option>
+                                    <option value="choix_multiple">Choix multiple (plusieurs réponses)</option>
+                                    <option value="vrai_faux">Vrai ou Faux</option>
+                                </select>
+                                <div id="help-choix_unique" class="question-type-help text-muted">Une seule réponse correcte possible.</div>
+                                <div id="help-choix_multiple" class="question-type-help text-muted">Plusieurs réponses peuvent être correctes.</div>
+                                <div id="help-vrai_faux" class="question-type-help text-muted">Question avec réponse Vrai ou Faux uniquement.</div>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="points">Points <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="points" name="points" min="1" value="1" required>
+                                <small class="form-text text-muted">Nombre de points attribués à cette question.</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Section des choix pour QCM et Vrai/Faux -->
+                        <div id="section-choix">
+                            <div class="form-group">
+                                <label>Réponses possibles <span class="text-danger">*</span></label>
+                                <div id="choix-vrai-faux">
+                                    <div class="choix-container">
+                                        <input type="text" class="form-control" name="choix_vf[]" value="Vrai" readonly title="Option Vrai" placeholder="Vrai">
+                                        <div class="choix-correct">
+                                            <div class="custom-control custom-radio">
+                                                <input type="radio" class="custom-control-input" id="correct-vrai" name="correct_vf" value="0" required>
+                                                <label class="custom-control-label" for="correct-vrai">Correct</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="choix-container">
+                                        <input type="text" class="form-control" name="choix_vf[]" value="Faux" readonly title="Option Faux" placeholder="Faux">
+                                        <div class="choix-correct">
+                                            <div class="custom-control custom-radio">
+                                                <input type="radio" class="custom-control-input" id="correct-faux" name="correct_vf" value="1" required>
+                                                <label class="custom-control-label" for="correct-faux">Correct</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="choix-dynamiques">
+                                    <div class="choix-container">
+                                        <input type="text" class="form-control" name="choix[]" placeholder="Réponse 1" required>
+                                        <div class="choix-correct">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" id="correct-0" name="correct[]" value="0">
+                                                <label class="custom-control-label" for="correct-0">Correct</label>
+                                            </div>
+                                        </div>
+                                        <div class="choix-actions">
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-choix" disabled title="Supprimer cette réponse"><i class="fas fa-times"></i><span class="sr-only">Supprimer cette réponse</span></button>
+                                        </div>
+                                    </div>
+                                    <div class="choix-container">
+                                        <input type="text" class="form-control" name="choix[]" placeholder="Réponse 2" required>
+                                        <div class="choix-correct">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" id="correct-1" name="correct[]" value="1">
+                                                <label class="custom-control-label" for="correct-1">Correct</label>
+                                            </div>
+                                        </div>
+                                        <div class="choix-actions">
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-choix" title="Supprimer cette réponse"><i class="fas fa-times"></i><span class="sr-only">Supprimer cette réponse</span></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button type="button" id="add-choix" class="btn btn-sm btn-outline-primary btn-add-choix">
+                                    <i class="fas fa-plus"></i> Ajouter une réponse
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success mr-2"><i class="fas fa-plus"></i> Ajouter la question</button>
+                            <a href="{% url 'liste_quiz_professeur' %}" class="btn btn-secondary">Terminer</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Questions existantes ({{ questions|length }})</h6>
+                </div>
+                <div class="card-body">
+                    {% if questions %}
+                        <div class="questions-list">
+                            {% for question in questions %}
+                                <div class="question-item mb-3 p-3 border-left-success">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="font-weight-bold mb-1">{{ question.texte }}</h6>
+                                        <span class="badge badge-primary badge-pill">{{ question.points }} pts</span>
+                                    </div>
+                                    <div class="small text-muted mb-2">
+                                        Type: {{ question.get_type_display }}
+                                    </div>
+                                    <div class="choix-list">
+                                        <strong>Réponses:</strong>
+                                        <ul class="list-unstyled pl-3 mt-1 mb-0">
+                                            {% for choix in question.choix.all %}
+                                                <li class="{% if choix.est_correct %}text-success font-weight-bold{% endif %}">
+                                                    {% if choix.est_correct %}<i class="fas fa-check-circle text-success mr-1"></i>{% else %}<i class="fas fa-circle text-muted mr-1"></i>{% endif %}
+                                                    {{ choix.texte }}
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Aucune question ajoutée pour l'instant.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Afficher l'aide pour le type de question sélectionné
+    function updateQuestionTypeHelp() {
+        $('.question-type-help').hide();
+        var selectedType = $('#type_question').val();
+        $('#help-' + selectedType).show();
+        
+        // Gérer l'affichage des choix selon le type
+        if (selectedType === 'vrai_faux') {
+            $('#choix-vrai-faux').show();
+            $('#choix-dynamiques').hide();
+            $('#add-choix').hide();
+            // S'assurer que les champs vrai/faux sont requis
+            $('input[name="correct_vf"]').prop('required', true);
+            // Rendre les champs dynamiques non requis
+            $('#choix-dynamiques input[name="choix[]"]').prop('required', false);
+        } else {
+            $('#choix-vrai-faux').hide();
+            $('#choix-dynamiques').show();
+            $('#add-choix').show();
+            // Rendre les champs vrai/faux non requis
+            $('input[name="correct_vf"]').prop('required', false);
+            // Rendre les champs dynamiques requis
+            $('#choix-dynamiques input[name="choix[]"]').prop('required', true);
+        }
+        
+        // Pour le type choix unique, s'assurer qu'une seule réponse est correcte
+        if (selectedType === 'choix_unique') {
+            enforceUniqueCorrectAnswer();
+        }
+    }
+    
+    // Initialiser l'affichage
+    updateQuestionTypeHelp();
+    
+    // Mettre à jour l'affichage quand le type change
+    $('#type_question').change(function() {
+        updateQuestionTypeHelp();
+        enforceUniqueCorrectAnswer();
+    });
+    
+    // Compteur pour les nouveaux choix
+    var choixCounter = $('#choix-dynamiques .choix-container').length;
+    
+    // Ajouter un nouveau choix
+    $('#add-choix').click(function() {
+        var newChoix = $('<div class="choix-container">').html(
+            '<input type="text" class="form-control" name="choix[]" placeholder="Réponse ' + (choixCounter + 1) + '" required>' +
+            '<div class="choix-correct">' +
+                '<div class="custom-control custom-checkbox">' +
+                    '<input type="checkbox" class="custom-control-input" id="correct-' + choixCounter + '" name="correct[]" value="' + choixCounter + '">' +
+                    '<label class="custom-control-label" for="correct-' + choixCounter + '">Correct</label>' +
+                '</div>' +
+            '</div>' +
+            '<div class="choix-actions">' +
+                '<button type="button" class="btn btn-sm btn-outline-danger remove-choix"><i class="fas fa-times"></i></button>' +
+            '</div>'
+        );
+        
+        $('#choix-dynamiques').append(newChoix);
+        choixCounter++;
+        
+        // Activer tous les boutons de suppression si on a plus de 2 choix
+        if ($('#choix-dynamiques .choix-container').length > 2) {
+            $('.remove-choix').prop('disabled', false);
+        }
+    });
+    
+    // Supprimer un choix
+    $(document).on('click', '.remove-choix', function() {
+        $(this).closest('.choix-container').remove();
+        
+        // Désactiver les boutons de suppression si on a seulement 2 choix
+        if ($('#choix-dynamiques .choix-container').length <= 2) {
+            $('.remove-choix').prop('disabled', true);
+        }
+        
+        // Réindexer les valeurs des choix
+        $('#choix-dynamiques .choix-container').each(function(index) {
+            $(this).find('input[name="correct[]"]').val(index);
+        });
+    });
+    
+    // Pour le type choix unique, s'assurer qu'une seule réponse est correcte
+    function enforceUniqueCorrectAnswer() {
+        // Enlever d'abord tous les gestionnaires d'événements
+        $(document).off('change', 'input[name="correct[]"]');
+        
+        // Ajouter le gestionnaire uniquement pour le type choix_unique
+        if ($('#type_question').val() === 'choix_unique') {
+            $(document).on('change', 'input[name="correct[]"]', function() {
+                if ($(this).prop('checked')) {
+                    // Décocher les autres cases
+                    $('input[name="correct[]"]').not(this).prop('checked', false);
+                }
+            });
+        }
+        // Pour choix_multiple, on ne fait rien (permettre plusieurs sélections)
+    }
+    
+    // Validation du formulaire
+    $('#questionForm').submit(function(e) {
+        var selectedType = $('#type_question').val();
+        var valid = true;
+        
+        // Vérifier qu'au moins une réponse est marquée comme correcte
+        if (selectedType === 'vrai_faux') {
+            // Pour les questions vrai/faux, vérifier que l'un des boutons radio est sélectionné
+            if ($('input[name="correct_vf"]:checked').length === 0) {
+                alert('Veuillez sélectionner la réponse correcte (Vrai ou Faux).');
+                valid = false;
+            }
+        } else if (selectedType !== 'texte_court') {
+            // Pour les autres types de questions, vérifier les cases à cocher
+            if ($('input[name="correct[]"]:checked').length === 0) {
+                alert('Veuillez sélectionner au moins une réponse correcte.');
+                valid = false;
+            }
+            
+            // Pour le type choix unique, vérifier qu'une seule réponse est correcte
+            if (selectedType === 'choix_unique' && $('input[name="correct[]"]:checked').length > 1) {
+                alert('Pour une question à choix unique, veuillez sélectionner une seule réponse correcte.');
+                valid = false;
+            }
+        }
+        
+        if (!valid) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}
+

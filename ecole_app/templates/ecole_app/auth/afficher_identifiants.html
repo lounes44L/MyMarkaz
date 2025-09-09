@@ -1,0 +1,75 @@
+{% extends 'ecole_app/base_admin.html' %}
+
+{% block title %}Identifiants utilisateur | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Identifiants de connexion - {{ type_utilisateur }}</h6>
+                    <a href="{% if type_utilisateur == 'Élève' %}{% url 'liste_eleves' %}{% else %}{% url 'liste_professeurs' %}{% endif %}" class="btn btn-secondary btn-sm" title="Retour à la liste" aria-label="Retour à la liste">
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i> Retour
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <p><i class="fas fa-info-circle" aria-hidden="true"></i> Les identifiants de connexion suivants ont été générés pour <strong>{{ nom }}</strong>.</p>
+                        <p>Veuillez les conserver précieusement et les transmettre à l'utilisateur.</p>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tr>
+                                <th>Nom d'utilisateur</th>
+                                <td>{{ user.username }}</td>
+                            </tr>
+                            {% if temp_password %}
+                            <tr>
+                                <th>Mot de passe temporaire</th>
+                                <td>{{ temp_password }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <th>Type d'utilisateur</th>
+                                <td>{{ type_utilisateur }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <p><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> <strong>Attention :</strong> Le mot de passe temporaire n'est affiché qu'une seule fois. Après avoir fermé cette page, vous ne pourrez plus le consulter.</p>
+                        <p>L'utilisateur devra changer son mot de passe lors de sa première connexion.</p>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button class="btn btn-primary" onclick="window.print();" title="Imprimer les identifiants" aria-label="Imprimer les identifiants">
+                            <i class="fas fa-print" aria-hidden="true"></i> Imprimer
+                        </button>
+                        {% if type_utilisateur == 'Élève' %}
+                        <a href="{% url 'liste_eleves' %}" class="btn btn-secondary" title="Retour à la liste des élèves" aria-label="Retour à la liste des élèves">
+                            <i class="fas fa-list" aria-hidden="true"></i> Liste des élèves
+                        </a>
+                        {% else %}
+                        <a href="{% url 'liste_professeurs' %}" class="btn btn-secondary" title="Retour à la liste des professeurs" aria-label="Retour à la liste des professeurs">
+                            <i class="fas fa-list" aria-hidden="true"></i> Liste des professeurs
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Notification pour rappeler à l'utilisateur de ne pas fermer cette page sans avoir noté les informations
+    window.addEventListener('beforeunload', function (e) {
+        e.preventDefault();
+        e.returnValue = 'Avez-vous bien noté ou imprimé les identifiants ? Ces informations ne seront plus accessibles après avoir quitté cette page.';
+    });
+</script>
+{% endblock %}

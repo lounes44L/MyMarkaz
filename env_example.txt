@@ -1,0 +1,11 @@
+# Configuration pour Cloudflare D1
+# Copiez ce fichier vers .env et remplissez vos valeurs
+
+# Cloudflare D1 Configuration
+CLOUDFLARE_ACCOUNT_ID=your_account_id_here
+CLOUDFLARE_DATABASE_ID=your_database_id_here
+CLOUDFLARE_API_TOKEN=your_api_token_here
+
+# Django Settings
+SECRET_KEY=django-insecure-3k4ad-xui)q4+z$q33rbg(b3qp%kom&sbhay6)i(3!g=+3z(ce
+DEBUG=True

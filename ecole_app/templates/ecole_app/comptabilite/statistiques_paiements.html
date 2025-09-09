@@ -1,0 +1,176 @@
+{% extends 'ecole_app/base_admin.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="h3 mb-4">Statistiques des Paiements</h1>
+            
+            <!-- Cartes de statistiques -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title">Total Paiements</h4>
+                                    <h2 class="mb-0">{{ total_paiements|floatformat:2 }} €</h2>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-euro-sign fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title">Nombre de Paiements</h4>
+                                    <h2 class="mb-0">{{ nombre_paiements }}</h2>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-receipt fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title">Moyenne par paiement</h4>
+                                    <h2 class="mb-0">
+                                        {% if nombre_paiements > 0 %}
+                                            {{ moyenne_paiement|floatformat:2 }} €
+                                        {% else %}
+                                            0.00 €
+                                        {% endif %}
+                                    </h2>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-chart-line fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graphiques et tableaux -->
+            <div class="row">
+                <!-- Paiements par mois -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Paiements par mois</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if paiements_par_mois %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Mois</th>
+                                                <th>Montant</th>
+                                                <th>Nombre</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in paiements_par_mois %}
+                                            <tr>
+                                                <td>{{ item.mois|date:"F Y" }}</td>
+                                                <td>{{ item.total|floatformat:2 }} €</td>
+                                                <td>{{ item.count }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p>Aucun paiement enregistré.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paiements par méthode -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Paiements par méthode</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if paiements_par_methode %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Méthode</th>
+                                                <th>Montant</th>
+                                                <th>Nombre</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in paiements_par_methode %}
+                                            <tr>
+                                                <td>{{ item.methode|title }}</td>
+                                                <td>{{ item.total|floatformat:2 }} €</td>
+                                                <td>{{ item.count }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p>Aucun paiement enregistré.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top élèves -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Top 10 élèves par paiement</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if top_eleves %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Élève</th>
+                                                <th>Montant total</th>
+                                                <th>Nombre de paiements</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in top_eleves %}
+                                            <tr>
+                                                <td>{{ item.eleve__nom }} {{ item.eleve__prenom }}</td>
+                                                <td>{{ item.total|floatformat:2 }} €</td>
+                                                <td>{{ item.count }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p>Aucun paiement enregistré.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

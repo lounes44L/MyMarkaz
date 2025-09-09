@@ -1,0 +1,139 @@
+{% extends 'ecole_app/base.html' %}
+{% load static %}
+
+{% block title %}Liste des Notes d'Examen{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Liste des Notes d'Examen</h1>
+        <div>
+            <a href="{% url 'export_notes_excel' %}{% if request.GET.classe %}?classe={{ request.GET.classe }}{% endif %}{% if request.GET.eleve %}&eleve={{ request.GET.eleve }}{% endif %}" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm mr-2">
+                <i class="fas fa-file-excel fa-sm text-white-50"></i> Exporter en Excel
+            </a>
+            <a href="{% url 'ajouter_note' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-plus fa-sm text-white-50"></i> Ajouter une note
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filtres</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row">
+                <div class="col-md-5 mb-3">
+                    <label for="classe">Classe</label>
+                    <select name="classe" id="classe" class="form-control">
+                        <option value="">Toutes les classes</option>
+                        {% for classe in classes %}
+                            <option value="{{ classe.id }}" {% if classe_selectionnee == classe.id|stringformat:"s" %}selected{% endif %}>
+                                {{ classe.nom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-5 mb-3">
+                    <label for="eleve">Élève</label>
+                    <select name="eleve" id="eleve" class="form-control">
+                        <option value="">Tous les élèves</option>
+                        {% for eleve in eleves %}
+                            <option value="{{ eleve.id }}" {% if eleve_selectionne == eleve.id|stringformat:"s" %}selected{% endif %}>
+                                {{ eleve.nom }} {{ eleve.prenom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 mb-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary btn-block">Filtrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tableau des notes -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Notes d'examen</h6>
+        </div>
+        <div class="card-body">
+            {% if notes %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Élève</th>
+                                <th>Classe</th>
+                                <th>Nom de l'examen</th>
+                                <th>Note</th>
+                                <th>Pourcentage</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for note in notes %}
+                                <tr>
+                                    <td>{{ note.date_examen }}</td>
+                                    <td>{{ note.eleve.nom }} {{ note.eleve.prenom }}</td>
+                                    <td>{{ note.classe.nom }}</td>
+                                    <td>{{ note.titre }}</td>
+                                    <td>{{ note.note }}/{{ note.note_max }}</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar {{ note.get_couleur_badge }}" role="progressbar" 
+                                                style="width: {{ note.pourcentage }}%" 
+                                                aria-valuenow="{{ note.pourcentage }}" aria-valuemin="0" aria-valuemax="100">
+                                                {{ note.pourcentage }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'modifier_note' note.id %}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'supprimer_note' note.id %}" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    Aucune note d'examen trouvée. Utilisez le bouton "Ajouter une note" pour créer votre première note.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialiser DataTable
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            },
+            "order": [[0, "desc"]] // Trier par date décroissante
+        });
+
+        // Mise à jour dynamique des élèves en fonction de la classe sélectionnée
+        $('#classe').change(function() {
+            var classeId = $(this).val();
+            if (classeId) {
+                // Si une classe est sélectionnée, on pourrait ajouter un appel AJAX pour filtrer les élèves
+                // Ce serait une amélioration future
+            }
+        });
+    });
+</script>
+{% endblock %}

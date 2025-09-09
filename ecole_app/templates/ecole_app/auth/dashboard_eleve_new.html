@@ -1,0 +1,226 @@
+{% extends 'ecole_app/base_admin.html' %}
+
+{% block title %}Tableau de bord Élève | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Mon espace élève</h1>
+    </div>
+
+    <!-- Les messages sont déjà affichés dans le template parent (base_admin.html) -->
+
+    <!-- Informations élève -->
+    <div class="row mb-4">
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Mon profil</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ eleve.nom }} {{ eleve.prenom }}</div>
+                            {% if eleve.email %}
+                            <div class="mt-2 text-gray-600">
+                                <i class="fas fa-envelope" aria-hidden="true"></i> {{ eleve.email }}
+                            </div>
+                            {% endif %}
+                            {% if eleve.telephone %}
+                            <div class="mt-2 text-gray-600">
+                                <i class="fas fa-phone" aria-hidden="true"></i> {{ eleve.telephone }}
+                            </div>
+                            {% endif %}
+                            {% if eleve.date_naissance %}
+                            <div class="mt-2 text-gray-600">
+                                <i class="fas fa-calendar" aria-hidden="true"></i> {{ eleve.date_naissance|date:"d/m/Y" }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex flex-column">
+                    <a href="{% url 'reset_password' %}" class="btn btn-sm btn-primary mb-2" title="Modifier mon mot de passe" aria-label="Modifier mon mot de passe">
+                        <i class="fas fa-key" aria-hidden="true"></i> Changer de mot de passe
+                    </a>
+                    <a href="{% url 'profile' %}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-user" aria-hidden="true"></i> Voir mon profil
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Mes classes</div>
+                            <div>
+    {% if eleve.classes.all %}
+        {% for classe in eleve.classes.all %}
+            <div class="mb-2">
+                <span class="badge bg-success me-1 mb-1">{{ classe.nom }}</span><br>
+                {% if classe.professeur %}
+                    <span class="text-muted" style="font-size: 0.95em">
+                        <i class="fas fa-chalkboard-teacher" aria-hidden="true"></i> Professeur : {{ classe.professeur.get_full_name|default:classe.professeur }}
+                    </span>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <span class="text-muted">Non assigné</span>
+    {% endif %}
+</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-school fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Objectifs mensuels -->
+    {% include 'ecole_app/eleves/objectifs_section.html' %}
+
+    <!-- Carnet pédagogique -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Mon carnet pédagogique</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-4">
+                        <p class="text-muted">Consultez votre carnet pédagogique.</p>
+                        <a href="{% url 'carnet_pedagogique' eleve.id %}" class="btn btn-info">
+                            <i class="fas fa-book" aria-hidden="true"></i> Voir mon carnet pédagogique
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section des paiements supprimée -->
+    
+    <!-- Présences -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Mes présences</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-4">
+                        <p class="text-muted">Consultez votre historique de présences.</p>
+                        <a href="{% url 'presences_eleve' eleve.id %}" class="btn btn-primary">
+                            <i class="fas fa-clipboard-check" aria-hidden="true"></i> Voir mes présences
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Cours partagés et Quiz -->
+    <div class="row">
+        <!-- Cours partagés -->
+        <div class="col-xl-6 col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Cours partagés</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-4">
+                        <i class="fas fa-book fa-3x text-gray-300 mb-3"></i>
+                        <p class="text-muted">Accédez aux cours partagés par vos professeurs.</p>
+                        <a href="{% url 'liste_cours_eleve' %}" class="btn btn-primary">
+                            <i class="fas fa-book-reader" aria-hidden="true"></i> Voir les cours partagés
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quiz -->
+        <div class="col-xl-6 col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quiz</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-4">
+                        <i class="fas fa-question-circle fa-3x text-gray-300 mb-3"></i>
+                        <p class="text-muted">Participez aux quiz créés par vos professeurs.</p>
+                        <a href="{% url 'liste_quiz_eleve' %}" class="btn btn-primary">
+                            <i class="fas fa-tasks" aria-hidden="true"></i> Voir les quiz disponibles
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        // DataTable pour les paiements
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            },
+            "order": [[0, "desc"]]
+        });
+        
+        // Initialisation du graphique de progression si l'élément existe
+        if (document.getElementById('progressionChart')) {
+            var ctx = document.getElementById('progressionChart').getContext('2d');
+            var progressionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [{{ progression_pourcentage }}, 100 - {{ progression_pourcentage }}],
+                        backgroundColor: ['#4e73df', '#eaecf4'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '80%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Gestion du formulaire d'objectif
+        $('#type_objectif').change(function() {
+            var selectedType = $(this).val();
+            $('.objectif-field').hide();
+            if (selectedType === 'sourate') {
+                $('#sourate_field').show();
+            } else if (selectedType === 'exercice') {
+                $('#exercice_field').show();
+            } else if (selectedType === 'libre') {
+                $('#description_field').show();
+            }
+        });
+        
+        // Déclencher le changement au chargement pour initialiser l'affichage
+        $('#type_objectif').trigger('change');
+    });
+</script>
+{% endblock %}

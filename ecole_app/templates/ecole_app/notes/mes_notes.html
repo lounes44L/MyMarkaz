@@ -1,0 +1,228 @@
+{% extends 'ecole_app/base_admin.html' %}
+
+{% block title %}Mes Notes | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Mes Notes</h1>
+        {% if request.user.professeur %}
+        <a href="{% url 'dashboard_professeur' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour au tableau de bord
+        </a>
+        {% elif request.user.eleve %}
+        <a href="{% url 'dashboard_eleve' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour au tableau de bord
+        </a>
+        {% else %}
+        <a href="{% url 'dashboard' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour au tableau de bord
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Statistiques -->
+    <div class="row">
+        <!-- Moyenne générale -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Moyenne générale
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.moyenne_generale|floatformat:1 }}/20</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-star fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Nombre d'examens -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Nombre d'examens
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_notes }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dernière note -->
+        {% if stats.derniere_note %}
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-{{ stats.derniere_note.couleur_badge }} shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-{{ stats.derniere_note.couleur_badge }} text-uppercase mb-1">
+                                Dernière note ({{ stats.derniere_note.date_examen|date:"d/m/Y" }})
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ stats.derniere_note.note }}/{{ stats.derniere_note.note_max }}
+                                <span class="badge badge-{{ stats.derniere_note.couleur_badge }}">{{ stats.derniere_note.mention }}</span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-graduation-cap fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Historique des notes -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Historique de mes notes</h6>
+            <div>
+                <a href="{% url 'export_notes_excel' %}{% if request.user.eleve %}?eleve={{ request.user.eleve.id }}{% endif %}" class="btn btn-sm btn-success mr-2">
+                    <i class="fas fa-file-excel"></i> Exporter en Excel
+                </a>
+                <a href="{% url 'historique_quiz_eleve' %}" class="btn btn-sm btn-info">
+                    <i class="fas fa-tasks"></i> Voir mes résultats de quiz
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if notes %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Examen</th>
+                            <th>Type</th>
+                            <th>Note</th>
+                            <th>Professeur</th>
+                            <th>Commentaire</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for note in notes %}
+                        <tr>
+                            <td>{{ note.date_examen|date:"d/m/Y" }}</td>
+                            <td>{{ note.titre }}</td>
+                            <td>{{ note.get_type_examen_display }}</td>
+                            <td>
+                                <span class="badge badge-{{ note.couleur_badge }} p-2 {% if note.couleur_badge == 'warning' or note.couleur_badge == 'light' %}text-dark{% else %}text-white{% endif %}">
+                                    {{ note.note }}/{{ note.note_max }}
+                                </span>
+                            </td>
+                            <td>{{ note.professeur.nom }}</td>
+                            <td>
+                                {% if note.commentaire %}
+                                <button type="button" class="btn btn-sm btn-outline-info" data-toggle="modal" data-target="#commentModal{{ note.id }}">
+                                    <i class="fas fa-comment"></i> Voir
+                                </button>
+                                
+                                <!-- Modal -->
+                                <div class="modal fade" id="commentModal{{ note.id }}" tabindex="-1" role="dialog" aria-labelledby="commentModalLabel{{ note.id }}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="commentModalLabel{{ note.id }}">Commentaire du professeur</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                {{ note.commentaire|linebreaks }}
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <span class="text-muted">Aucun</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <p class="text-muted">Aucune note n'a été enregistrée pour le moment.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Statistiques par type d'examen -->
+    {% if stats.notes_par_type %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Statistiques par type d'examen</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for type_nom, type_stats in stats.notes_par_type.items %}
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        {{ type_nom }} ({{ type_stats.count }})
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ type_stats.moyenne|floatformat:1 }}/20</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            },
+            "order": [[0, "desc"]]
+        });
+    });
+</script>
+{% endblock %}

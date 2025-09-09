@@ -1,0 +1,67 @@
+# Recette complète pour reconstruire l'application Gestion Markaz sur base44.com (Django-like)
+
+## 1. Modélisation des données
+
+### Utilisateurs
+- Utilisateur : hérite du modèle User (authentification Django)
+- Professeur : lié à User, champs : nom, prénom, email, classe(s) assignée(s)
+- Élève : lié à User, champs : nom, prénom, email, téléphone, date_naissance, classe, creneaux, montant_total, annee_scolaire, archive
+
+### Scolarité
+- Classe : nom, professeur, composante
+- AnneeScolaire : nom (ex: 2025-2026), date_debut, date_fin, active, composante
+- Creneau : nom, horaire
+- Paiement : élève, montant, date, annee_scolaire
+- PresenceEleve : élève, date, present, justifie, commentaire, classe, creneau, composante, date_creation
+
+### Carnet pédagogique
+- CarnetPedagogique : élève, contenu, date, professeur
+
+## 2. Authentification & rôles
+- 3 types d'utilisateurs : admin, professeur, élève
+- Redirection après login selon le rôle
+- Middleware pour forcer la sélection d'une composante (hors élève)
+
+## 3. Vues principales
+- Dashboard élève : profil, classe, créneau, paiements, carnet pédagogique, présences
+- Dashboard professeur : classes assignées, accès carnets pédagogiques, gestion présences
+- Dashboard admin : gestion utilisateurs, classes, composantes, années scolaires
+
+## 4. Fonctions clés
+- Accès au profil depuis dashboard élève (bouton dédié)
+- Changement de mot de passe
+- Affichage dynamique des paiements, barre de progression (couleur selon pourcentage)
+- Historique des présences (présent/absent/justifié)
+- Gestion des carnets pédagogiques (consultation, édition)
+- Intégration Coran : JSON sourates, navigation par sourate/page, affichage multilingue
+
+## 5. Templates (pages)
+- login.html : formulaire de connexion sécurisé
+- dashboard_eleve.html : profil, paiements, carnet, présences
+- profile.html : infos utilisateur, boutons dashboard/changer mot de passe
+- presences/eleve.html : historique des présences élève
+- presences/classe.html : gestion collective des présences
+- anneescolaire/liste.html : gestion des années scolaires
+
+## 6. Logique métier
+- Filtrer les paiements et présences par élève et année scolaire active
+- Les présences ne sont PAS liées directement à l'année scolaire (pas de champ annee_scolaire dans PresenceEleve)
+- Les carnets pédagogiques sont liés à l'élève et au professeur
+- Les droits d'accès sont contrôlés dans chaque vue (admin, professeur, élève)
+
+## 7. Conseils de migration base44.com
+- Créer d'abord les modèles (tables) et relations (ForeignKey)
+- Recréer les vues et routes principales (login, dashboard, profil, gestion présences, paiements)
+- Adapter les templates pour correspondre à la navigation base44
+- Penser à déplacer le CSS inline vers des fichiers dédiés
+- Tester chaque fonctionnalité après migration (login, accès profil, historique présences, paiement, carnet)
+
+## 8. Bonus
+- Prévoir une page de préférences utilisateur (thème, année scolaire active)
+- Ajouter la gestion des justificatifs d'absence
+- Optimiser l'affichage mobile/responsive
+
+---
+
+**Ce fichier retrace toute l'architecture et la logique de l'application d'origine. Il te suffit de suivre chaque section pour la reconstruire sur base44.com ou tout autre framework Django-like.**
+

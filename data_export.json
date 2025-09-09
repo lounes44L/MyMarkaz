@@ -1,0 +1,3465 @@
+{
+  "ecole_app.parametresite": [
+    {
+      "model": "ecole_app.parametresite",
+      "pk": 1,
+      "fields": {
+        "montant_defaut_eleve": "400.00",
+        "date_modification": "2025-08-25T09:13:18.169Z"
+      }
+    }
+  ],
+  "ecole_app.composante": [
+    {
+      "model": "ecole_app.composante",
+      "pk": 1,
+      "fields": {
+        "nom": "Enfants",
+        "description": "Composante par défaut",
+        "active": true,
+        "date_creation": "2025-07-21T11:52:04.447Z"
+      }
+    },
+    {
+      "model": "ecole_app.composante",
+      "pk": 6,
+      "fields": {
+        "nom": "Femmes",
+        "description": "",
+        "active": true,
+        "date_creation": "2025-08-25T09:44:09.376Z"
+      }
+    },
+    {
+      "model": "ecole_app.composante",
+      "pk": 2,
+      "fields": {
+        "nom": "Hommes",
+        "description": "",
+        "active": true,
+        "date_creation": "2025-07-21T11:53:21.459Z"
+      }
+    }
+  ],
+  "ecole_app.creneau": [
+    {
+      "model": "ecole_app.creneau",
+      "pk": 9,
+      "fields": {
+        "composante": 1,
+        "nom": "samedi matin",
+        "jour": "samedi",
+        "heure_debut": "20:00:00",
+        "heure_fin": "22:30:00",
+        "archive": false,
+        "date_creation": "2025-07-13T10:08:13.974Z"
+      }
+    },
+    {
+      "model": "ecole_app.creneau",
+      "pk": 11,
+      "fields": {
+        "composante": 1,
+        "nom": "lundi",
+        "jour": "lundi",
+        "heure_debut": "12:22:00",
+        "heure_fin": "12:53:00",
+        "archive": false,
+        "date_creation": "2025-07-21T08:56:37.018Z"
+      }
+    },
+    {
+      "model": "ecole_app.creneau",
+      "pk": 13,
+      "fields": {
+        "composante": 2,
+        "nom": "mardi soir",
+        "jour": "mardi",
+        "heure_debut": "20:00:00",
+        "heure_fin": "22:30:00",
+        "archive": false,
+        "date_creation": "2025-07-22T11:21:06.432Z"
+      }
+    },
+    {
+      "model": "ecole_app.creneau",
+      "pk": 14,
+      "fields": {
+        "composante": 1,
+        "nom": "jeudi soir",
+        "jour": "jeudi",
+        "heure_debut": "20:00:00",
+        "heure_fin": "22:00:00",
+        "archive": false,
+        "date_creation": "2025-08-03T08:51:26.199Z"
+      }
+    },
+    {
+      "model": "ecole_app.creneau",
+      "pk": 16,
+      "fields": {
+        "composante": 1,
+        "nom": "ded",
+        "jour": "mercredi",
+        "heure_debut": null,
+        "heure_fin": null,
+        "archive": false,
+        "date_creation": "2025-08-25T14:34:06.389Z"
+      }
+    }
+  ],
+  "ecole_app.anneescolaire": [
+    {
+      "model": "ecole_app.anneescolaire",
+      "pk": 1,
+      "fields": {
+        "composante": 1,
+        "nom": "2025-2026",
+        "date_debut": "2025-07-17",
+        "date_fin": "2026-11-11",
+        "active": true,
+        "date_creation": "2025-07-17T10:14:01.002Z"
+      }
+    },
+    {
+      "model": "ecole_app.anneescolaire",
+      "pk": 5,
+      "fields": {
+        "composante": 6,
+        "nom": "2024-2025",
+        "date_debut": "2024-09-01",
+        "date_fin": "2025-06-30",
+        "active": false,
+        "date_creation": "2025-08-25T09:44:09.382Z"
+      }
+    }
+  ],
+  "ecole_app.professeur": [
+    {
+      "model": "ecole_app.professeur",
+      "pk": 7,
+      "fields": {
+        "user": 8,
+        "nom": "lalaoui louness",
+        "email": "",
+        "telephone": "",
+        "mot_de_passe_en_clair": "jUSkPqO1",
+        "indemnisation": "0.00",
+        "date_creation": "2025-07-13T14:08:39.704Z",
+        "composantes": [
+          1,
+          6,
+          2
+        ]
+      }
+    },
+    {
+      "model": "ecole_app.professeur",
+      "pk": 13,
+      "fields": {
+        "user": 32,
+        "nom": "Ahmad Diop",
+        "email": "",
+        "telephone": "",
+        "mot_de_passe_en_clair": "3wVWuRui",
+        "indemnisation": "0.00",
+        "date_creation": "2025-08-03T09:04:01.343Z",
+        "composantes": [
+          1,
+          6,
+          2
+        ]
+      }
+    },
+    {
+      "model": "ecole_app.professeur",
+      "pk": 14,
+      "fields": {
+        "user": 33,
+        "nom": "azabar aboubakr",
+        "email": "",
+        "telephone": "",
+        "mot_de_passe_en_clair": "Zw1gGWt0",
+        "indemnisation": "0.00",
+        "date_creation": "2025-08-03T09:04:27.554Z",
+        "composantes": [
+          1,
+          6,
+          2
+        ]
+      }
+    },
+    {
+      "model": "ecole_app.professeur",
+      "pk": 16,
+      "fields": {
+        "user": 35,
+        "nom": "samy leffad",
+        "email": "",
+        "telephone": "",
+        "mot_de_passe_en_clair": "eAtCq7HK",
+        "indemnisation": "0.00",
+        "date_creation": "2025-08-03T10:19:09.791Z",
+        "composantes": [
+          1,
+          6,
+          2
+        ]
+      }
+    },
+    {
+      "model": "ecole_app.professeur",
+      "pk": 17,
+      "fields": {
+        "user": 36,
+        "nom": "bourriche moh",
+        "email": "",
+        "telephone": "",
+        "mot_de_passe_en_clair": "I9YSwaSf",
+        "indemnisation": "0.00",
+        "date_creation": "2025-08-03T10:21:05.714Z",
+        "composantes": [
+          1,
+          6,
+          2
+        ]
+      }
+    },
+    {
+      "model": "ecole_app.professeur",
+      "pk": 18,
+      "fields": {
+        "user": 37,
+        "nom": "ibrahim mahmat",
+        "email": "",
+        "telephone": "",
+        "mot_de_passe_en_clair": "hKJAf0Gj",
+        "indemnisation": "0.00",
+        "date_creation": "2025-08-03T10:32:50.736Z",
+        "composantes": [
+          1,
+          6,
+          2
+        ]
+      }
+    },
+    {
+      "model": "ecole_app.professeur",
+      "pk": 22,
+      "fields": {
+        "user": 42,
+        "nom": "Taleb abdelhamid",
+        "email": "",
+        "telephone": "",
+        "mot_de_passe_en_clair": "hSnGVe6k",
+        "indemnisation": "0.00",
+        "date_creation": "2025-08-07T20:24:20.562Z",
+        "composantes": [
+          1,
+          6,
+          2
+        ]
+      }
+    },
+    {
+      "model": "ecole_app.professeur",
+      "pk": 23,
+      "fields": {
+        "user": 68,
+        "nom": "Jules demaimay",
+        "email": "",
+        "telephone": "",
+        "mot_de_passe_en_clair": null,
+        "indemnisation": "0.00",
+        "date_creation": "2025-08-25T13:48:41.005Z",
+        "composantes": [
+          1,
+          6,
+          2
+        ]
+      }
+    },
+    {
+      "model": "ecole_app.professeur",
+      "pk": 24,
+      "fields": {
+        "user": 69,
+        "nom": "karim elh",
+        "email": "",
+        "telephone": "",
+        "mot_de_passe_en_clair": null,
+        "indemnisation": "0.00",
+        "date_creation": "2025-08-25T13:49:53.247Z",
+        "composantes": [
+          1,
+          6,
+          2
+        ]
+      }
+    },
+    {
+      "model": "ecole_app.professeur",
+      "pk": 25,
+      "fields": {
+        "user": 70,
+        "nom": "ahmad bary",
+        "email": "",
+        "telephone": "",
+        "mot_de_passe_en_clair": null,
+        "indemnisation": "0.00",
+        "date_creation": "2025-08-25T13:50:56.005Z",
+        "composantes": [
+          1,
+          6,
+          2
+        ]
+      }
+    },
+    {
+      "model": "ecole_app.professeur",
+      "pk": 26,
+      "fields": {
+        "user": 71,
+        "nom": "rayen tahri",
+        "email": "",
+        "telephone": "",
+        "mot_de_passe_en_clair": "raytah6413",
+        "indemnisation": "0.00",
+        "date_creation": "2025-08-25T13:59:46.556Z",
+        "composantes": [
+          1,
+          6,
+          2
+        ]
+      }
+    },
+    {
+      "model": "ecole_app.professeur",
+      "pk": 27,
+      "fields": {
+        "user": 72,
+        "nom": "chikh saiddd",
+        "email": "",
+        "telephone": "",
+        "mot_de_passe_en_clair": "chisai4203",
+        "indemnisation": "0.00",
+        "date_creation": "2025-08-25T14:34:54.002Z",
+        "composantes": [
+          1,
+          6,
+          2
+        ]
+      }
+    },
+    {
+      "model": "ecole_app.professeur",
+      "pk": 28,
+      "fields": {
+        "user": 74,
+        "nom": "administration",
+        "email": "lalaouilounes2@gmail.com",
+        "telephone": null,
+        "mot_de_passe_en_clair": "TGdWcNkI",
+        "indemnisation": "0.00",
+        "date_creation": "2025-08-25T17:42:02.829Z",
+        "composantes": []
+      }
+    }
+  ],
+  "ecole_app.classe": [
+    {
+      "model": "ecole_app.classe",
+      "pk": 8,
+      "fields": {
+        "composante": 1,
+        "nom": "Lounes",
+        "professeur": 27,
+        "creneau": 11,
+        "capacite": 7,
+        "annee_scolaire": null,
+        "date_creation": "2025-07-13T10:14:13.964Z"
+      }
+    },
+    {
+      "model": "ecole_app.classe",
+      "pk": 9,
+      "fields": {
+        "composante": 1,
+        "nom": "lecture",
+        "professeur": 7,
+        "creneau": 11,
+        "capacite": 13,
+        "annee_scolaire": 1,
+        "date_creation": "2025-07-13T14:09:30.306Z"
+      }
+    },
+    {
+      "model": "ecole_app.classe",
+      "pk": 13,
+      "fields": {
+        "composante": 1,
+        "nom": "Lecture accelerée",
+        "professeur": 13,
+        "creneau": 9,
+        "capacite": 20,
+        "annee_scolaire": 1,
+        "date_creation": "2025-07-16T08:44:16.720Z"
+      }
+    },
+    {
+      "model": "ecole_app.classe",
+      "pk": 17,
+      "fields": {
+        "composante": 1,
+        "nom": "Mémorisation",
+        "professeur": 13,
+        "creneau": null,
+        "capacite": 20,
+        "annee_scolaire": 1,
+        "date_creation": "2025-07-16T08:45:29.427Z"
+      }
+    },
+    {
+      "model": "ecole_app.classe",
+      "pk": 19,
+      "fields": {
+        "composante": 2,
+        "nom": "memo",
+        "professeur": 13,
+        "creneau": 11,
+        "capacite": 20,
+        "annee_scolaire": null,
+        "date_creation": "2025-08-21T12:14:50.674Z"
+      }
+    },
+    {
+      "model": "ecole_app.classe",
+      "pk": 20,
+      "fields": {
+        "composante": 1,
+        "nom": "deed",
+        "professeur": 17,
+        "creneau": 9,
+        "capacite": 20,
+        "annee_scolaire": null,
+        "date_creation": "2025-08-25T13:09:31.225Z"
+      }
+    }
+  ],
+  "ecole_app.eleve": [
+    {
+      "model": "ecole_app.eleve",
+      "pk": 1,
+      "fields": {
+        "composante": 1,
+        "user": null,
+        "nom": "ded",
+        "prenom": "dz",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": null,
+        "classe": null,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-07-13T08:59:57.591Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 6,
+      "fields": {
+        "composante": 1,
+        "user": null,
+        "nom": "Leroy",
+        "prenom": "Lucas",
+        "prenom_pere": "vava",
+        "prenom_mere": "yemma",
+        "mot_de_passe_en_clair": null,
+        "classe": 9,
+        "annee_scolaire": null,
+        "date_naissance": "2002-02-06",
+        "telephone": "0693690428",
+        "telephone_secondaire": "07",
+        "adresse": "24 rue de Paris, 75000 Paris",
+        "email": "eleve1@example.com",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": "",
+        "date_creation": "2025-07-13T09:43:01.676Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 7,
+      "fields": {
+        "composante": 1,
+        "user": null,
+        "nom": "Petit",
+        "prenom": "Hugo",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": null,
+        "classe": null,
+        "annee_scolaire": null,
+        "date_naissance": "2003-01-25",
+        "telephone": "0621227152",
+        "telephone_secondaire": null,
+        "adresse": "23 rue de Paris, 75000 Paris",
+        "email": "eleve2@example.com",
+        "remarque": null,
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-07-13T09:43:01.688Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 9,
+      "fields": {
+        "composante": 1,
+        "user": null,
+        "nom": "Moreau",
+        "prenom": "Léa",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": null,
+        "classe": null,
+        "annee_scolaire": null,
+        "date_naissance": "2006-07-10",
+        "telephone": "0682342025",
+        "telephone_secondaire": null,
+        "adresse": "94 rue de Paris, 75000 Paris",
+        "email": "eleve4@example.com",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-07-13T09:43:01.711Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 10,
+      "fields": {
+        "composante": 1,
+        "user": null,
+        "nom": "Michel",
+        "prenom": "Théo",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": null,
+        "classe": 13,
+        "annee_scolaire": null,
+        "date_naissance": "2006-06-16",
+        "telephone": "0689246376",
+        "telephone_secondaire": null,
+        "adresse": "54 rue de Paris, 75000 Paris",
+        "email": "eleve5@example.com",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": "",
+        "date_creation": "2025-07-13T09:43:01.723Z",
+        "montant_total": "400.00",
+        "classes": [
+          8,
+          13
+        ],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 11,
+      "fields": {
+        "composante": 1,
+        "user": null,
+        "nom": "Moreau",
+        "prenom": "Léa",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": null,
+        "classe": null,
+        "annee_scolaire": null,
+        "date_naissance": "2000-06-24",
+        "telephone": "0692246686",
+        "telephone_secondaire": null,
+        "adresse": "5 rue de Paris, 75000 Paris",
+        "email": "eleve6@example.com",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-07-13T09:43:01.736Z",
+        "montant_total": "400.00",
+        "classes": [
+          9
+        ],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 16,
+      "fields": {
+        "composante": 1,
+        "user": null,
+        "nom": "YASMINE",
+        "prenom": "SS",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": null,
+        "classe": 8,
+        "annee_scolaire": null,
+        "date_naissance": "2002-11-11",
+        "telephone": "2222",
+        "telephone_secondaire": null,
+        "adresse": "DDZ",
+        "email": "lalaouilounes2@gmail.com",
+        "remarque": null,
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-07-13T09:47:23.457Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 19,
+      "fields": {
+        "composante": 1,
+        "user": 13,
+        "nom": "julie",
+        "prenom": "heurel",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "jYK66361",
+        "classe": 9,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-07-13T22:21:22.810Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 20,
+      "fields": {
+        "composante": 1,
+        "user": 14,
+        "nom": "lounes",
+        "prenom": "lalaoui",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "9zsEKkcl",
+        "classe": 9,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": null,
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-07-14T09:49:25.636Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 21,
+      "fields": {
+        "composante": 1,
+        "user": 15,
+        "nom": "mmadou",
+        "prenom": "ba",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "mmadou.ba1",
+        "classe": 8,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "testaloune@gmail.fr",
+        "remarque": null,
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-07-14T10:10:59.838Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 23,
+      "fields": {
+        "composante": 1,
+        "user": 17,
+        "nom": "Benchabane",
+        "prenom": "Yasmine",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "benchabane.yasmine1",
+        "classe": null,
+        "annee_scolaire": 1,
+        "date_naissance": "2002-04-04",
+        "telephone": "0760108442",
+        "telephone_secondaire": null,
+        "adresse": "52 Avenue de l'épi d'or",
+        "email": "lalaouilounes2@gmail.com",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": "",
+        "date_creation": "2025-07-16T10:26:27.325Z",
+        "montant_total": "400.00",
+        "classes": [
+          9
+        ],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 24,
+      "fields": {
+        "composante": 1,
+        "user": 18,
+        "nom": "Lalaoui",
+        "prenom": "Alicia",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "lalaoui.alicia1",
+        "classe": null,
+        "annee_scolaire": null,
+        "date_naissance": "2004-10-04",
+        "telephone": "0760108442",
+        "telephone_secondaire": null,
+        "adresse": "52 Avenue de l'épi d'or",
+        "email": "lalaouilounes2@gmail.com",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-07-16T10:27:45.671Z",
+        "montant_total": "400.00",
+        "classes": [
+          9,
+          17
+        ],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 25,
+      "fields": {
+        "composante": 1,
+        "user": 19,
+        "nom": "Lalaoui",
+        "prenom": "Lounes",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "lalaoui.lounes1",
+        "classe": null,
+        "annee_scolaire": null,
+        "date_naissance": "2004-10-04",
+        "telephone": "0760108442",
+        "telephone_secondaire": null,
+        "adresse": "52 Avenue de l'épi d'or",
+        "email": "lalaouilounes2@gmail.com",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": "",
+        "date_creation": "2025-07-16T10:32:24.742Z",
+        "montant_total": "400.00",
+        "classes": [
+          8,
+          13,
+          17
+        ],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 26,
+      "fields": {
+        "composante": 1,
+        "user": 20,
+        "nom": "leffad",
+        "prenom": "samy",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "Ja3igmRU",
+        "classe": 8,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": null,
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-07-16T12:02:34.103Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 27,
+      "fields": {
+        "composante": 1,
+        "user": 21,
+        "nom": "dzzd",
+        "prenom": "qdqz",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "eED35Rkf",
+        "classe": 9,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": "dzqd",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-07-16T12:21:59.875Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 28,
+      "fields": {
+        "composante": 1,
+        "user": 22,
+        "nom": "elh",
+        "prenom": "karim",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "l3xogQgh",
+        "classe": 17,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-07-16T12:22:16.880Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 30,
+      "fields": {
+        "composante": 1,
+        "user": 24,
+        "nom": "yasine",
+        "prenom": "bouche",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "yasine.bouche1",
+        "classe": 13,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "test@gmail.com",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": "",
+        "date_creation": "2025-07-16T22:24:49.863Z",
+        "montant_total": "400.00",
+        "classes": [
+          13,
+          17
+        ],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 31,
+      "fields": {
+        "composante": 1,
+        "user": 25,
+        "nom": "sz",
+        "prenom": "szsz",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "Fkgpln54",
+        "classe": 13,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": "",
+        "date_creation": "2025-07-16T22:28:13.953Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 32,
+      "fields": {
+        "composante": 1,
+        "user": 26,
+        "nom": "azd",
+        "prenom": "dza",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "2Pc7rRQ1",
+        "classe": 8,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": null,
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-07-16T22:28:56.174Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 33,
+      "fields": {
+        "composante": 1,
+        "user": 28,
+        "nom": "sahlaoui",
+        "prenom": "abderrahim",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "iuwS3tVr",
+        "classe": 13,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-07-21T10:16:51.421Z",
+        "montant_total": "400.00",
+        "classes": [
+          8,
+          9,
+          17
+        ],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 35,
+      "fields": {
+        "composante": 1,
+        "user": 41,
+        "nom": "chiha",
+        "prenom": "faress",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "gw9wOmBS",
+        "classe": null,
+        "annee_scolaire": null,
+        "date_naissance": "2000-03-02",
+        "telephone": "076010725",
+        "telephone_secondaire": "9276292",
+        "adresse": "",
+        "email": "",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-08-07T20:02:25.820Z",
+        "montant_total": "400.00",
+        "classes": [
+          8,
+          13,
+          17
+        ],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 36,
+      "fields": {
+        "composante": 1,
+        "user": 43,
+        "nom": "zoubida",
+        "prenom": "markoucha",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": null,
+        "classe": null,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-08-07T21:21:49.919Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 37,
+      "fields": {
+        "composante": 1,
+        "user": 44,
+        "nom": "yahya",
+        "prenom": "el echi",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": null,
+        "classe": null,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-08-19T19:29:03.792Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 38,
+      "fields": {
+        "composante": 1,
+        "user": 45,
+        "nom": "barry",
+        "prenom": "ahmad",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": null,
+        "classe": null,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-08-19T19:50:58.281Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 39,
+      "fields": {
+        "composante": 1,
+        "user": 46,
+        "nom": "julier",
+        "prenom": "jdz",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": null,
+        "classe": null,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": "\nInformations du parent:\nNom: \nPrénom: \nTéléphone: ",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-08-21T13:53:49.045Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 40,
+      "fields": {
+        "composante": 1,
+        "user": 47,
+        "nom": "dzada",
+        "prenom": "dada",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": null,
+        "classe": null,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": "\nInformations du parent:\nNom: \nPrénom: \nTéléphone: ",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-08-21T13:54:12.080Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 41,
+      "fields": {
+        "composante": 1,
+        "user": 52,
+        "nom": "Said",
+        "prenom": "arba",
+        "prenom_pere": "zdzd",
+        "prenom_mere": "dz",
+        "mot_de_passe_en_clair": "saiarb5",
+        "classe": null,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-08-22T12:01:23.770Z",
+        "montant_total": "400.00",
+        "classes": [
+          13,
+          17
+        ],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 42,
+      "fields": {
+        "composante": 1,
+        "user": 53,
+        "nom": "yazid",
+        "prenom": "maadi",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "yazmaa9",
+        "classe": null,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-08-22T12:14:29.174Z",
+        "montant_total": "400.00",
+        "classes": [
+          8,
+          9,
+          17
+        ],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 45,
+      "fields": {
+        "composante": 1,
+        "user": 56,
+        "nom": "ljl",
+        "prenom": "efzef",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "ljlefz5",
+        "classe": null,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-08-24T18:18:36.120Z",
+        "montant_total": "400.00",
+        "classes": [
+          13
+        ],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 46,
+      "fields": {
+        "composante": 1,
+        "user": 57,
+        "nom": "xzdz",
+        "prenom": "zddz",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "xzdz.zddz1",
+        "classe": 8,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "08978790",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-08-24T18:25:10.496Z",
+        "montant_total": "400.00",
+        "classes": [
+          13,
+          17
+        ],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 47,
+      "fields": {
+        "composante": 1,
+        "user": 58,
+        "nom": "dzdz",
+        "prenom": "dzzd",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "dzdz.dzzd1",
+        "classe": null,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-08-24T18:32:57.421Z",
+        "montant_total": "400.00",
+        "classes": [],
+        "creneaux": []
+      }
+    },
+    {
+      "model": "ecole_app.eleve",
+      "pk": 48,
+      "fields": {
+        "composante": 1,
+        "user": 73,
+        "nom": "yiwan",
+        "prenom": "ismiss",
+        "prenom_pere": null,
+        "prenom_mere": null,
+        "mot_de_passe_en_clair": "yiwism0934",
+        "classe": null,
+        "annee_scolaire": null,
+        "date_naissance": null,
+        "telephone": "",
+        "telephone_secondaire": null,
+        "adresse": "",
+        "email": "",
+        "remarque": "",
+        "archive": false,
+        "motif_archive": null,
+        "date_creation": "2025-08-25T14:37:47.533Z",
+        "montant_total": "200.00",
+        "classes": [
+          8
+        ],
+        "creneaux": []
+      }
+    }
+  ],
+  "ecole_app.listeattente": [
+    {
+      "model": "ecole_app.listeattente",
+      "pk": 1,
+      "fields": {
+        "composante": 1,
+        "nom": "sahlaoui",
+        "prenom": "abderrahim",
+        "date_naissance": null,
+        "telephone": "",
+        "email": "",
+        "remarque": "",
+        "date_ajout": "2025-07-21T10:16:43.895Z",
+        "ajoute_definitivement": true
+      }
+    },
+    {
+      "model": "ecole_app.listeattente",
+      "pk": 3,
+      "fields": {
+        "composante": null,
+        "nom": "bouchra",
+        "prenom": "yasine",
+        "date_naissance": null,
+        "telephone": "",
+        "email": "",
+        "remarque": "",
+        "date_ajout": "2025-08-20T12:59:24.941Z",
+        "ajoute_definitivement": false
+      }
+    },
+    {
+      "model": "ecole_app.listeattente",
+      "pk": 4,
+      "fields": {
+        "composante": 1,
+        "nom": "xzdz",
+        "prenom": "zddz",
+        "date_naissance": null,
+        "telephone": "08978790",
+        "email": "",
+        "remarque": "",
+        "date_ajout": "2025-08-24T18:19:22.988Z",
+        "ajoute_definitivement": true
+      }
+    },
+    {
+      "model": "ecole_app.listeattente",
+      "pk": 6,
+      "fields": {
+        "composante": 1,
+        "nom": "dzdz",
+        "prenom": "dzzd",
+        "date_naissance": null,
+        "telephone": "",
+        "email": "",
+        "remarque": "",
+        "date_ajout": "2025-08-24T18:32:55.197Z",
+        "ajoute_definitivement": true
+      }
+    }
+  ],
+  "ecole_app.paiement": [
+    {
+      "model": "ecole_app.paiement",
+      "pk": 31,
+      "fields": {
+        "composante": 1,
+        "eleve": 6,
+        "montant": "420.00",
+        "date": "2025-08-25",
+        "methode": "especes",
+        "commentaire": "25/08/2025: REGLE",
+        "annee_scolaire": 1,
+        "date_creation": "2025-08-24T16:57:36.943Z"
+      }
+    },
+    {
+      "model": "ecole_app.paiement",
+      "pk": 32,
+      "fields": {
+        "composante": 1,
+        "eleve": 19,
+        "montant": "310.00",
+        "date": "2025-08-25",
+        "methode": "carte",
+        "commentaire": "25/08/2025: a complete",
+        "annee_scolaire": 1,
+        "date_creation": "2025-08-25T08:56:29.143Z"
+      }
+    },
+    {
+      "model": "ecole_app.paiement",
+      "pk": 33,
+      "fields": {
+        "composante": 1,
+        "eleve": 23,
+        "montant": "400.00",
+        "date": "2025-08-25",
+        "methode": "especes",
+        "commentaire": "REGLE",
+        "annee_scolaire": 1,
+        "date_creation": "2025-08-25T09:20:46.262Z"
+      }
+    },
+    {
+      "model": "ecole_app.paiement",
+      "pk": 34,
+      "fields": {
+        "composante": 1,
+        "eleve": 7,
+        "montant": "99.00",
+        "date": "2025-08-25",
+        "methode": "virement",
+        "commentaire": "endetéé",
+        "annee_scolaire": 1,
+        "date_creation": "2025-08-25T19:26:45.957Z"
+      }
+    }
+  ],
+  "ecole_app.charge": [],
+  "ecole_app.presenceeleve": [
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 3,
+      "fields": {
+        "composante": null,
+        "eleve": 1,
+        "date": "2025-08-09",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": null,
+        "creneau": null,
+        "date_creation": "2025-08-09T07:03:18.434Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 4,
+      "fields": {
+        "composante": 1,
+        "eleve": 23,
+        "date": "2025-08-09",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 9,
+        "creneau": null,
+        "date_creation": "2025-08-09T07:06:44.346Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 5,
+      "fields": {
+        "composante": 1,
+        "eleve": 11,
+        "date": "2025-08-09",
+        "present": false,
+        "justifie": true,
+        "commentaire": "",
+        "classe": 9,
+        "creneau": null,
+        "date_creation": "2025-08-09T07:06:47.675Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 6,
+      "fields": {
+        "composante": 1,
+        "eleve": 23,
+        "date": "2025-08-09",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 17,
+        "creneau": null,
+        "date_creation": "2025-08-09T07:20:48.425Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 7,
+      "fields": {
+        "composante": 1,
+        "eleve": 23,
+        "date": "2025-08-10",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 9,
+        "creneau": null,
+        "date_creation": "2025-08-10T14:11:18.842Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 8,
+      "fields": {
+        "composante": 1,
+        "eleve": 11,
+        "date": "2025-08-10",
+        "present": false,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 9,
+        "creneau": null,
+        "date_creation": "2025-08-10T14:11:24.142Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 9,
+      "fields": {
+        "composante": 1,
+        "eleve": 23,
+        "date": "2025-08-10",
+        "present": false,
+        "justifie": true,
+        "commentaire": "",
+        "classe": 17,
+        "creneau": null,
+        "date_creation": "2025-08-10T14:11:30.381Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 10,
+      "fields": {
+        "composante": 1,
+        "eleve": 1,
+        "date": "2025-08-10",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": null,
+        "creneau": null,
+        "date_creation": "2025-08-10T14:11:40.661Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 11,
+      "fields": {
+        "composante": 1,
+        "eleve": 1,
+        "date": "2025-08-19",
+        "present": false,
+        "justifie": true,
+        "commentaire": "",
+        "classe": null,
+        "creneau": null,
+        "date_creation": "2025-08-19T19:53:56.155Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 12,
+      "fields": {
+        "composante": 1,
+        "eleve": 23,
+        "date": "2025-08-20",
+        "present": false,
+        "justifie": false,
+        "commentaire": "mm",
+        "classe": 17,
+        "creneau": null,
+        "date_creation": "2025-08-20T18:41:26.284Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 13,
+      "fields": {
+        "composante": 1,
+        "eleve": 23,
+        "date": "2025-08-21",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 17,
+        "creneau": null,
+        "date_creation": "2025-08-21T12:37:54.814Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 14,
+      "fields": {
+        "composante": 1,
+        "eleve": 25,
+        "date": "2025-08-22",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 13,
+        "creneau": null,
+        "date_creation": "2025-08-22T14:26:25.780Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 15,
+      "fields": {
+        "composante": 1,
+        "eleve": 10,
+        "date": "2025-08-22",
+        "present": false,
+        "justifie": true,
+        "commentaire": "",
+        "classe": 13,
+        "creneau": null,
+        "date_creation": "2025-08-22T14:26:30.306Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 16,
+      "fields": {
+        "composante": 1,
+        "eleve": 41,
+        "date": "2025-08-22",
+        "present": false,
+        "justifie": true,
+        "commentaire": "",
+        "classe": 13,
+        "creneau": null,
+        "date_creation": "2025-08-22T14:26:33.934Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 17,
+      "fields": {
+        "composante": 1,
+        "eleve": 30,
+        "date": "2025-08-22",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 13,
+        "creneau": null,
+        "date_creation": "2025-08-22T14:26:38.115Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 18,
+      "fields": {
+        "composante": 1,
+        "eleve": 33,
+        "date": "2025-08-22",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 8,
+        "creneau": null,
+        "date_creation": "2025-08-22T14:50:53.249Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 19,
+      "fields": {
+        "composante": 1,
+        "eleve": 42,
+        "date": "2025-08-22",
+        "present": false,
+        "justifie": true,
+        "commentaire": "",
+        "classe": 8,
+        "creneau": null,
+        "date_creation": "2025-08-22T14:50:58.372Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 20,
+      "fields": {
+        "composante": 1,
+        "eleve": 23,
+        "date": "2025-08-22",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 17,
+        "creneau": null,
+        "date_creation": "2025-08-22T14:51:13.016Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 21,
+      "fields": {
+        "composante": 1,
+        "eleve": 23,
+        "date": "2025-08-22",
+        "present": false,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 9,
+        "creneau": null,
+        "date_creation": "2025-08-22T14:57:42.996Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 22,
+      "fields": {
+        "composante": 1,
+        "eleve": 11,
+        "date": "2025-08-22",
+        "present": false,
+        "justifie": true,
+        "commentaire": "",
+        "classe": 9,
+        "creneau": null,
+        "date_creation": "2025-08-22T21:08:39.039Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 23,
+      "fields": {
+        "composante": 1,
+        "eleve": 24,
+        "date": "2025-08-22",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 9,
+        "creneau": null,
+        "date_creation": "2025-08-22T21:08:47.399Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 24,
+      "fields": {
+        "composante": 1,
+        "eleve": 33,
+        "date": "2025-08-22",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 9,
+        "creneau": null,
+        "date_creation": "2025-08-22T21:27:49.314Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 25,
+      "fields": {
+        "composante": 1,
+        "eleve": 42,
+        "date": "2025-08-22",
+        "present": false,
+        "justifie": true,
+        "commentaire": "",
+        "classe": 9,
+        "creneau": null,
+        "date_creation": "2025-08-22T21:30:57.689Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 26,
+      "fields": {
+        "composante": 1,
+        "eleve": 25,
+        "date": "2025-08-24",
+        "present": false,
+        "justifie": true,
+        "commentaire": "",
+        "classe": 13,
+        "creneau": null,
+        "date_creation": "2025-08-24T10:06:14.779Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 27,
+      "fields": {
+        "composante": 1,
+        "eleve": 41,
+        "date": "2025-08-24",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 13,
+        "creneau": null,
+        "date_creation": "2025-08-24T10:06:18.465Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 28,
+      "fields": {
+        "composante": 1,
+        "eleve": 30,
+        "date": "2025-08-24",
+        "present": false,
+        "justifie": true,
+        "commentaire": "",
+        "classe": 13,
+        "creneau": null,
+        "date_creation": "2025-08-24T10:06:22.004Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 29,
+      "fields": {
+        "composante": 1,
+        "eleve": 10,
+        "date": "2025-08-24",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 13,
+        "creneau": null,
+        "date_creation": "2025-08-24T10:06:26.016Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 30,
+      "fields": {
+        "composante": 1,
+        "eleve": 25,
+        "date": "2025-08-24",
+        "present": false,
+        "justifie": true,
+        "commentaire": "",
+        "classe": 17,
+        "creneau": null,
+        "date_creation": "2025-08-24T11:35:04.094Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 33,
+      "fields": {
+        "composante": 1,
+        "eleve": 33,
+        "date": "2025-08-24",
+        "present": false,
+        "justifie": true,
+        "commentaire": "maalde",
+        "classe": 17,
+        "creneau": null,
+        "date_creation": "2025-08-24T14:22:32.505Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 34,
+      "fields": {
+        "composante": 1,
+        "eleve": 41,
+        "date": "2025-08-24",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 17,
+        "creneau": null,
+        "date_creation": "2025-08-24T14:22:35.375Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 35,
+      "fields": {
+        "composante": 1,
+        "eleve": 30,
+        "date": "2025-08-24",
+        "present": false,
+        "justifie": true,
+        "commentaire": "dzed",
+        "classe": 17,
+        "creneau": null,
+        "date_creation": "2025-08-24T14:22:38.949Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 36,
+      "fields": {
+        "composante": 1,
+        "eleve": 42,
+        "date": "2025-08-24",
+        "present": true,
+        "justifie": false,
+        "commentaire": "dze",
+        "classe": 17,
+        "creneau": null,
+        "date_creation": "2025-08-24T14:22:43.444Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 38,
+      "fields": {
+        "composante": 1,
+        "eleve": 30,
+        "date": "2025-08-22",
+        "present": false,
+        "justifie": false,
+        "commentaire": "ZDZD",
+        "classe": 17,
+        "creneau": null,
+        "date_creation": "2025-08-24T17:48:11.609Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 41,
+      "fields": {
+        "composante": 1,
+        "eleve": 45,
+        "date": "2025-08-24",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 13,
+        "creneau": null,
+        "date_creation": "2025-08-25T09:33:21.060Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 42,
+      "fields": {
+        "composante": 1,
+        "eleve": 25,
+        "date": "2025-08-25",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 8,
+        "creneau": null,
+        "date_creation": "2025-08-25T13:37:02.978Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 43,
+      "fields": {
+        "composante": 1,
+        "eleve": 48,
+        "date": "2025-08-25",
+        "present": false,
+        "justifie": true,
+        "commentaire": "dede",
+        "classe": 8,
+        "creneau": null,
+        "date_creation": "2025-08-25T14:38:01.529Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 44,
+      "fields": {
+        "composante": 1,
+        "eleve": 25,
+        "date": "2025-08-25",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 13,
+        "creneau": null,
+        "date_creation": "2025-08-25T19:45:05.464Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 45,
+      "fields": {
+        "composante": 1,
+        "eleve": 35,
+        "date": "2025-08-25",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 17,
+        "creneau": null,
+        "date_creation": "2025-08-25T19:51:35.897Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 46,
+      "fields": {
+        "composante": 1,
+        "eleve": 35,
+        "date": "2025-08-24",
+        "present": false,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 17,
+        "creneau": null,
+        "date_creation": "2025-08-25T19:51:42.149Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceeleve",
+      "pk": 47,
+      "fields": {
+        "composante": 1,
+        "eleve": 35,
+        "date": "2025-08-23",
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "classe": 17,
+        "creneau": null,
+        "date_creation": "2025-08-25T19:51:48.800Z"
+      }
+    }
+  ],
+  "ecole_app.presenceprofesseur": [
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 2,
+      "fields": {
+        "composante": 1,
+        "professeur": 7,
+        "date": "2025-07-14",
+        "creneau": null,
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "date_creation": "2025-07-14T08:58:10.477Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 6,
+      "fields": {
+        "composante": 1,
+        "professeur": 7,
+        "date": "2025-07-21",
+        "creneau": null,
+        "present": false,
+        "justifie": false,
+        "commentaire": "",
+        "date_creation": "2025-07-21T09:05:56.141Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 12,
+      "fields": {
+        "composante": 1,
+        "professeur": 7,
+        "date": "2025-07-22",
+        "creneau": null,
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "date_creation": "2025-07-21T09:17:05.780Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 14,
+      "fields": {
+        "composante": null,
+        "professeur": 13,
+        "date": "2025-08-05",
+        "creneau": null,
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "date_creation": "2025-08-05T12:48:58.467Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 15,
+      "fields": {
+        "composante": null,
+        "professeur": 14,
+        "date": "2025-08-05",
+        "creneau": null,
+        "present": false,
+        "justifie": false,
+        "commentaire": "",
+        "date_creation": "2025-08-05T12:49:01.055Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 16,
+      "fields": {
+        "composante": null,
+        "professeur": 18,
+        "date": "2025-08-05",
+        "creneau": null,
+        "present": false,
+        "justifie": false,
+        "commentaire": "",
+        "date_creation": "2025-08-05T12:49:03.172Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 17,
+      "fields": {
+        "composante": null,
+        "professeur": 16,
+        "date": "2025-08-05",
+        "creneau": null,
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "date_creation": "2025-08-05T12:49:09.039Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 18,
+      "fields": {
+        "composante": null,
+        "professeur": 17,
+        "date": "2025-08-05",
+        "creneau": null,
+        "present": false,
+        "justifie": false,
+        "commentaire": "il est malade",
+        "date_creation": "2025-08-05T12:49:16.463Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 19,
+      "fields": {
+        "composante": null,
+        "professeur": 7,
+        "date": "2025-08-05",
+        "creneau": null,
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "date_creation": "2025-08-05T12:49:19.403Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 20,
+      "fields": {
+        "composante": null,
+        "professeur": 22,
+        "date": "2025-08-07",
+        "creneau": 14,
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "date_creation": "2025-08-08T06:23:26.453Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 21,
+      "fields": {
+        "composante": null,
+        "professeur": 7,
+        "date": "2025-08-07",
+        "creneau": 14,
+        "present": false,
+        "justifie": false,
+        "commentaire": "",
+        "date_creation": "2025-08-08T06:23:30.815Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 22,
+      "fields": {
+        "composante": null,
+        "professeur": 13,
+        "date": "2025-08-22",
+        "creneau": null,
+        "present": false,
+        "justifie": false,
+        "commentaire": "",
+        "date_creation": "2025-08-22T14:36:05.616Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 25,
+      "fields": {
+        "composante": null,
+        "professeur": 13,
+        "date": "2025-08-22",
+        "creneau": 9,
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "date_creation": "2025-08-22T14:49:09.900Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 26,
+      "fields": {
+        "composante": null,
+        "professeur": 13,
+        "date": "2025-08-22",
+        "creneau": 11,
+        "present": false,
+        "justifie": false,
+        "commentaire": "",
+        "date_creation": "2025-08-22T14:49:14.497Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 27,
+      "fields": {
+        "composante": null,
+        "professeur": 22,
+        "date": "2025-08-22",
+        "creneau": 11,
+        "present": false,
+        "justifie": false,
+        "commentaire": "",
+        "date_creation": "2025-08-22T14:54:42.827Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 28,
+      "fields": {
+        "composante": null,
+        "professeur": 13,
+        "date": "2025-08-25",
+        "creneau": 11,
+        "present": true,
+        "justifie": false,
+        "commentaire": "sd",
+        "date_creation": "2025-08-25T13:37:34.851Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 29,
+      "fields": {
+        "composante": null,
+        "professeur": 14,
+        "date": "2025-08-25",
+        "creneau": 11,
+        "present": false,
+        "justifie": false,
+        "commentaire": "",
+        "date_creation": "2025-08-25T13:37:37.550Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 30,
+      "fields": {
+        "composante": null,
+        "professeur": 22,
+        "date": "2025-08-25",
+        "creneau": 11,
+        "present": true,
+        "justifie": false,
+        "commentaire": "\"e\"e",
+        "date_creation": "2025-08-25T13:37:42.263Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 31,
+      "fields": {
+        "composante": null,
+        "professeur": 17,
+        "date": "2025-08-25",
+        "creneau": 11,
+        "present": false,
+        "justifie": false,
+        "commentaire": "",
+        "date_creation": "2025-08-25T13:37:44.800Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 32,
+      "fields": {
+        "composante": null,
+        "professeur": 18,
+        "date": "2025-08-25",
+        "creneau": 11,
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "date_creation": "2025-08-25T13:37:47.254Z"
+      }
+    },
+    {
+      "model": "ecole_app.presenceprofesseur",
+      "pk": 33,
+      "fields": {
+        "composante": null,
+        "professeur": 13,
+        "date": "2025-08-25",
+        "creneau": 9,
+        "present": true,
+        "justifie": false,
+        "commentaire": "",
+        "date_creation": "2025-08-25T13:38:04.108Z"
+      }
+    }
+  ],
+  "ecole_app.carnetpedagogique": [
+    {
+      "model": "ecole_app.carnetpedagogique",
+      "pk": 1,
+      "fields": {
+        "composante": 1,
+        "eleve": 21,
+        "date_creation": "2025-07-16T13:40:17.787Z"
+      }
+    },
+    {
+      "model": "ecole_app.carnetpedagogique",
+      "pk": 2,
+      "fields": {
+        "composante": 1,
+        "eleve": 28,
+        "date_creation": "2025-07-17T10:01:31.441Z"
+      }
+    },
+    {
+      "model": "ecole_app.carnetpedagogique",
+      "pk": 3,
+      "fields": {
+        "composante": 1,
+        "eleve": 20,
+        "date_creation": "2025-07-17T10:29:16.544Z"
+      }
+    },
+    {
+      "model": "ecole_app.carnetpedagogique",
+      "pk": 4,
+      "fields": {
+        "composante": 1,
+        "eleve": 23,
+        "date_creation": "2025-07-21T09:22:41.725Z"
+      }
+    },
+    {
+      "model": "ecole_app.carnetpedagogique",
+      "pk": 5,
+      "fields": {
+        "composante": null,
+        "eleve": 31,
+        "date_creation": "2025-07-22T08:49:29.194Z"
+      }
+    },
+    {
+      "model": "ecole_app.carnetpedagogique",
+      "pk": 7,
+      "fields": {
+        "composante": null,
+        "eleve": 19,
+        "date_creation": "2025-08-05T12:26:15.968Z"
+      }
+    },
+    {
+      "model": "ecole_app.carnetpedagogique",
+      "pk": 8,
+      "fields": {
+        "composante": null,
+        "eleve": 35,
+        "date_creation": "2025-08-07T20:22:31.706Z"
+      }
+    },
+    {
+      "model": "ecole_app.carnetpedagogique",
+      "pk": 9,
+      "fields": {
+        "composante": null,
+        "eleve": 7,
+        "date_creation": "2025-08-09T14:54:40.856Z"
+      }
+    },
+    {
+      "model": "ecole_app.carnetpedagogique",
+      "pk": 10,
+      "fields": {
+        "composante": null,
+        "eleve": 24,
+        "date_creation": "2025-08-19T19:52:20.404Z"
+      }
+    },
+    {
+      "model": "ecole_app.carnetpedagogique",
+      "pk": 11,
+      "fields": {
+        "composante": null,
+        "eleve": 33,
+        "date_creation": "2025-08-22T12:46:53.972Z"
+      }
+    },
+    {
+      "model": "ecole_app.carnetpedagogique",
+      "pk": 12,
+      "fields": {
+        "composante": null,
+        "eleve": 30,
+        "date_creation": "2025-08-22T14:29:08.365Z"
+      }
+    },
+    {
+      "model": "ecole_app.carnetpedagogique",
+      "pk": 13,
+      "fields": {
+        "composante": null,
+        "eleve": 41,
+        "date_creation": "2025-08-22T21:59:11.795Z"
+      }
+    },
+    {
+      "model": "ecole_app.carnetpedagogique",
+      "pk": 14,
+      "fields": {
+        "composante": null,
+        "eleve": 25,
+        "date_creation": "2025-08-24T17:55:24.493Z"
+      }
+    },
+    {
+      "model": "ecole_app.carnetpedagogique",
+      "pk": 15,
+      "fields": {
+        "composante": null,
+        "eleve": 48,
+        "date_creation": "2025-08-25T14:38:21.502Z"
+      }
+    }
+  ],
+  "ecole_app.ecouteavantmemo": [
+    {
+      "model": "ecole_app.ecouteavantmemo",
+      "pk": 5,
+      "fields": {
+        "carnet": 12,
+        "date": "2025-07-25",
+        "debut_page": 350,
+        "fin_page": 350,
+        "enseignant": 24,
+        "remarques": "ded"
+      }
+    }
+  ],
+  "ecole_app.memorisation": [
+    {
+      "model": "ecole_app.memorisation",
+      "pk": 1,
+      "fields": {
+        "carnet": 4,
+        "date": "2025-08-08",
+        "debut_page": 1,
+        "fin_page": 1,
+        "enseignant": 18,
+        "remarques": ""
+      }
+    },
+    {
+      "model": "ecole_app.memorisation",
+      "pk": 2,
+      "fields": {
+        "carnet": 4,
+        "date": "2025-08-21",
+        "debut_page": 127,
+        "fin_page": 127,
+        "enseignant": 14,
+        "remarques": ""
+      }
+    },
+    {
+      "model": "ecole_app.memorisation",
+      "pk": 3,
+      "fields": {
+        "carnet": 4,
+        "date": "2025-08-21",
+        "debut_page": 305,
+        "fin_page": 311,
+        "enseignant": 22,
+        "remarques": ""
+      }
+    },
+    {
+      "model": "ecole_app.memorisation",
+      "pk": 7,
+      "fields": {
+        "carnet": 8,
+        "date": "2025-08-25",
+        "debut_page": 231,
+        "fin_page": 232,
+        "enseignant": 24,
+        "remarques": "dz"
+      }
+    }
+  ],
+  "ecole_app.revision": [
+    {
+      "model": "ecole_app.revision",
+      "pk": 1,
+      "fields": {
+        "carnet": 2,
+        "semaine": 29,
+        "date": "2025-07-17",
+        "jour": "samedi",
+        "nombre_hizb": "1.00",
+        "remarques": null
+      }
+    },
+    {
+      "model": "ecole_app.revision",
+      "pk": 2,
+      "fields": {
+        "carnet": 2,
+        "semaine": 29,
+        "date": "2025-07-17",
+        "jour": "vendredi",
+        "nombre_hizb": "2.00",
+        "remarques": null
+      }
+    },
+    {
+      "model": "ecole_app.revision",
+      "pk": 3,
+      "fields": {
+        "carnet": 4,
+        "semaine": 32,
+        "date": "2025-08-08",
+        "jour": "vendredi",
+        "nombre_hizb": "2.00",
+        "remarques": null
+      }
+    },
+    {
+      "model": "ecole_app.revision",
+      "pk": 7,
+      "fields": {
+        "carnet": 12,
+        "semaine": 35,
+        "date": "2025-08-25",
+        "jour": "lundi",
+        "nombre_hizb": "12.00",
+        "remarques": ""
+      }
+    },
+    {
+      "model": "ecole_app.revision",
+      "pk": 8,
+      "fields": {
+        "carnet": 8,
+        "semaine": 35,
+        "date": "2025-08-25",
+        "jour": "lundi",
+        "nombre_hizb": "2.00",
+        "remarques": ""
+      }
+    }
+  ],
+  "ecole_app.repetition": [
+    {
+      "model": "ecole_app.repetition",
+      "pk": 1,
+      "fields": {
+        "carnet": 4,
+        "sourate": "As-Sajda",
+        "page": 415,
+        "nombre_repetitions": 2,
+        "derniere_date": "2025-08-20"
+      }
+    },
+    {
+      "model": "ecole_app.repetition",
+      "pk": 5,
+      "fields": {
+        "carnet": 12,
+        "sourate": "Muhammad",
+        "page": 508,
+        "nombre_repetitions": 27,
+        "derniere_date": "2025-08-25"
+      }
+    },
+    {
+      "model": "ecole_app.repetition",
+      "pk": 6,
+      "fields": {
+        "carnet": 8,
+        "sourate": "Al-Baqara",
+        "page": 13,
+        "nombre_repetitions": 15,
+        "derniere_date": "2025-08-25"
+      }
+    }
+  ],
+  "ecole_app.siteconfig": [
+    {
+      "model": "ecole_app.siteconfig",
+      "pk": 1,
+      "fields": {
+        "key": "site_name",
+        "value": "MyMarkaz"
+      }
+    }
+  ],
+  "ecole_app.competencelivre": [
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 21,
+      "fields": {
+        "lecon": 0,
+        "description": "Capacité à appliquer la nasalisation (الغُنَّة) sur le noun ;",
+        "ordre": 1,
+        "date_creation": "2025-08-10T06:33:07.326Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 22,
+      "fields": {
+        "lecon": 0,
+        "description": "Maîtrise des différentes déclinaisons de ن ;",
+        "ordre": 2,
+        "date_creation": "2025-08-10T06:33:07.337Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 23,
+      "fields": {
+        "lecon": 0,
+        "description": "Capacité à distinguer les différents types de prolongement plus de 2 temps ;",
+        "ordre": 3,
+        "date_creation": "2025-08-10T06:33:07.346Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 24,
+      "fields": {
+        "lecon": 0,
+        "description": "Maîtrise les types de القَلْقَلَة.",
+        "ordre": 4,
+        "date_creation": "2025-08-10T06:33:07.355Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 1,
+      "fields": {
+        "lecon": 1,
+        "description": "Capacité à reconnaître et lire les lettres fortes ;",
+        "ordre": 1,
+        "date_creation": "2025-08-09T14:42:54.115Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 2,
+      "fields": {
+        "lecon": 1,
+        "description": "Capacité à identifier la position des lettres dans un mot ;",
+        "ordre": 2,
+        "date_creation": "2025-08-09T14:42:54.134Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 3,
+      "fields": {
+        "lecon": 1,
+        "description": "Capacité à identifier et lire les lettres qui nécessitent de tirer le bout de la langue ;",
+        "ordre": 3,
+        "date_creation": "2025-08-09T14:42:54.148Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 4,
+      "fields": {
+        "lecon": 1,
+        "description": "Capacité à lire les lettres mises dans le désordre ;",
+        "ordre": 4,
+        "date_creation": "2025-08-09T14:42:54.160Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 5,
+      "fields": {
+        "lecon": 1,
+        "description": "Compétences générales en prononciation.",
+        "ordre": 5,
+        "date_creation": "2025-08-09T14:42:54.172Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 6,
+      "fields": {
+        "lecon": 6,
+        "description": "Capacité à reconnaître les lettres de prolongement ;",
+        "ordre": 1,
+        "date_creation": "2025-08-10T06:30:42.935Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 7,
+      "fields": {
+        "lecon": 6,
+        "description": "Capacité à distinguer les voyelles courtes des voyelles longues ;",
+        "ordre": 2,
+        "date_creation": "2025-08-10T06:30:42.951Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 8,
+      "fields": {
+        "lecon": 6,
+        "description": "Capacité à distinguer les lettres de line des lettres de prolongement ;",
+        "ordre": 3,
+        "date_creation": "2025-08-10T06:30:42.961Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 9,
+      "fields": {
+        "lecon": 6,
+        "description": "Compétences générales en prononciation ;",
+        "ordre": 4,
+        "date_creation": "2025-08-10T06:30:42.971Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 10,
+      "fields": {
+        "lecon": 6,
+        "description": "Capacité à lire fluidement le texte, les exemples et l'exercice 8.",
+        "ordre": 5,
+        "date_creation": "2025-08-10T06:30:42.979Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 11,
+      "fields": {
+        "lecon": 7,
+        "description": "Capacité à identifier les différents types de doubles voyelles ;",
+        "ordre": 1,
+        "date_creation": "2025-08-10T06:30:54.837Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 12,
+      "fields": {
+        "lecon": 7,
+        "description": "Capacité à maîtriser l'arrêt sur les doubles voyelles ;",
+        "ordre": 2,
+        "date_creation": "2025-08-10T06:30:54.851Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 13,
+      "fields": {
+        "lecon": 7,
+        "description": "Compétences générales en prononciation ;",
+        "ordre": 3,
+        "date_creation": "2025-08-10T06:30:54.860Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 14,
+      "fields": {
+        "lecon": 7,
+        "description": "Capacité à lire fluidement le texte, les exemples et l'exercice 9.",
+        "ordre": 4,
+        "date_creation": "2025-08-10T06:30:54.869Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 15,
+      "fields": {
+        "lecon": 7,
+        "description": "Capacité à distinguer la particularité des doubles voyelles fathatayn par rapport aux autres doubles voyelles.",
+        "ordre": 5,
+        "date_creation": "2025-08-10T06:30:54.877Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 16,
+      "fields": {
+        "lecon": 8,
+        "description": "Capacité à reconnaître et prononcer les lettres avec chadda ;",
+        "ordre": 1,
+        "date_creation": "2025-08-10T06:31:04.061Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 17,
+      "fields": {
+        "lecon": 8,
+        "description": "Capacité à identifier la différence entre une lettre avec chadda et sans chadda ;",
+        "ordre": 2,
+        "date_creation": "2025-08-10T06:31:04.076Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 18,
+      "fields": {
+        "lecon": 8,
+        "description": "Compétences générales en prononciation des mots avec chadda ;",
+        "ordre": 3,
+        "date_creation": "2025-08-10T06:31:04.087Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 19,
+      "fields": {
+        "lecon": 8,
+        "description": "Capacité à lire fluidement le texte, les exemples et l'exercice 10.",
+        "ordre": 4,
+        "date_creation": "2025-08-10T06:31:04.099Z"
+      }
+    },
+    {
+      "model": "ecole_app.competencelivre",
+      "pk": 20,
+      "fields": {
+        "lecon": 8,
+        "description": "Capacité à appliquer correctement les règles de prononciation de la chadda.",
+        "ordre": 5,
+        "date_creation": "2025-08-10T06:31:04.109Z"
+      }
+    }
+  ],
+  "ecole_app.evaluationcompetence": [
+    {
+      "model": "ecole_app.evaluationcompetence",
+      "pk": 1,
+      "fields": {
+        "eleve": 9,
+        "competence": 1,
+        "statut": "acquis",
+        "date_evaluation": "2025-08-09",
+        "commentaire": null,
+        "date_creation": "2025-08-09T14:54:53.070Z",
+        "date_modification": "2025-08-09T14:54:53.070Z"
+      }
+    },
+    {
+      "model": "ecole_app.evaluationcompetence",
+      "pk": 2,
+      "fields": {
+        "eleve": 9,
+        "competence": 2,
+        "statut": "non_acquis",
+        "date_evaluation": "2025-08-09",
+        "commentaire": null,
+        "date_creation": "2025-08-09T14:54:55.404Z",
+        "date_modification": "2025-08-09T14:54:55.404Z"
+      }
+    },
+    {
+      "model": "ecole_app.evaluationcompetence",
+      "pk": 3,
+      "fields": {
+        "eleve": 23,
+        "competence": 2,
+        "statut": "acquis",
+        "date_evaluation": "2025-08-20",
+        "commentaire": null,
+        "date_creation": "2025-08-20T14:27:08.605Z",
+        "date_modification": "2025-08-20T14:27:08.605Z"
+      }
+    },
+    {
+      "model": "ecole_app.evaluationcompetence",
+      "pk": 9,
+      "fields": {
+        "eleve": 23,
+        "competence": 11,
+        "statut": "acquis",
+        "date_evaluation": "2025-08-25",
+        "commentaire": null,
+        "date_creation": "2025-08-25T19:25:11.154Z",
+        "date_modification": "2025-08-25T19:25:11.154Z"
+      }
+    },
+    {
+      "model": "ecole_app.evaluationcompetence",
+      "pk": 10,
+      "fields": {
+        "eleve": 23,
+        "competence": 12,
+        "statut": "non_acquis",
+        "date_evaluation": "2025-08-25",
+        "commentaire": null,
+        "date_creation": "2025-08-25T19:25:12.281Z",
+        "date_modification": "2025-08-25T19:25:12.281Z"
+      }
+    },
+    {
+      "model": "ecole_app.evaluationcompetence",
+      "pk": 11,
+      "fields": {
+        "eleve": 23,
+        "competence": 13,
+        "statut": "non_acquis",
+        "date_evaluation": "2025-08-25",
+        "commentaire": null,
+        "date_creation": "2025-08-25T19:25:14.088Z",
+        "date_modification": "2025-08-25T19:25:14.088Z"
+      }
+    },
+    {
+      "model": "ecole_app.evaluationcompetence",
+      "pk": 12,
+      "fields": {
+        "eleve": 23,
+        "competence": 14,
+        "statut": "non_acquis",
+        "date_evaluation": "2025-08-25",
+        "commentaire": null,
+        "date_creation": "2025-08-25T19:25:15.150Z",
+        "date_modification": "2025-08-25T19:25:15.150Z"
+      }
+    },
+    {
+      "model": "ecole_app.evaluationcompetence",
+      "pk": 13,
+      "fields": {
+        "eleve": 23,
+        "competence": 15,
+        "statut": "non_acquis",
+        "date_evaluation": "2025-08-25",
+        "commentaire": null,
+        "date_creation": "2025-08-25T19:25:16.673Z",
+        "date_modification": "2025-08-25T19:25:16.673Z"
+      }
+    },
+    {
+      "model": "ecole_app.evaluationcompetence",
+      "pk": 16,
+      "fields": {
+        "eleve": 35,
+        "competence": 10,
+        "statut": "non_acquis",
+        "date_evaluation": "2025-08-26",
+        "commentaire": null,
+        "date_creation": "2025-08-26T08:16:57.747Z",
+        "date_modification": "2025-08-26T08:16:57.747Z"
+      }
+    },
+    {
+      "model": "ecole_app.evaluationcompetence",
+      "pk": 7,
+      "fields": {
+        "eleve": 35,
+        "competence": 11,
+        "statut": "acquis",
+        "date_evaluation": "2025-08-26",
+        "commentaire": null,
+        "date_creation": "2025-08-25T18:27:51.399Z",
+        "date_modification": "2025-08-26T08:23:58.851Z"
+      }
+    },
+    {
+      "model": "ecole_app.evaluationcompetence",
+      "pk": 8,
+      "fields": {
+        "eleve": 35,
+        "competence": 12,
+        "statut": "acquis",
+        "date_evaluation": "2025-08-25",
+        "commentaire": null,
+        "date_creation": "2025-08-25T18:27:51.416Z",
+        "date_modification": "2025-08-25T19:55:54.099Z"
+      }
+    },
+    {
+      "model": "ecole_app.evaluationcompetence",
+      "pk": 4,
+      "fields": {
+        "eleve": 35,
+        "competence": 13,
+        "statut": "acquis",
+        "date_evaluation": "2025-08-12",
+        "commentaire": null,
+        "date_creation": "2025-08-25T18:12:54.322Z",
+        "date_modification": "2025-08-26T08:16:56.338Z"
+      }
+    },
+    {
+      "model": "ecole_app.evaluationcompetence",
+      "pk": 5,
+      "fields": {
+        "eleve": 35,
+        "competence": 14,
+        "statut": "non_acquis",
+        "date_evaluation": "2025-08-26",
+        "commentaire": null,
+        "date_creation": "2025-08-25T18:12:54.340Z",
+        "date_modification": "2025-08-26T08:23:59.801Z"
+      }
+    },
+    {
+      "model": "ecole_app.evaluationcompetence",
+      "pk": 6,
+      "fields": {
+        "eleve": 35,
+        "competence": 15,
+        "statut": "non_acquis",
+        "date_evaluation": "2025-08-26",
+        "commentaire": null,
+        "date_creation": "2025-08-25T18:12:54.364Z",
+        "date_modification": "2025-08-26T08:24:03.158Z"
+      }
+    },
+    {
+      "model": "ecole_app.evaluationcompetence",
+      "pk": 15,
+      "fields": {
+        "eleve": 35,
+        "competence": 17,
+        "statut": "acquis",
+        "date_evaluation": "2025-08-25",
+        "commentaire": null,
+        "date_creation": "2025-08-25T19:56:14.153Z",
+        "date_modification": "2025-08-25T19:56:14.153Z"
+      }
+    },
+    {
+      "model": "ecole_app.evaluationcompetence",
+      "pk": 14,
+      "fields": {
+        "eleve": 35,
+        "competence": 18,
+        "statut": "non_acquis",
+        "date_evaluation": "2025-08-25",
+        "commentaire": null,
+        "date_creation": "2025-08-25T19:56:12.786Z",
+        "date_modification": "2025-08-25T19:56:12.786Z"
+      }
+    }
+  ],
+  "ecole_app.paiementhistorique": [
+    {
+      "model": "ecole_app.paiementhistorique",
+      "pk": 14,
+      "fields": {
+        "paiement": 31,
+        "montant": "10.00",
+        "date": "2025-08-24",
+        "methode": "especes",
+        "commentaire": "ERREUR",
+        "date_creation": "2025-08-24T16:57:36.958Z"
+      }
+    },
+    {
+      "model": "ecole_app.paiementhistorique",
+      "pk": 15,
+      "fields": {
+        "paiement": 31,
+        "montant": "10.00",
+        "date": "2025-08-24",
+        "methode": "cheque",
+        "commentaire": "",
+        "date_creation": "2025-08-24T16:57:44.601Z"
+      }
+    },
+    {
+      "model": "ecole_app.paiementhistorique",
+      "pk": 16,
+      "fields": {
+        "paiement": 32,
+        "montant": "110.00",
+        "date": "2025-08-25",
+        "methode": "especes",
+        "commentaire": "110",
+        "date_creation": "2025-08-25T08:56:29.153Z"
+      }
+    },
+    {
+      "model": "ecole_app.paiementhistorique",
+      "pk": 17,
+      "fields": {
+        "paiement": 32,
+        "montant": "200.00",
+        "date": "2025-08-25",
+        "methode": "carte",
+        "commentaire": "a complete",
+        "date_creation": "2025-08-25T08:57:10.711Z"
+      }
+    },
+    {
+      "model": "ecole_app.paiementhistorique",
+      "pk": 18,
+      "fields": {
+        "paiement": 33,
+        "montant": "400.00",
+        "date": "2025-08-25",
+        "methode": "especes",
+        "commentaire": "REGLE",
+        "date_creation": "2025-08-25T09:20:46.271Z"
+      }
+    },
+    {
+      "model": "ecole_app.paiementhistorique",
+      "pk": 19,
+      "fields": {
+        "paiement": 31,
+        "montant": "400.00",
+        "date": "2025-08-25",
+        "methode": "especes",
+        "commentaire": "REGLE",
+        "date_creation": "2025-08-25T09:20:59.874Z"
+      }
+    },
+    {
+      "model": "ecole_app.paiementhistorique",
+      "pk": 20,
+      "fields": {
+        "paiement": 34,
+        "montant": "99.00",
+        "date": "2025-08-25",
+        "methode": "virement",
+        "commentaire": "endetéé",
+        "date_creation": "2025-08-25T19:26:45.977Z"
+      }
+    }
+  ],
+  "ecole_app.objectifmensuel": [
+    {
+      "model": "ecole_app.objectifmensuel",
+      "pk": 1,
+      "fields": {
+        "eleve": 23,
+        "mois": "2025-08-01",
+        "sourate": "Al-Isra",
+        "page_debut": 282,
+        "page_fin": 282,
+        "numero_exercice": null,
+        "description_libre": null,
+        "statut": "atteint",
+        "date_creation": "2025-08-08T08:31:12.482Z",
+        "date_modification": "2025-08-21T13:33:50.567Z",
+        "commentaire": ""
+      }
+    },
+    {
+      "model": "ecole_app.objectifmensuel",
+      "pk": 2,
+      "fields": {
+        "eleve": 25,
+        "mois": "2025-08-01",
+        "sourate": "Ta-Ha",
+        "page_debut": 319,
+        "page_fin": 319,
+        "numero_exercice": null,
+        "description_libre": null,
+        "statut": "non_atteint",
+        "date_creation": "2025-08-22T13:16:53.032Z",
+        "date_modification": "2025-08-22T13:17:16.458Z",
+        "commentaire": ""
+      }
+    },
+    {
+      "model": "ecole_app.objectifmensuel",
+      "pk": 3,
+      "fields": {
+        "eleve": 30,
+        "mois": "2025-08-01",
+        "sourate": "Yusuf",
+        "page_debut": 247,
+        "page_fin": 247,
+        "numero_exercice": null,
+        "description_libre": null,
+        "statut": "non_atteint",
+        "date_creation": "2025-08-22T13:36:15.405Z",
+        "date_modification": "2025-08-24T17:49:46.788Z",
+        "commentaire": ""
+      }
+    },
+    {
+      "model": "ecole_app.objectifmensuel",
+      "pk": 4,
+      "fields": {
+        "eleve": 35,
+        "mois": "2025-08-01",
+        "sourate": null,
+        "page_debut": null,
+        "page_fin": null,
+        "numero_exercice": null,
+        "description_libre": "FINIR LE LIVRE",
+        "statut": "non_atteint",
+        "date_creation": "2025-08-25T19:49:59.486Z",
+        "date_modification": "2025-08-25T19:50:11.355Z",
+        "commentaire": ""
+      }
+    }
+  ],
+  "ecole_app.noteexamen": [
+    {
+      "model": "ecole_app.noteexamen",
+      "pk": 10,
+      "fields": {
+        "eleve": 35,
+        "professeur": 28,
+        "classe": 17,
+        "titre": "dz",
+        "type_examen": "recitation",
+        "sourate_concernee": null,
+        "note": "20.00",
+        "note_max": "20.00",
+        "date_examen": "2025-08-25",
+        "commentaire": "ccec",
+        "date_creation": "2025-08-25T17:47:07.683Z",
+        "date_modification": "2025-08-25T17:47:07.683Z"
+      }
+    },
+    {
+      "model": "ecole_app.noteexamen",
+      "pk": 9,
+      "fields": {
+        "eleve": 25,
+        "professeur": 28,
+        "classe": 8,
+        "titre": "czz",
+        "type_examen": "recitation",
+        "sourate_concernee": null,
+        "note": "10.00",
+        "note_max": "20.00",
+        "date_examen": "2025-08-25",
+        "commentaire": "",
+        "date_creation": "2025-08-25T17:44:37.891Z",
+        "date_modification": "2025-08-25T17:44:48.529Z"
+      }
+    },
+    {
+      "model": "ecole_app.noteexamen",
+      "pk": 6,
+      "fields": {
+        "eleve": 30,
+        "professeur": 13,
+        "classe": 17,
+        "titre": "TEST",
+        "type_examen": "recitation",
+        "sourate_concernee": null,
+        "note": "10.00",
+        "note_max": "20.00",
+        "date_examen": "2025-08-24",
+        "commentaire": "llllllllllllllllllllllllllllllllllllllllllllllllllllllzidnozddzzdz",
+        "date_creation": "2025-08-24T17:51:29.612Z",
+        "date_modification": "2025-08-24T17:51:44.239Z"
+      }
+    },
+    {
+      "model": "ecole_app.noteexamen",
+      "pk": 5,
+      "fields": {
+        "eleve": 25,
+        "professeur": 13,
+        "classe": 13,
+        "titre": "cours de adab",
+        "type_examen": "recitation",
+        "sourate_concernee": null,
+        "note": "12.00",
+        "note_max": "20.00",
+        "date_examen": "2025-08-24",
+        "commentaire": "zcz",
+        "date_creation": "2025-08-24T17:39:07.378Z",
+        "date_modification": "2025-08-24T17:39:07.378Z"
+      }
+    },
+    {
+      "model": "ecole_app.noteexamen",
+      "pk": 4,
+      "fields": {
+        "eleve": 30,
+        "professeur": 13,
+        "classe": 13,
+        "titre": "juzz mull",
+        "type_examen": "recitation",
+        "sourate_concernee": null,
+        "note": "19.00",
+        "note_max": "20.00",
+        "date_examen": "2025-08-22",
+        "commentaire": "",
+        "date_creation": "2025-08-22T14:01:46.671Z",
+        "date_modification": "2025-08-24T17:38:51.838Z"
+      }
+    },
+    {
+      "model": "ecole_app.noteexamen",
+      "pk": 1,
+      "fields": {
+        "eleve": 23,
+        "professeur": 13,
+        "classe": 17,
+        "titre": "Juzz amma",
+        "type_examen": "recitation",
+        "sourate_concernee": null,
+        "note": "19.00",
+        "note_max": "20.00",
+        "date_examen": "2025-08-21",
+        "commentaire": "tb",
+        "date_creation": "2025-08-21T11:43:02.333Z",
+        "date_modification": "2025-08-21T11:43:02.333Z"
+      }
+    }
+  ],
+  "ecole_app.courspartage": [
+    {
+      "model": "ecole_app.courspartage",
+      "pk": 5,
+      "fields": {
+        "titre": "uyuyb",
+        "description": "hg",
+        "fichier": "cours_partages/plan_dasssemblage.pdf",
+        "professeur": 7,
+        "eleve": null,
+        "date_debut": "2025-08-25T19:29:06.833Z",
+        "date_creation": "2025-08-25T19:29:06.833Z",
+        "date_modification": "2025-08-25T19:29:06.843Z",
+        "actif": true,
+        "classes": [
+          8,
+          9,
+          13,
+          17,
+          19,
+          20
+        ]
+      }
+    }
+  ],
+  "ecole_app.progressioncoran": [
+    {
+      "model": "ecole_app.progressioncoran",
+      "pk": 1,
+      "fields": {
+        "eleve": 23,
+        "sourate_actuelle": "Al-Mujadila",
+        "page_actuelle": 545,
+        "page_debut_sourate": 1,
+        "direction_memorisation": "fin",
+        "date_mise_a_jour": "2025-08-22T12:56:07.460Z"
+      }
+    },
+    {
+      "model": "ecole_app.progressioncoran",
+      "pk": 2,
+      "fields": {
+        "eleve": 25,
+        "sourate_actuelle": "Al-Mujadila",
+        "page_actuelle": 545,
+        "page_debut_sourate": 542,
+        "direction_memorisation": "fin",
+        "date_mise_a_jour": "2025-08-22T13:28:10.223Z"
+      }
+    },
+    {
+      "model": "ecole_app.progressioncoran",
+      "pk": 3,
+      "fields": {
+        "eleve": 30,
+        "sourate_actuelle": "An-Naml",
+        "page_actuelle": 385,
+        "page_debut_sourate": 377,
+        "direction_memorisation": "fin",
+        "date_mise_a_jour": "2025-08-24T17:49:59.564Z"
+      }
+    },
+    {
+      "model": "ecole_app.progressioncoran",
+      "pk": 4,
+      "fields": {
+        "eleve": 35,
+        "sourate_actuelle": "Ar-Rum",
+        "page_actuelle": 406,
+        "page_debut_sourate": 405,
+        "direction_memorisation": "fin",
+        "date_mise_a_jour": "2025-08-25T19:50:28.695Z"
+      }
+    }
+  ]
+}

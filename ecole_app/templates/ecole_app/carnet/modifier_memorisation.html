@@ -1,0 +1,175 @@
+{% extends "ecole_app/base.html" %}
+{% load static %}
+
+{% block title %}Modifier une mémorisation - {{ memorisation.eleve.nom }} {{ memorisation.eleve.prenom }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-brain me-2"></i>
+                        Modifier une mémorisation pour {{ memorisation.eleve.nom }} {{ memorisation.eleve.prenom }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.date.id_for_label }}" class="form-label">Date</label>
+                            {{ form.date }}
+                            {% if form.date.errors %}
+                            <div class="text-danger">{{ form.date.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.sourate_select.id_for_label }}" class="form-label">Sourate</label>
+                            {{ form.sourate_select }}
+                            <small class="form-text text-muted">Sélectionnez d'abord la sourate pour afficher les pages disponibles</small>
+                            {% if form.sourate_select.errors %}
+                            <div class="text-danger">{{ form.sourate_select.errors }}</div>
+                            {% endif %}
+                            {{ form.sourate }}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="debut-page-select-memorisation" class="form-label">Page de début</label>
+                                    <select name="debut_page" id="debut-page-select-memorisation" class="form-control" aria-label="Page de début">
+                                        <option value="">Sélectionnez d'abord une sourate</option>
+                                    </select>
+                                    {% if form.debut_page.errors %}
+                                    <div class="text-danger">{{ form.debut_page.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="fin-page-select-memorisation" class="form-label">Page de fin</label>
+                                    <select name="fin_page" id="fin-page-select-memorisation" class="form-control" aria-label="Page de fin">
+                                        <option value="">Sélectionnez d'abord une sourate</option>
+                                    </select>
+                                    {% if form.fin_page.errors %}
+                                    <div class="text-danger">{{ form.fin_page.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.enseignant.id_for_label }}" class="form-label">Enseignant</label>
+                            {{ form.enseignant }}
+                            {% if form.enseignant.errors %}
+                            <div class="text-danger">{{ form.enseignant.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.remarques.id_for_label }}" class="form-label">Remarques</label>
+                            {{ form.remarques }}
+                            <small class="form-text text-muted">Facultatif</small>
+                            {% if form.remarques.errors %}
+                            <div class="text-danger">{{ form.remarques.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            {% if eleve and eleve.id %}
+                                <a href="{% url 'carnet_pedagogique' eleve.id %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i> Retour au carnet
+                                </a>
+                            {% else %}
+                                <a href="{% url 'liste_eleves' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i> Retour à la liste des élèves
+                                </a>
+                            {% endif %}
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Enregistrer les modifications
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/sourate-pages.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded in modifier_memorisation.html');
+        
+        // Configuration pour la mémorisation
+        setupSouratePageSelection(
+            'id_sourate_select',
+            'debut-page-select-memorisation',
+            'fin-page-select-memorisation'
+        );
+        
+        // Initialiser la sourate et les pages en fonction des valeurs existantes
+        function initSourate() {
+            const debutPage = parseInt("{{ memorisation.debut_page }}", 10);
+            const finPage = parseInt("{{ memorisation.fin_page }}", 10);
+            console.log('Initializing sourate for pages:', debutPage, 'to', finPage);
+            
+            // Appel AJAX pour trouver la sourate correspondante
+            fetch(`/api/sourate-pages/find-sourate/?debut_page=${debutPage}&fin_page=${finPage}`)
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    console.log('Found sourate data:', data);
+                    if (data.sourate_index !== undefined) {
+                        // Sélectionner la sourate dans le menu déroulant
+                        const sourateSelect = document.getElementById('id_sourate_select');
+                        if (sourateSelect) {
+                            sourateSelect.value = data.sourate_index;
+                            console.log('Set sourate select value to:', data.sourate_index);
+                            
+                            // Déclencher l'événement change pour charger les pages
+                            const event = new Event('change');
+                            sourateSelect.dispatchEvent(event);
+                            
+                            // Attendre que les pages soient chargées puis sélectionner les bonnes valeurs
+                            setTimeout(function() {
+                                const debutPageSelect = document.getElementById('debut-page-select-memorisation');
+                                const finPageSelect = document.getElementById('fin-page-select-memorisation');
+                                
+                                console.log('Setting page values after loading options');
+                                
+                                // Fonction pour définir une valeur avec retries
+                                function setSelectValue(select, value, retries = 3) {
+                                    if (select && select.options.length > 1) {
+                                        select.value = value;
+                                        console.log(`Set ${select.id} to:`, value);
+                                        return true;
+                                    } else if (retries > 0) {
+                                        console.log(`${select ? select.id : 'select'} not ready, retrying in 500ms...`);
+                                        setTimeout(() => setSelectValue(select, value, retries - 1), 500);
+                                    }
+                                    return false;
+                                }
+                                
+                                setSelectValue(debutPageSelect, debutPage);
+                                setSelectValue(finPageSelect, finPage);
+                            }, 1000); // Attendre 1000ms pour que les options soient chargées
+                        }
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error finding sourate:', error);
+                });
+        }
+        
+        // Attendre un peu pour s'assurer que tout est chargé
+        setTimeout(initSourate, 500);
+    });
+</script>
+{% endblock %}

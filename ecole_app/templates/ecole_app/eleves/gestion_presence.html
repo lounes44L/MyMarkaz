@@ -1,0 +1,331 @@
+{% extends 'ecole_app/base.html' %}
+{% load static %}
+{% load dict_extras %}
+
+{% block title %}Gestion des présences élèves{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Gestion des présences élèves</h1>
+        <a href="{% url 'rapport_presence_eleve' %}" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm">
+            <i class="fas fa-chart-bar fa-sm text-white-50"></i> Voir le rapport
+        </a>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Sélectionner une date et une classe</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="date" class="form-label">Date</label>
+                    <input type="date" class="form-control" id="date" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="classe" class="form-label">Classe</label>
+                    <select name="classe" id="classe" class="form-control" required>
+                        <option value="">Sélectionner une classe</option>
+                        {% for classe in classes %}
+                            <option value="{{ classe.id }}" {% if selected_classe.id == classe.id %}selected{% endif %}>
+                                {{ classe.nom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">Filtrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    {% if selected_classe %}
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total élèves</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-eleves">{{ stats.total_eleves }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Présents</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="presents">{{ stats.presents }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Absents justifiés</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="absents-justifies">{{ stats.absents_justifies }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Absents non justifiés</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="absents-non-justifies">{{ stats.absents_non_justifies }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-times fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Liste des élèves -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                Gestion des présences pour le {{ selected_date|date:"d/m/Y" }}
+                {% if selected_classe %}
+                    - Classe: {{ selected_classe.nom }}
+                {% endif %}
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive overflow-auto">
+                <table class="table table-bordered table-striped table-sm" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Élève</th>
+                            <th>Classe</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for eleve, presence in eleves_with_presence %}
+                        <tr data-eleve-id="{{ eleve.id }}">
+                            <td>{{ eleve.nom }} {{ eleve.prenom }}</td>
+                            <td>
+                                {% for classe in eleve.classes.all %}
+                                    {{ classe.nom }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% if presence %}
+                                    {% if presence.present %}
+                                        <span id="status-badge-{{ eleve.id }}" class="badge bg-success text-white">Présent</span>
+                                    {% elif presence.justifie %}
+                                        <span id="status-badge-{{ eleve.id }}" class="badge bg-warning text-dark">Absent justifié</span>
+                                    {% else %}
+                                        <span id="status-badge-{{ eleve.id }}" class="badge bg-danger text-white">Absent non justifié</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span id="status-badge-{{ eleve.id }}" class="badge bg-secondary text-white">Non renseigné</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#presenceModal{{ eleve.id }}">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </button>
+                            </td>
+                        </tr>
+                        
+                        <!-- Modal Présence -->
+                        <div class="modal fade" id="presenceModal{{ eleve.id }}" tabindex="-1" aria-labelledby="presenceModalLabel{{ eleve.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="presenceModalLabel{{ eleve.id }}">Présence de {{ eleve.nom }} {{ eleve.prenom }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form method="post" class="presence-form" data-eleve-id="{{ eleve.id }}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="eleve_id" value="{{ eleve.id }}">
+                                        <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+                
+                                        {% if selected_classe %}
+                                        <input type="hidden" name="classe_id" value="{{ selected_classe.id }}">
+                                        {% endif %}
+                                        
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <p class="mb-2">État de présence:</p>
+                                                <div class="form-check">
+                                                    <input type="radio" class="form-check-input" id="present{{ eleve.id }}" name="status" value="present" {% if presence and presence.present %}checked{% endif %}>
+                                                    <label class="form-check-label" for="present{{ eleve.id }}">Présent</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input type="radio" class="form-check-input" id="absent_justifie{{ eleve.id }}" name="status" value="absent_justifie" {% if presence and not presence.present and presence.justifie %}checked{% endif %}>
+                                                    <label class="form-check-label" for="absent_justifie{{ eleve.id }}">Absent justifié</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input type="radio" class="form-check-input" id="absent{{ eleve.id }}" name="status" value="absent" {% if presence and not presence.present and not presence.justifie %}checked{% endif %}>
+                                                    <label class="form-check-label" for="absent{{ eleve.id }}">Absent non justifié</label>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="commentaire{{ eleve.id }}" class="form-label">Commentaire</label>
+                                                <textarea class="form-control" id="commentaire{{ eleve.id }}" name="commentaire" rows="3">{% if presence %}{{ presence.commentaire }}{% endif %}</textarea>
+                                            </div>
+                                            <div class="alert alert-success d-none" role="alert" id="success-message-{{ eleve.id }}"></div>
+                                            <div class="alert alert-danger d-none" role="alert" id="error-message-{{ eleve.id }}"></div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center">Aucun élève trouvé</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            },
+            "responsive": true,
+            "scrollX": true,
+            "scrollCollapse": true,
+            "paging": true,
+            "pageLength": 10
+        });
+        
+        // Gestion des formulaires de présence avec AJAX
+        $('.presence-form').on('submit', function(e) {
+            e.preventDefault();
+            
+            var form = $(this);
+            var eleveId = form.data('eleve-id');
+            var successMessage = $('#success-message-' + eleveId);
+            var errorMessage = $('#error-message-' + eleveId);
+            var statusBadge = $('#status-badge-' + eleveId);
+            
+            // Cacher les messages précédents
+            successMessage.addClass('d-none');
+            errorMessage.addClass('d-none');
+            
+            $.ajax({
+                type: 'POST',
+                url: window.location.pathname,
+                data: form.serialize(),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Afficher le message de succès
+                        successMessage.text(response.message);
+                        successMessage.removeClass('d-none');
+                        errorMessage.addClass('d-none');
+                        
+                        // Mettre à jour le badge en fonction du statut
+                        var status = $('input[name="status"]:checked', form).val();
+                        
+                        // Supprimer toutes les classes de badge possibles
+                        statusBadge.removeClass('bg-success bg-warning bg-danger bg-secondary text-white text-dark');
+                        
+                        // Ajouter les classes appropriées selon le statut
+                        if (status === 'present') {
+                            statusBadge.addClass('bg-success text-white');
+                            statusBadge.text('Présent');
+                        } else if (status === 'absent_justifie') {
+                            statusBadge.addClass('bg-warning text-dark');
+                            statusBadge.text('Absent justifié');
+                        } else if (status === 'absent') {
+                            statusBadge.addClass('bg-danger text-white');
+                            statusBadge.text('Absent non justifié');
+                        }
+                        
+                        // S'assurer que le texte du badge est visible
+                        statusBadge.css('display', 'inline-block');
+                        
+                        // Mettre à jour également le badge dans le tableau principal
+                        var statusCell = $('tr[data-eleve-id="' + eleveId + '"] td:nth-child(3) span.badge');
+                        if (statusCell.length) {
+                            statusCell.removeClass('bg-success bg-warning bg-danger bg-secondary text-white text-dark');
+                            statusCell.addClass(statusBadge.attr('class'));
+                            statusCell.text(statusBadge.text());
+                        }
+                        
+                        // Mettre à jour les statistiques si disponibles
+                        if (response.stats) {
+                            $('#total-eleves').text(response.stats.total_eleves);
+                            $('#presents').text(response.stats.presents);
+                            $('#absents-justifies').text(response.stats.absents_justifies);
+                            $('#absents-non-justifies').text(response.stats.absents_non_justifies);
+                        }
+                        
+                        // Fermer le modal et rafraîchir la page après un court délai
+                        setTimeout(function() {
+                            var modal = bootstrap.Modal.getInstance($('#presenceModal' + eleveId));
+                            if (modal) modal.hide();
+                            
+                            // Simple reload sans modifier l'URL
+                            location.reload();
+                        }, 500);
+                    } else {
+                        // Afficher le message d'erreur
+                        errorMessage.text(response.message);
+                        errorMessage.removeClass('d-none');
+                    }
+                },
+                error: function() {
+                    // Afficher un message d'erreur générique
+                    errorMessage.text('Une erreur est survenue lors de la communication avec le serveur.');
+                    errorMessage.removeClass('d-none');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

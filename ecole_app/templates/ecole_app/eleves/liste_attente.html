@@ -1,0 +1,153 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Liste d'attente - Gestion Markaz{% endblock %}
+{% block page_title %}Liste d'attente{% endblock %}
+
+{% block content %}
+<ul class="nav nav-tabs mb-4">
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'liste_eleves' %}">Élèves actifs</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'archives_eleves' %}">Archives</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" href="{% url 'liste_attente' %}">Liste d'attente</a>
+  </li>
+</ul>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Ajouter un élève à la liste d'attente</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" action="">
+            {% csrf_token %}
+            <input type="hidden" name="ajout_attente" value="1">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    {{ form.nom.label_tag }}
+                    {{ form.nom }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.prenom.label_tag }}
+                    {{ form.prenom }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.date_naissance.label_tag }}
+                    {{ form.date_naissance }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.telephone.label_tag }}
+                    {{ form.telephone }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.email.label_tag }}
+                    {{ form.email }}
+                </div>
+                <div class="col-md-12 mb-3">
+                    {{ form.remarque.label_tag }}
+                    {{ form.remarque }}
+                </div>
+            </div>
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> Ajouter à la liste d'attente
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Élèves en liste d'attente ({{ eleves_attente|length }})</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Date naissance</th>
+                        <th>Téléphone</th>
+                        <th>Email</th>
+                        <th>Remarque</th>
+                        <th>Date ajout</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for eleve in eleves_attente %}
+                    <tr>
+                        <td>{{ eleve.nom }}</td>
+                        <td>{{ eleve.prenom }}</td>
+                        <td>{{ eleve.date_naissance|date:'d/m/Y' }}</td>
+                        <td>{{ eleve.telephone }}</td>
+                        <td>{{ eleve.email }}</td>
+                        <td>{{ eleve.remarque }}</td>
+                        <td>{{ eleve.date_ajout|date:'d/m/Y H:i' }}</td>
+                        <td>
+                            <button type="button" class="btn btn-success btn-sm" 
+                                    data-bs-toggle="modal" data-bs-target="#ajoutDefModal"
+                                    data-id="{{ eleve.id }}" data-nom="{{ eleve.nom }}" data-prenom="{{ eleve.prenom }}">
+                                <i class="fas fa-plus"></i> Ajouter définitivement
+                            </button>
+                            <a href="{% url 'modifier_eleve_attente' eleve.id %}" class="btn btn-primary btn-sm ms-1">
+                                <i class="fas fa-edit"></i> Modifier
+                            </a>
+                            <form method="post" action="{% url 'supprimer_eleve_attente' eleve.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm ms-1" onclick="return confirm('Supprimer cet élève de la liste d\'attente ?');">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="text-center">Aucun élève en attente.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'ajout définitif -->
+<div class="modal fade" id="ajoutDefModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'ajouter_definitivement' %}">
+        {% csrf_token %}
+        <input type="hidden" name="enfant_id" id="modalEleveId">
+        <div class="modal-header">
+          <h5 class="modal-title">Ajouter définitivement</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info" id="modalEleveNom"></div>
+          <p>Cet élève sera ajouté à la liste principale.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success">Ajouter définitivement</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Pré-remplir le modal avec les infos de l'élève sélectionné
+const ajoutDefModal = document.getElementById('ajoutDefModal');
+ajoutDefModal.addEventListener('show.bs.modal', function (event) {
+  const button = event.relatedTarget;
+  const eleveId = button.getAttribute('data-id');
+  const nom = button.getAttribute('data-nom');
+  const prenom = button.getAttribute('data-prenom');
+  document.getElementById('modalEleveId').value = eleveId;
+  document.getElementById('modalEleveNom').innerText = nom + ' ' + prenom;
+});
+</script>
+{% endblock %}

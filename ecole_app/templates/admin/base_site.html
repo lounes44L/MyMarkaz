@@ -1,0 +1,254 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<!-- Ajout du CSS personnalisé pour l'administration -->
+<link rel="stylesheet" type="text/css" href="{% static 'ecole_app/css/admin-custom.css' %}">
+<style>
+    /* Ensure the sidebar is properly positioned */
+    body {
+        padding-top: 60px; /* Height of the header */
+    }
+    
+    /* Adjust the main content area */
+    #content {
+        margin-left: 60px; /* Collapsed sidebar width */
+        transition: margin-left 0.3s ease;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    
+    /* Style the sidebar */
+    #sidebar {
+        position: fixed;
+        left: 0;
+        top: 60px; /* Height of the header */
+        width: 250px;
+        height: calc(100% - 60px);
+        background: #417690;
+        color: #ffc;
+        overflow-y: auto;
+        z-index: 1000;
+        transition: all 0.3s ease;
+        transform: translateX(-190px); /* Hide most of the sidebar */
+    }
+    
+    #sidebar:hover {
+        transform: translateX(0); /* Show full sidebar on hover */
+        box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+    }
+    
+    /* Adjust content when sidebar is hovered */
+    #sidebar:hover + #content {
+        margin-left: 250px;
+    }
+    
+    /* Style the sidebar links */
+    #sidebar a {
+        color: #fff;
+        padding: 10px 15px;
+        display: block;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    #sidebar a:hover {
+        background: rgba(255,255,255,0.1);
+    }
+    
+    /* Adjust for mobile */
+    @media (max-width: 1024px) {
+        #sidebar {
+            transform: translateX(-250px);
+        }
+        
+        #sidebar:hover {
+            transform: translateX(0);
+        }
+        
+        #content {
+            margin-left: 0 !important;
+        }
+    }
+</style>
+<style>
+    /* Réinitialisation des styles de largeur fixe */
+    body {
+        width: 100% !important;
+        min-width: auto !important;
+        max-width: 100% !important;
+        overflow-x: hidden;
+        zoom: 1;
+    }
+    
+    #container {
+        width: 100% !important;
+        min-width: auto !important;
+        max-width: 100% !important;
+        margin: 0;
+        padding: 0 15px;
+        box-sizing: border-box;
+    }
+    
+    /* Ajustement pour le contenu principal */
+    #content {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 15px;
+        margin: 0;
+        box-sizing: border-box;
+    }
+    
+    /* Ajustement pour les tableaux */
+    #changelist {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Correction pour la largeur des tableaux */
+    #result_list {
+        width: 100% !important;
+        max-width: 100% !important;
+        table-layout: auto;
+    }
+    
+    #changelist table {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* Ajustement pour les formulaires */
+    .aligned .form-row {
+        max-width: 100% !important;
+        width: 100% !important;
+        overflow: visible;
+        margin: 0 0 15px 0;
+    }
+    
+    /* Correction pour les champs de formulaire */
+    .form-row > div {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* Ajustement pour les champs de formulaire */
+    .vTextField, .vLargeTextField, .vURLField {
+        width: 100%;
+        max-width: 800px;
+        box-sizing: border-box;
+    }
+    
+    /* Ajustement pour les sélecteurs de date/heure */
+    .datetime {
+        white-space: nowrap;
+    }
+    
+    /* Ajustement pour les filtres latéraux */
+    #changelist-filter {
+        width: 200px;
+        float: right;
+        margin: 0 0 20px 20px;
+    }
+    
+    /* Ajustement pour le contenu principal avec filtre */
+    .colMS {
+        margin-right: 220px !important;
+    }
+    
+    /* Correction pour le header */
+    #header {
+        width: 100% !important;
+        padding: 10px 20px !important;
+        box-sizing: border-box;
+    }
+    
+    /* Correction pour la barre d'outils */
+    .object-tools {
+        position: relative;
+        float: right;
+        margin: 0 0 10px 0;
+    }
+    
+    /* Ajustement pour les écrans plus petits */
+    @media (max-width: 1024px) {
+        body, #container, #content, .colMS {
+            width: 100% !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 10px !important;
+        }
+        
+        .colMS {
+            margin-right: 0 !important;
+            float: none !important;
+        }
+        
+        #changelist-filter {
+            position: relative;
+            width: 100% !important;
+            margin: 0 0 20px 0 !important;
+            float: none !important;
+        }
+        
+        #toolbar {
+            margin: 0 0 15px 0 !important;
+            padding: 10px !important;
+            width: 100% !important;
+            box-sizing: border-box;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="sidebar">
+    {% if user.is_active and user.is_staff %}
+        {% load admin_menu %}
+        {% get_admin_menu as menu %}
+        {% for item in menu %}
+            <a href="{{ item.url }}"{% if item.selected %} class="selected"{% endif %}>
+                {{ item.title }}
+            </a>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<div id="content" class="{% block coltype %}colM{% endblock %}">
+    {% block pretitle %}{% endblock %}
+    {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
+    {% block content %}
+    {{ content }}
+    {% endblock %}
+    {% block sidebar %}{% endblock %}
+    <br class="clear">
+</div>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<!-- Script pour ajuster dynamiquement la largeur si nécessaire -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ajuster la largeur des tableaux
+        var tables = document.querySelectorAll('#result_list');
+        tables.forEach(function(table) {
+            table.style.width = '100%';
+            table.style.tableLayout = 'auto';
+        });
+        
+        // Ajuster la largeur des champs de formulaire
+        var inputs = document.querySelectorAll('input[type="text"], textarea, select');
+        inputs.forEach(function(input) {
+            if (!input.classList.contains('vDateField') && !input.classList.contains('vTimeField')) {
+                input.style.maxWidth = '800px';
+                input.style.width = '100%';
+                input.style.boxSizing = 'border-box';
+            }
+        });
+    });
+</script>
+{% endblock %}

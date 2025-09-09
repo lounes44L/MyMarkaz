@@ -1,0 +1,80 @@
+{% extends "ecole_app/base.html" %}
+{% load static %}
+
+{% block title %}Ajouter une répétition (Tikrar) - {{ eleve.nom }} {{ eleve.prenom }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-redo me-2"></i>
+                        Ajouter une répétition (Tikrar) pour {{ eleve.nom }} {{ eleve.prenom }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.sourate_select.id_for_label }}" class="form-label">Sourate</label>
+                            {{ form.sourate_select }}
+                            <small class="form-text text-muted">Sélectionnez d'abord la sourate pour afficher les pages disponibles</small>
+                            {% if form.sourate_select.errors %}
+                            <div class="text-danger">{{ form.sourate_select.errors }}</div>
+                            {% endif %}
+                            {{ form.sourate }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="page-select-repetition" class="form-label">Page</label>
+                            <select name="page" id="page-select-repetition" class="form-control" disabled aria-label="Page">
+                                <option value="">Sélectionnez d'abord une sourate</option>
+                            </select>
+                            {% if form.page.errors %}
+                            <div class="text-danger">{{ form.page.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.nombre_repetitions.id_for_label }}" class="form-label">Nombre de répétitions</label>
+                            {{ form.nombre_repetitions }}
+                            {% if form.nombre_repetitions.errors %}
+                            <div class="text-danger">{{ form.nombre_repetitions.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'carnet_pedagogique' eleve.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Retour
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save me-1"></i> Enregistrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/sourate-pages.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded in ajouter_repetition.html');
+        
+        // Configuration pour la répétition (tikrar)
+        setupSouratePageSelection(
+            'id_sourate_select',
+            'page-select-repetition',
+            null, // Pas de fin_page pour la répétition
+            true  // Mode page unique
+        );
+    });
+</script>
+{% endblock %}

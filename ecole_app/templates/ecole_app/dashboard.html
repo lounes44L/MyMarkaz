@@ -1,0 +1,180 @@
+{% extends 'ecole_app/base_admin.html' %}
+
+{% block title %}Dashboard général - Markaz Quran{% endblock %}
+
+{% block page_title %}Dashboard général{% endblock %}
+
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ecole_app/css/progress-bars.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="row mb-3">
+    <!-- Statistiques générales -->
+    <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
+        <div class="stats-card professeurs">
+            <div class="stat-icon">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <h5 class="fs-6">Professeurs</h5>
+            <div class="stat-value fs-4">{{ total_profs }}</div>
+            <div class="mt-2">
+                <a href="{% url 'liste_professeurs' %}" class="btn btn-sm btn-outline-primary" title="Voir tous les professeurs" aria-label="Voir la liste complète des professeurs">Voir</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
+        <div class="stats-card etudiants">
+            <div class="stat-icon">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <h5 class="fs-6">Étudiants</h5>
+            <div class="stat-value fs-4">{{ total_eleves }}</div>
+            <div class="mt-2">
+                <a href="{% url 'liste_eleves' %}" class="btn btn-sm btn-outline-primary" title="Voir tous les étudiants" aria-label="Voir la liste complète des étudiants">Voir</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
+        <div class="stats-card creneaux">
+            <div class="stat-icon">
+                <i class="far fa-clock"></i>
+            </div>
+            <h5 class="fs-6">Créneaux</h5>
+            <div class="stat-value fs-4">{{ total_creneaux }}</div>
+            <div class="mt-2">
+                <a href="{% url 'liste_creneaux' %}" class="btn btn-sm btn-outline-primary" title="Voir tous les créneaux" aria-label="Voir la liste complète des créneaux">Voir</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
+        <div class="stats-card classes">
+            <div class="stat-icon">
+                <i class="fas fa-school"></i>
+            </div>
+            <h5 class="fs-6">Classes</h5>
+            <div class="stat-value fs-4">{{ total_classes }}</div>
+            <div class="mt-2">
+                <a href="{% url 'liste_classes' %}" class="btn btn-sm btn-outline-primary" title="Voir toutes les classes" aria-label="Voir la liste complète des classes">Voir</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Taux d'occupation global -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center py-2">
+                <h5 class="mb-0 fs-6">Taux d'occupation global</h5>
+            </div>
+            <div class="card-body py-2">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="small text-secondary">{{ total_eleves }} / {{ total_capacite }} places ({{ taux_remplissage }}%)</span>
+                </div>
+                <div class="progress">
+                    {% if taux_remplissage > 85 %}
+                        <div class="progress-bar progress-bar-danger progress-width-custom" role="progressbar" data-width="{{ taux_remplissage|default:0|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100" aria-label="Taux de remplissage : {{ taux_remplissage|default:0|floatformat:0 }}%">
+                            <span class="visually-hidden">{{ taux_remplissage|default:0|floatformat:0 }}% de remplissage</span>
+                        </div>
+                    {% elif taux_remplissage > 60 %}
+                        <div class="progress-bar progress-bar-warning progress-width-custom" role="progressbar" data-width="{{ taux_remplissage|default:0|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100" aria-label="Taux de remplissage : {{ taux_remplissage|default:0|floatformat:0 }}%">
+                            <span class="visually-hidden">{{ taux_remplissage|default:0|floatformat:0 }}% de remplissage</span>
+                        </div>
+                    {% else %}
+                        <div class="progress-bar progress-bar-success progress-width-custom" role="progressbar" data-width="{{ taux_remplissage|default:0|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100" aria-label="Taux de remplissage : {{ taux_remplissage|default:0|floatformat:0 }}%">
+                            <span class="visually-hidden">{{ taux_remplissage|default:0|floatformat:0 }}% de remplissage</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Occupation des classes -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center py-2">
+                <h5 class="mb-0 fs-6">Occupation des classes</h5>
+                <a href="{% url 'liste_classes' %}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Voir toutes les classes">Voir tout</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-container overflow-auto table-classes-container">
+                    {% for classe in classe_stats %}
+                        <div class="p-2 border-bottom">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div>
+                                    <h6 class="mb-0 small"><a href="{% url 'detail_classe' classe.id %}" title="Voir les détails de la classe {{ classe.nom }}">{{ classe.nom }}</a></h6>
+                                    <div class="text-muted small">{{ classe.creneau }}</div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="small">{{ classe.eleves_en_classe }} / {{ classe.capacite }}</div>
+                                </div>
+                            </div>
+                            <div class="progress">
+                                {% if classe.taux_occupation > 85 %}
+                                    <div class="progress-bar progress-bar-danger progress-width-custom" role="progressbar" data-width="{{ classe.taux_occupation|default:0|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100" aria-label="Taux d'occupation de la classe {{ classe.nom }} : {{ classe.taux_occupation|default:0|floatformat:0 }}%">
+                                        <span class="visually-hidden">{{ classe.taux_occupation|default:0|floatformat:0 }}% d'occupation</span>
+                                    </div>
+                                {% elif classe.taux_occupation > 60 %}
+                                    <div class="progress-bar progress-bar-warning progress-width-custom" role="progressbar" data-width="{{ classe.taux_occupation|default:0|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100" aria-label="Taux d'occupation de la classe {{ classe.nom }} : {{ classe.taux_occupation|default:0|floatformat:0 }}%">
+                                        <span class="visually-hidden">{{ classe.taux_occupation|default:0|floatformat:0 }}% d'occupation</span>
+                                    </div>
+                                {% else %}
+                                    <div class="progress-bar progress-bar-success progress-width-custom" role="progressbar" data-width="{{ classe.taux_occupation|default:0|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100" aria-label="Taux d'occupation de la classe {{ classe.nom }} : {{ classe.taux_occupation|default:0|floatformat:0 }}%">
+                                        <span class="visually-hidden">{{ classe.taux_occupation|default:0|floatformat:0 }}% d'occupation</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="p-3 text-center">
+                            <p class="mb-0 small">Aucune classe disponible</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actions rapides -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center py-2">
+                <h5 class="mb-0 fs-6">Actions rapides</h5>
+            </div>
+            <div class="card-body py-2">
+                <div class="row g-2">
+                    <div class="col-lg-3 col-md-6 col-sm-6 mb-2">
+                        <a href="{% url 'ajout_rapide_eleve' %}" class="btn btn-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-1" title="Ajouter un étudiant">
+                            <i class="fas fa-plus-circle"></i> Ajouter un étudiant
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 col-sm-6 mb-2">
+                        <a href="{% url 'liste_professeurs' %}" class="btn btn-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-1" title="Ajouter un professeur">
+                            <i class="fas fa-plus-circle"></i> Ajouter un professeur
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 col-sm-6 mb-2">
+                        <a href="{% url 'liste_classes' %}" class="btn btn-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-1" title="Ajouter une classe">
+                            <i class="fas fa-plus-circle"></i> Ajouter une classe
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 col-sm-6 mb-2">
+                        <a href="{% url 'liste_paiements' %}" class="btn btn-warning btn-sm w-100 d-flex align-items-center justify-content-center gap-1" title="Enregistrer un nouveau paiement" aria-label="Enregistrer un nouveau paiement">
+                            <i class="fas fa-money-bill-wave" aria-hidden="true"></i> Enregistrer un paiement
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

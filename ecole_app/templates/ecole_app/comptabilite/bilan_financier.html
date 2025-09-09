@@ -1,0 +1,405 @@
+{% extends 'ecole_app/base_admin.html' %}
+{% load static %}
+
+{% block title %}Bilan financier{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Bilan financier</h1>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Filtres</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="annee" class="form-label">Année scolaire</label>
+                    <select name="annee" id="annee" class="form-control">
+                        <option value="">Toutes les années</option>
+                        {% for annee in annees %}
+                            <option value="{{ annee.id }}" {% if annee_active.id == annee.id %}selected{% endif %}>
+                                {{ annee.nom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="periode" class="form-label">Période</label>
+                    <select name="periode" id="periode" class="form-control">
+                        <option value="annee" {% if periode == 'annee' %}selected{% endif %}>Année complète</option>
+                        <option value="mois" {% if periode == 'mois' %}selected{% endif %}>Mois</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="mois" class="form-label">Mois</label>
+                    <select name="mois" id="mois" class="form-control" {% if periode != 'mois' %}disabled{% endif %}>
+                        <option value="1" {% if mois == 1 %}selected{% endif %}>Janvier</option>
+                        <option value="2" {% if mois == 2 %}selected{% endif %}>Février</option>
+                        <option value="3" {% if mois == 3 %}selected{% endif %}>Mars</option>
+                        <option value="4" {% if mois == 4 %}selected{% endif %}>Avril</option>
+                        <option value="5" {% if mois == 5 %}selected{% endif %}>Mai</option>
+                        <option value="6" {% if mois == 6 %}selected{% endif %}>Juin</option>
+                        <option value="7" {% if mois == 7 %}selected{% endif %}>Juillet</option>
+                        <option value="8" {% if mois == 8 %}selected{% endif %}>Août</option>
+                        <option value="9" {% if mois == 9 %}selected{% endif %}>Septembre</option>
+                        <option value="10" {% if mois == 10 %}selected{% endif %}>Octobre</option>
+                        <option value="11" {% if mois == 11 %}selected{% endif %}>Novembre</option>
+                        <option value="12" {% if mois == 12 %}selected{% endif %}>Décembre</option>
+                    </select>
+                </div>
+                <div class="col-md-12 mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter me-1"></i> Filtrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistiques générales -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total des entrées</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_entrees }} €</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-euro-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Total des charges</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_charges }} €</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-minus-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Total des indemnisations</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_indemnisations }} €</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-tie fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Solde</div>
+                            <div class="h5 mb-0 font-weight-bold {% if solde >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {{ solde }} €
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-balance-scale fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="row">
+        <!-- Diagramme circulaire des charges par catégorie -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Répartition des charges par catégorie</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height:300px;">
+                        <canvas id="chargesPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diagramme circulaire des entrées par type -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Répartition des entrées</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height:300px;">
+                        <canvas id="entreesPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Graphique d'évolution mensuelle -->
+        <div class="col-xl-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Évolution mensuelle</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height:400px;">
+                        <canvas id="evolutionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableaux récapitulatifs -->
+    <div class="row">
+        <!-- Tableau des charges -->
+        <div class="col-xl-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Récapitulatif des charges</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Catégorie</th>
+                                    <th>Montant</th>
+                                    <th>Pourcentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for categorie in charges_par_categorie %}
+                                <tr>
+                                    <td>{{ categorie.categorie_display }}</td>
+                                    <td>{{ categorie.total }} €</td>
+                                    <td>{{ categorie.pourcentage }}%</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">Aucune charge enregistrée</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tableau des entrées -->
+        <div class="col-xl-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Récapitulatif des entrées</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Montant</th>
+                                    <th>Pourcentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for type in entrees_par_type %}
+                                <tr>
+                                    <td>{{ type.type_display }}</td>
+                                    <td>{{ type.total }} €</td>
+                                    <td>{{ type.pourcentage }}%</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">Aucune entrée enregistrée</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Activer/désactiver les sélecteurs en fonction de la période choisie
+    document.addEventListener('DOMContentLoaded', function() {
+        const periodeSelect = document.getElementById('periode');
+        const moisSelect = document.getElementById('mois');
+        const trimestreSelect = document.getElementById('trimestre');
+        
+        periodeSelect.addEventListener('change', function() {
+            if (this.value === 'mois') {
+                moisSelect.disabled = false;
+                trimestreSelect.disabled = true;
+            } else if (this.value === 'trimestre') {
+                moisSelect.disabled = true;
+                trimestreSelect.disabled = false;
+            } else {
+                moisSelect.disabled = true;
+                trimestreSelect.disabled = true;
+            }
+        });
+    });
+
+    // Diagramme circulaire des charges par catégorie
+    const chargesCtx = document.getElementById('chargesPieChart').getContext('2d');
+    const chargesPieChart = new Chart(chargesCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ charges_labels|safe }},
+            datasets: [{
+                data: {{ charges_data|safe }},
+                backgroundColor: [
+                    '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#5a5c69', '#858796',
+                    '#6f42c1', '#20c9a6', '#fd7e14', '#e83e8c'
+                ],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+
+    // Diagramme circulaire des entrées par type
+    const entreesCtx = document.getElementById('entreesPieChart').getContext('2d');
+    const entreesPieChart = new Chart(entreesCtx, {
+        type: 'pie',
+        data: {
+            labels: [{% for type in entrees_par_type %}'{{ type.type_display }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                data: [{% for type in entrees_par_type %}{{ type.total }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                backgroundColor: [
+                    '#1cc88a', '#4e73df', '#36b9cc', '#f6c23e', '#e74a3b', '#5a5c69', '#858796',
+                    '#6f42c1', '#20c9a6', '#fd7e14', '#e83e8c'
+                ],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+
+    // Graphique d'évolution mensuelle
+    const evolutionCtx = document.getElementById('evolutionChart').getContext('2d');
+    const evolutionChart = new Chart(evolutionCtx, {
+        type: 'line',
+        data: {
+            labels: {{ labels_mois|safe }},
+            datasets: [
+                {
+                    label: 'Entrées',
+                    data: {{ donnees_entrees|safe }},
+                    borderColor: '#1cc88a',
+                    backgroundColor: 'rgba(28, 200, 138, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.1
+                },
+                {
+                    label: 'Charges',
+                    data: {{ donnees_charges|safe }},
+                    borderColor: '#e74a3b',
+                    backgroundColor: 'rgba(231, 74, 59, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.1
+                },
+                {
+                    label: 'Indemnisations',
+                    data: {{ donnees_indemnisations|safe }},
+                    borderColor: '#f6c23e',
+                    backgroundColor: 'rgba(246, 194, 62, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.1
+                },
+                {
+                    label: 'Solde',
+                    data: {{ donnees_solde|safe }},
+                    borderColor: '#4e73df',
+                    backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        drawBorder: false,
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

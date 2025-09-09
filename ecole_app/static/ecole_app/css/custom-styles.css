@@ -1,0 +1,88 @@
+/* Styles personnalisés pour l'application Gestion Markaz */
+
+/* Correction pour le texte blanc sur fond blanc */
+.text-gray-800 {
+    color: #333333 !important;
+}
+
+.dark-mode .text-gray-800 {
+    color: #e0e0e0 !important;
+}
+
+.text-white-50 {
+    color: rgba(0, 0, 0, 0.7) !important;
+}
+
+.dark-mode .text-white-50 {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Correction pour les données dans les tableaux */
+.table td.align-middle {
+    color: #333333;
+}
+
+.dark-mode .table td.align-middle {
+    color: #e0e0e0;
+}
+
+/* Styles pour les barres de progression */
+.progress-width-dynamic {
+    transition: width 0.6s ease;
+}
+
+/* Styles spécifiques pour les pages élèves */
+.student-card {
+    margin-bottom: 1.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* Styles pour les modals */
+.modal-header-custom {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Styles pour les tableaux */
+.table-hover-custom tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.075);
+}
+
+/* Styles pour les listes */
+.list-group-custom .list-group-item {
+    border-left: 3px solid transparent;
+}
+
+.list-group-custom .list-group-item:hover {
+    border-left: 3px solid #007bff;
+}
+
+/* Styles pour les formulaires */
+.form-label-required::after {
+    content: " *";
+    color: #dc3545;
+}
+
+/* Styles pour les badges */
+.badge-outline {
+    background-color: transparent;
+    border: 1px solid currentColor;
+}
+
+/* Badge pour l'affichage des classes dans la liste des quiz */
+.badge-classe {
+    background-color: #ff5722; /* orange vif */
+    color: #ffffff;           /* texte blanc */
+    border: 1px solid #e64a19;
+    font-weight: 600;
+    padding: 5px 8px;
+    margin: 2px;
+    display: inline-block;
+}
+
+/* Variante en mode sombre */
+.dark-mode .badge-classe {
+    background-color: #ff7043;
+    color: #000000;
+    border-color: #ff5722;
+}

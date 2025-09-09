@@ -1,0 +1,63 @@
+{% extends 'ecole_app/base.html' %}
+{% load static %}
+
+{% block title %}Créer un module pédagogique{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>Créer un nouveau module pédagogique</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="titre">Titre du module <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="titre" name="titre" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="publie">Statut</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="publie" name="publie">
+                                        <label class="form-check-label" for="publie">Publier immédiatement</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Classes concernées</label>
+                            <div class="row">
+                                {% for classe in classes %}
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="classe_{{ classe.id }}" name="classes" value="{{ classe.id }}">
+                                        <label class="form-check-label" for="classe_{{ classe.id }}">
+                                            {{ classe.nom }}
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end mt-4">
+                            <a href="{% url 'liste_modules' %}" class="btn btn-light me-2">Annuler</a>
+                            <button type="submit" class="btn btn-primary">Créer le module</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

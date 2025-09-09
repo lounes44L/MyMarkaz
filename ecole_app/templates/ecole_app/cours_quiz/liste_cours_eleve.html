@@ -1,0 +1,66 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Cours Partagés{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Cours Partagés</h1>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Liste des cours -->
+    <div class="row">
+        {% if cours %}
+            {% for c in cours %}
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ c.titre }}</div>
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Par {{ c.professeur.nom }} - {{ c.date_creation|date:"d/m/Y" }}
+                                    </div>
+                                    <p class="mt-2 mb-2">{{ c.description|truncatechars:100 }}</p>
+                                    <div class="mt-3">
+                                        {% for classe in c.classes.all %}
+                                            <span class="badge-classe">{{ classe.nom }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <a href="{% url 'telecharger_cours' c.id %}" class="btn btn-primary btn-circle" title="Télécharger le cours">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="card shadow mb-4">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-book fa-3x text-gray-300 mb-3"></i>
+                        <p class="text-muted">Aucun cours n'est disponible pour le moment.</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Ajouter un cours{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Ajouter un cours</h1>
+        <a href="{% url 'liste_cours_professeur' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour à la liste
+        </a>
+    </div>
+
+    <!-- Messages are now handled in the base template -->
+
+    <!-- Formulaire d'ajout de cours -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Nouveau cours partagé</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="titre">Titre <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="titre" name="titre" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fichier">Fichier (PDF, Word, etc.) <span class="text-danger">*</span></label>
+                    <input type="file" class="form-control-file" id="fichier" name="fichier" required>
+                    <small class="form-text text-muted">Formats acceptés : PDF, DOC, DOCX, PPT, PPTX, etc.</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="classes">Classes</label>
+                    <select multiple class="form-control" id="classes" name="classes">
+                        {% for classe in classes %}
+                            <option value="{{ classe.id }}">{{ classe.nom }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-text text-muted">Maintenez Ctrl enfoncé pour sélectionner plusieurs classes.</small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

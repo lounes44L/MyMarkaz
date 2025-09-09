@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques des Notes - {{ classe.nom }}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    {% load static %}
+    <link href="{% static 'ecole_app/css/composante.css' %}" rel="stylesheet">
+    <link href="{% static 'ecole_app/css/custom-styles.css' %}" rel="stylesheet">
+    <!-- DataTables -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap5.min.css">
+    <style>
+        :root {
+            --primary-green: #1b5530;
+            --light-green: #22693c;
+            --yellow-accent: #ffce4b;
+            --text-light: #ffffff;
+            --bg-light: #f8fafb;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-light);
+            padding-top: 70px;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .dashboard-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-green);
+            border-color: var(--primary-green);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--light-green);
+            border-color: var(--light-green);
+        }
+        
+        .moyenne-bar-container {
+            width: 100%;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            height: 20px;
+            position: relative;
+        }
+        
+        .moyenne-bar {
+            height: 100%;
+            border-radius: 5px;
+            color: white;
+            text-align: center;
+            line-height: 20px;
+            font-size: 0.8rem;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        
+        .top-nav {
+            background-color: white;
+            padding: 0.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .back-button {
+            background-color: var(--yellow-accent);
+            color: #333;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 5px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .table-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Mode sombre */
+        .dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        
+        .dark-mode .top-nav {
+            background-color: #1e1e1e;
+            border-bottom: 1px solid #333;
+            color: #e0e0e0;
+        }
+        
+        .dark-mode .card,
+        .dark-mode .table-container {
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+            border: 1px solid #444;
+        }
+        
+        .dark-mode .card-header {
+            background-color: #333;
+            border-bottom: 1px solid #444;
+            color: #e0e0e0;
+        }
+        
+        .dark-mode .table {
+            color: #e0e0e0;
+        }
+        
+        .dark-mode .table thead th {
+            border-color: #444;
+            background-color: #333;
+        }
+        
+        .dark-mode .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .dark-mode .table td,
+        .dark-mode .table th {
+            border-color: #444;
+        }
+        
+        .dark-mode .alert-info {
+            background-color: #0f3a42;
+            color: #98d7e4;
+            border-color: #0c7384;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <div class="top-nav">
+        <a href="{% url 'liste_notes_professeur' %}" class="back-button">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+        <h5 class="mb-0">Statistiques des Notes - {{ classe.nom }}</h5>
+        <button class="btn btn-sm btn-outline-secondary" id="toggleDarkMode">
+            <i class="fas fa-sun"></i> Mode sombre
+        </button>
+    </div>
+
+    <div class="container-fluid">
+        <!-- Résumé des statistiques -->
+        <div class="row mt-4">
+            <!-- Total des notes -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Total des notes</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_notes }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Moyenne de la classe -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Moyenne de la classe</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.moyenne_classe|floatformat:2 }}/20</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nombre d'élèves évalués -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                    Élèves évalués</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.notes_par_eleve|length }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-users fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Types d'examens -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    Types d'examens</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.notes_par_type|length }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-tasks fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques par type d'examen -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Statistiques par type d'examen</h6>
+            </div>
+            <div class="card-body">
+                {% if stats.notes_par_type %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Type d'examen</th>
+                                    <th>Nombre de notes</th>
+                                    <th>Moyenne</th>
+                                    <th>Visualisation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for type_nom, type_stats in stats.notes_par_type.items %}
+                                    <tr>
+                                        <td>{{ type_nom }}</td>
+                                        <td>{{ type_stats.count }}</td>
+                                        <td>{{ type_stats.moyenne|floatformat:2 }}/20</td>
+                                        <td>
+                                            <div class="moyenne-bar-container">
+                                                <div class="moyenne-bar {% if type_stats.moyenne >= 14 %}bg-success{% elif type_stats.moyenne >= 10 %}bg-info{% elif type_stats.moyenne >= 7 %}bg-warning{% else %}bg-danger{% endif %}"
+                                                    data-moyenne="{{ type_stats.moyenne|default:0 }}">
+                                                    {{ type_stats.moyenne|floatformat:1 }}/20
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        Aucune donnée disponible pour les types d'examen.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Statistiques par élève -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Statistiques par élève</h6>
+            </div>
+            <div class="card-body">
+                {% if stats.notes_par_eleve %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Élève</th>
+                                    <th>Nombre de notes</th>
+                                    <th>Moyenne</th>
+                                    <th>Dernière note</th>
+                                    <th>Progression</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for eleve_id, eleve_stats in stats.notes_par_eleve.items %}
+                                    <tr>
+                                        <td>{{ eleve_stats.eleve.nom }} {{ eleve_stats.eleve.prenom }}</td>
+                                        <td>{{ eleve_stats.count }}</td>
+                                        <td>{{ eleve_stats.moyenne|floatformat:2 }}/20</td>
+                                        <td>
+                                            {% if eleve_stats.derniere_note %}
+                                                <span class="badge {{ eleve_stats.derniere_note.get_couleur_badge }}">
+                                                    {{ eleve_stats.derniere_note.note }}/{{ eleve_stats.derniere_note.note_max }}
+                                                    ({{ eleve_stats.derniere_note.get_mention }})
+                                                </span>
+                                                <br>
+                                                <small class="text-muted">{{ eleve_stats.derniere_note.date_examen }}</small>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="moyenne-bar-container">
+                                                <div class="moyenne-bar {% if eleve_stats.moyenne >= 14 %}bg-success{% elif eleve_stats.moyenne >= 10 %}bg-info{% elif eleve_stats.moyenne >= 7 %}bg-warning{% else %}bg-danger{% endif %}"
+                                                    data-moyenne="{{ eleve_stats.moyenne|default:0 }}">
+                                                    {{ eleve_stats.moyenne|floatformat:1 }}/20
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        Aucune donnée disponible pour les élèves.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Dernières notes -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Dernières notes (10 max)</h6>
+            </div>
+            <div class="card-body">
+                {% if notes %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Élève</th>
+                                    <th>Type d'examen</th>
+                                    <th>Note</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for note in notes %}
+                                    <tr>
+                                        <td>{{ note.date_examen }}</td>
+                                        <td>{{ note.eleve.nom }} {{ note.eleve.prenom }}</td>
+                                        <td>{{ note.get_type_examen_display }}</td>
+                                        <td><span class="badge {{ note.get_couleur_badge }} {% if note.get_couleur_badge == 'bg-warning' or note.get_couleur_badge == 'bg-light' %}text-dark{% else %}text-white{% endif %}">{{ note.note }}/{{ note.note_max }}</span></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        Aucune note récente disponible.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery d'abord car DataTables en dépend -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap5.min.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Script pour gérer le mode sombre
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle dark mode
+            const toggleButton = document.getElementById('toggleDarkMode');
+            const body = document.body;
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            
+            if (isDarkMode) {
+                body.classList.add('dark-mode');
+                toggleButton.innerHTML = '<i class="fas fa-moon"></i> Mode clair';
+            }
+            
+            toggleButton.addEventListener('click', function() {
+                body.classList.toggle('dark-mode');
+                const isDarkMode = body.classList.contains('dark-mode');
+                localStorage.setItem('darkMode', isDarkMode);
+                
+                if (isDarkMode) {
+                    this.innerHTML = '<i class="fas fa-moon"></i> Mode clair';
+                } else {
+                    this.innerHTML = '<i class="fas fa-sun"></i> Mode sombre';
+                }
+            });
+            
+            // Initialiser les barres de moyenne
+            document.querySelectorAll('.moyenne-bar').forEach(function(bar) {
+                const moyenne = parseFloat(bar.getAttribute('data-moyenne'));
+                const pourcentage = (moyenne / 20) * 100;
+                bar.style.width = pourcentage + '%';
+            });
+            
+            // Initialiser DataTable pour le tableau des élèves
+            $('#dataTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+                },
+                "order": [[2, "desc"]] // Trier par moyenne décroissante
+            });
+        });
+    </script>
+</body>
+</html>

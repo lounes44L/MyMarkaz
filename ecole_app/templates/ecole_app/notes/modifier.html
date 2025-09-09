@@ -1,0 +1,195 @@
+{% extends 'ecole_app/base.html' %}
+{% load static %}
+
+{% block title %}Modifier une Note d'Examen{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Modifier une Note d'Examen</h1>
+        <a href="{% url 'liste_notes_professeur' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour à la liste
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Modification de la note pour {{ note.eleve }}</h6>
+            <span class="badge {{ note.get_couleur_badge }} p-2">{{ note.get_mention }}</span>
+        </div>
+        <div class="card-body">
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                {% if user.is_superuser or user.is_staff %}
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="professeur_id">Professeur</label>
+                        <select name="professeur_id" id="professeur_id" class="form-control" required disabled>
+                            <option value="{{ note.professeur.id }}" selected>{{ note.professeur.user.first_name }} {{ note.professeur.user.last_name }}</option>
+                        </select>
+                        <small class="text-muted">Le professeur ne peut pas être modifié après la création de la note</small>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.classe.id_for_label }}">Classe</label>
+                        {{ form.classe }}
+                        {% if form.classe.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.classe.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.eleve.id_for_label }}">Élève</label>
+                        {{ form.eleve }}
+                        {% if form.eleve.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.eleve.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.titre.id_for_label }}">Titre de l'examen</label>
+                        {{ form.titre }}
+                        {% if form.titre.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.titre.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.sourate_concernee.id_for_label }}">Sourate concernée (optionnel)</label>
+                        {{ form.sourate_concernee }}
+                        {% if form.sourate_concernee.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.sourate_concernee.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.type_examen.id_for_label }}">Type d'examen</label>
+                        {{ form.type_examen }}
+                        {% if form.type_examen.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.type_examen.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.date_examen.id_for_label }}">Date de l'examen</label>
+                        {{ form.date_examen }}
+                        {% if form.date_examen.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.date_examen.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.note.id_for_label }}">Note</label>
+                        {{ form.note }}
+                        {% if form.note.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.note.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.note_max.id_for_label }}">Note maximale</label>
+                        {{ form.note_max }}
+                        {% if form.note_max.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.note_max.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.commentaire.id_for_label }}">Commentaire</label>
+                    {{ form.commentaire }}
+                    {% if form.commentaire.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.commentaire.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                    <a href="{% url 'liste_notes_professeur' %}" class="btn btn-secondary">Annuler</a>
+                </div>
+                
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger mt-3">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialiser les champs select avec Select2 si le plugin est chargé
+        if ($.fn.select2) {
+            $('.form-control').select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            });
+        }
+
+        // Initialiser le datepicker pour la date d'examen si le plugin est chargé
+        if ($.fn.datepicker) {
+            $('#{{ form.date_examen.id_for_label }}').datepicker({
+                format: 'yyyy-mm-dd',
+                language: 'fr',
+                autoclose: true,
+                todayHighlight: true
+            });
+        }
+
+        // Mise à jour dynamique des élèves en fonction de la classe sélectionnée
+        $('#{{ form.classe.id_for_label }}').change(function() {
+            var classeId = $(this).val();
+            var currentEleveId = '{{ note.eleve.id }}';
+            if (classeId) {
+                $.ajax({
+                    url: '/api/eleves-par-classe/' + classeId + '/',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        var options = '<option value="">Sélectionner un élève</option>';
+                        $.each(data, function(index, eleve) {
+                            var selected = (eleve.id == currentEleveId) ? 'selected' : '';
+                            options += '<option value="' + eleve.id + '" ' + selected + '>' + eleve.nom + ' ' + eleve.prenom + '</option>';
+                        });
+                        $('#{{ form.eleve.id_for_label }}').html(options).trigger('change');
+                    }
+                });
+            } else {
+                $('#{{ form.eleve.id_for_label }}').html('<option value="">Sélectionner un élève</option>').trigger('change');
+            }
+        });
+    });
+</script>
+{% endblock %}

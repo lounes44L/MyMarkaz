@@ -1,0 +1,429 @@
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
+from django.utils import timezone
+from django.http import JsonResponse, HttpResponseForbidden
+from django.db.models import Count, Sum, Avg
+from django.core.exceptions import PermissionDenied
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+import json
+from .models import (Eleve, Professeur, CarnetPedagogique, EcouteAvantMemo, 
+                    Memorisation, Revision, Repetition, Creneau, CompetenceLivre, EvaluationCompetence)
+from .forms import (CarnetPedagogiqueForm, EcouteAvantMemoForm, MemorisationForm,
+                    RevisionForm, RepetitionForm)
+
+def check_eleve_access(request, eleve_id=None):
+    """Vérifier si l'utilisateur a accès à l'élève spécifié"""
+    # Si c'est un élève connecté, il ne peut accéder qu'à son propre carnet
+    if hasattr(request.user, 'eleve'):
+        if eleve_id and str(request.user.eleve.id) != str(eleve_id):
+            return None, False
+        return request.user.eleve, True
+    
+    # Si c'est un professeur, il ne peut accéder qu'aux élèves de ses créneaux
+    elif hasattr(request.user, 'professeur') and eleve_id:
+        eleve = get_object_or_404(Eleve, id=eleve_id)
+        # Récupérer les classes du professeur
+        classes_prof = request.user.professeur.classes.all()
+        # Récupérer les créneaux associés à ces classes
+        creneaux_prof = Creneau.objects.filter(classes__in=classes_prof).distinct()
+        # Vérifier si l'élève est dans l'une des classes du professeur
+        eleve_classes = eleve.classes.all()
+        prof_classes = request.user.professeur.classes.all()
+        
+        # Vérifier s'il y a une intersection entre les classes de l'élève et celles du professeur
+        if eleve_classes.filter(id__in=prof_classes).exists() or request.user.is_staff:
+            return eleve, True
+        return None, False
+    
+    # Si c'est un administrateur, il peut accéder à tous les élèves
+    elif request.user.is_staff and eleve_id:
+        return get_object_or_404(Eleve, id=eleve_id), True
+    
+    return None, False
+
+@login_required
+def carnet_pedagogique(request, eleve_id=None):
+    """Vue principale du carnet pédagogique"""
+    # Si c'est un élève connecté, afficher son propre carnet
+    if hasattr(request.user, 'eleve') and not eleve_id:
+        eleve = request.user.eleve
+    # Sinon vérifier les permissions d'accès
+    else:
+        eleve, has_access = check_eleve_access(request, eleve_id)
+        if not has_access:
+            messages.error(request, "Vous n'avez pas accès au carnet de cet élève.")
+            return redirect('dashboard')
+    
+    # Récupérer ou créer le carnet pédagogique de l'élève
+    carnet, created = CarnetPedagogique.objects.get_or_create(eleve=eleve)
+    
+    # Récupérer le mois et l'année depuis les paramètres GET ou utiliser la date actuelle
+    date_actuelle = timezone.now()
+    try:
+        mois = int(request.GET.get('mois', date_actuelle.month))
+        annee = int(request.GET.get('annee', date_actuelle.year))
+        
+        # Vérifier que les valeurs sont dans des plages valides
+        if mois < 1 or mois > 12:
+            mois = date_actuelle.month
+        if annee < 2000 or annee > 2100:  # Plage raisonnable pour les années
+            annee = date_actuelle.year
+    except (ValueError, TypeError):
+        # En cas d'erreur de conversion, utiliser les valeurs par défaut
+        mois = date_actuelle.month
+        annee = date_actuelle.year
+    
+    # Récupérer les données du carnet
+    ecoutes = EcouteAvantMemo.objects.filter(carnet=carnet).order_by('-date')
+    memorisations = Memorisation.objects.filter(carnet=carnet).order_by('-date')
+    
+    # Utiliser values() pour sélectionner uniquement les champs nécessaires et éviter l'erreur de colonne manquante
+    revisions = Revision.objects.filter(carnet=carnet).values('id', 'carnet_id', 'semaine', 'date', 'jour', 'nombre_hizb').order_by('-date')
+    repetitions = Repetition.objects.filter(carnet=carnet).order_by('-derniere_date')
+    
+    # Statistiques
+    total_pages_memo = memorisations.aggregate(Sum('fin_page'))['fin_page__sum'] or 0
+    
+    # Récupérer les compétences du livre et leurs évaluations
+    competences = CompetenceLivre.objects.all().order_by('lecon', 'ordre')
+    evaluations = EvaluationCompetence.objects.filter(eleve=eleve).select_related('competence')
+    
+    # Créer un dictionnaire des évaluations par competence_id pour un accès plus rapide
+    evaluations_dict = {eval.competence_id: eval for eval in evaluations}
+    
+    # Organiser les compétences par leçon avec leurs évaluations
+    competences_par_lecon = {}
+    competences_status = {}
+    dates_annotation = {}
+    
+    for competence in competences:
+        if competence.lecon not in competences_par_lecon:
+            competences_par_lecon[competence.lecon] = []
+        
+        # Récupérer l'évaluation pour cette compétence
+        evaluation = evaluations_dict.get(competence.id)
+        
+        # Ajouter le statut de la compétence au dictionnaire avec l'ID réel
+        if evaluation:
+            competences_status[str(competence.id)] = evaluation.statut
+            # Sauvegarder la date d'évaluation par leçon
+            if competence.lecon not in dates_annotation:
+                dates_annotation[competence.lecon] = evaluation.date_evaluation
+        
+        competences_par_lecon[competence.lecon].append({
+            'competence': competence,
+            'evaluation': evaluation
+        })
+    
+    # Ajouter des mappings spéciaux pour les tableaux qui regroupent plusieurs leçons
+    # Tableau 1: Leçons 1-2 -> utiliser leçon 1 ou 2 selon disponibilité
+    if 1 not in dates_annotation and 2 in dates_annotation:
+        dates_annotation[1] = dates_annotation[2]
+    elif 2 not in dates_annotation and 1 in dates_annotation:
+        dates_annotation[2] = dates_annotation[1]
+    
+    # Tableau 2: Leçons 3-6 -> utiliser la première date disponible
+    for lecon in [3, 4, 5, 6]:
+        if lecon in dates_annotation:
+            dates_annotation[3] = dates_annotation[lecon]  # Le template utilise dates_annotation.3
+            break
+    
+    # Tableau 6: Règles de base -> chercher dans les compétences "regles"
+    for competence in competences:
+        if competence.description.startswith('Capacité à appliquer la nasalisation'):
+            evaluation = evaluations_dict.get(competence.id)
+            if evaluation:
+                dates_annotation['regles'] = evaluation.date_evaluation
+                break
+    
+    # Créer un mapping des compétences statiques vers les vraies compétences
+    competences_mapping = {
+        # Leçon 1 et 2
+        '1_1': 'Capacité à reconnaître et lire les lettres fortes ;',
+        '1_2': 'Capacité à identifier la position des lettres dans un mot ;',
+        '1_3': 'Capacité à identifier et lire les lettres qui nécessitent de tirer le bout de la langue ;',
+        '1_4': 'Capacité à lire les lettres mises dans le désordre ;',
+        '1_5': 'Compétences générales en prononciation.',
+        # Leçon 3 à 6
+        '3_1': 'Capacité à reconnaître et lire les lettres fortes ;',
+        '3_2': 'Capacité à identifier la position des lettres dans un mot ;',
+        '3_3': 'Capacité à identifier et lire les lettres qui nécessitent de tirer le bout de la langue ;',
+        '3_4': 'Capacité à lire les lettres mises dans le désordre ;',
+        '3_5': 'Compétences générales en prononciation ;',
+        '3_6': 'Capacité à lire fluidement les mots des exercices 1 à 5 ;',
+        '3_7': 'Capacité à bien prononcer les 3 voyelles courtes.',
+        # Leçon 7
+        '7_1': 'Capacité à reconnaître et lire les lettres qui sortent avec l\'air ;',
+        '7_2': 'Capacité à reconnaître et lire les lettres qui sont appelées القَلْقَلَة ;',
+        '7_3': 'Capacité à reconnaître et lire les lettres qui sont appelées اللِّينِيَّة ;',
+        '7_4': 'Capacité à reconnaître et lire les lettres fortes ;',
+        '7_5': 'Compétences générales en prononciation ;',
+        '7_6': 'Capacité à lire fluidement les mots des exercices 6 et 7 ;',
+        '7_7': 'Capacité à identifier et lire les lettres qui nécessitent de tirer le bout de la langue.',
+        # Leçon 8
+        '8_1': 'Capacité à reconnaître les lettres de prolongement ;',
+        '8_2': 'Capacité à distinguer les voyelles courtes des voyelles longues ;',
+        '8_3': 'Capacité à distinguer les lettres de line des lettres de prolongement ;',
+        '8_4': 'Compétences générales en prononciation ;',
+        '8_5': 'Capacité à lire fluidement le texte, les exemples et l\'exercice 8.',
+        # Leçon 9
+        '9_1': 'Capacité à identifier les différents types de doubles voyelles ;',
+        '9_2': 'Capacité à maîtriser l\'arrêt sur les doubles voyelles ;',
+        '9_3': 'Compétences générales en prononciation ;',
+        '9_4': 'Capacité à lire fluidement le texte, les exemples et l\'exercice 9.',
+        '9_5': 'Capacité à distinguer la particularité des doubles voyelles fathatayn par rapport aux autres doubles voyelles.',
+        # Règles de base
+        'regles_1': 'Capacité à appliquer la nasalisation (الْغُنَّة) sur le noun ;',
+        'regles_2': 'Maîtrise des différentes déclinaisons de ن ;',
+        'regles_3': 'Capacité à distinguer les différents types de prolongement plus de 2 temps ;',
+        'regles_4': 'Maîtrise les types de الْقَلْقَلَة.'
+    }
+    
+    # Créer un mapping inverse pour retrouver les IDs réels
+    competences_statiques_status = {}
+    competences_id_mapping = {}  # Mapping static_id -> real_id
+    for static_id, description in competences_mapping.items():
+        for competence in competences:
+            if competence.description.strip() == description.strip():
+                competences_id_mapping[static_id] = competence.id
+                if str(competence.id) in competences_status:
+                    competences_statiques_status[static_id] = competences_status[str(competence.id)]
+                break
+    
+    context = {
+        'eleve': eleve,
+        'carnet': carnet,
+        'ecoutes': ecoutes,
+        'memorisations': memorisations,
+        'revisions': revisions,
+        'repetitions': repetitions,
+        'total_pages_memo': total_pages_memo,
+        'competences_par_lecon': competences_par_lecon,
+        'competences_status': competences_statiques_status,  # Utiliser le mapping statique
+        'competences_id_mapping': competences_id_mapping,  # Mapping pour JavaScript
+        'dates_annotation': dates_annotation,
+        'mois': mois,
+        'annee': annee,
+        'mois_actuel': date_actuelle.month,  # Mois actuel pour le bouton "Mois courant"
+        'annee_actuelle': date_actuelle.year,  # Année actuelle pour le bouton "Mois courant"
+    }
+    return render(request, 'ecole_app/carnet/index.html', context)
+
+@login_required
+def ajouter_ecoute(request, eleve_id=None):
+    """Ajouter une séance d'écoute avant mémorisation"""
+    # Vérifier les permissions d'accès
+    eleve, has_access = check_eleve_access(request, eleve_id)
+    if not has_access:
+        messages.error(request, "Vous n'avez pas accès au carnet de cet élève.")
+        return redirect('dashboard')
+    
+    carnet, created = CarnetPedagogique.objects.get_or_create(eleve=eleve)
+    
+    if request.method == 'POST':
+        form = EcouteAvantMemoForm(request.POST)
+        if form.is_valid():
+            ecoute = form.save(commit=False)
+            ecoute.carnet = carnet
+            ecoute.save()
+            messages.success(request, "Séance d'écoute ajoutée avec succès.")
+            return redirect('carnet_pedagogique', eleve_id=eleve.id)
+    else:
+        form = EcouteAvantMemoForm()
+        # Pré-remplir l'enseignant si c'est un professeur connecté
+        if hasattr(request.user, 'professeur'):
+            form.initial['enseignant'] = request.user.professeur
+    
+    context = {
+        'form': form,
+        'eleve': eleve,
+        'titre_page': "Ajouter une séance d'écoute"
+    }
+    return render(request, 'ecole_app/carnet/formulaire.html', context)
+
+@login_required
+def ajouter_memorisation(request, eleve_id=None):
+    """Ajouter une séance de mémorisation"""
+    # Vérifier les permissions d'accès
+    eleve, has_access = check_eleve_access(request, eleve_id)
+    if not has_access:
+        messages.error(request, "Vous n'avez pas accès au carnet de cet élève.")
+        return redirect('dashboard')
+    
+    carnet, created = CarnetPedagogique.objects.get_or_create(eleve=eleve)
+    
+    if request.method == 'POST':
+        form = MemorisationForm(request.POST)
+        if form.is_valid():
+            memorisation = form.save(commit=False)
+            memorisation.carnet = carnet
+            # Récupérer le nom de la sourate depuis les données nettoyées
+            if 'sourate' in form.cleaned_data and form.cleaned_data['sourate']:
+                memorisation.sourate = form.cleaned_data['sourate']
+            memorisation.save()
+            messages.success(request, "Séance de mémorisation ajoutée avec succès.")
+            return redirect('carnet_pedagogique', eleve_id=eleve.id)
+    else:
+        form = MemorisationForm()
+        # Pré-remplir l'enseignant si c'est un professeur connecté
+        if hasattr(request.user, 'professeur'):
+            form.initial['enseignant'] = request.user.professeur
+    
+    context = {
+        'form': form,
+        'eleve': eleve,
+        'titre_page': "Ajouter une séance de mémorisation"
+    }
+    return render(request, 'ecole_app/carnet/formulaire.html', context)
+
+@login_required
+def ajouter_revision(request, eleve_id=None):
+    """Ajouter une révision"""
+    # Vérifier les permissions d'accès
+    eleve, has_access = check_eleve_access(request, eleve_id)
+    if not has_access:
+        messages.error(request, "Vous n'avez pas accès au carnet de cet élève.")
+        return redirect('dashboard')
+    
+    carnet, created = CarnetPedagogique.objects.get_or_create(eleve=eleve)
+    
+    if request.method == 'POST':
+        form = RevisionForm(request.POST)
+        if form.is_valid():
+            revision = form.save(commit=False)
+            revision.carnet = carnet
+            # Ignorer le champ remarques pour éviter l'erreur de colonne manquante
+            # remarques = form.cleaned_data.get('remarques')
+            # if remarques:
+            #     revision.remarques = remarques
+            # Auto-calculate the week number
+            revision.semaine = revision.date.isocalendar()[1]
+            revision.save()
+            messages.success(request, "Révision ajoutée avec succès.")
+            return redirect('carnet_pedagogique', eleve_id=eleve.id)
+    else:
+        # Pré-remplir la semaine actuelle
+        semaine_actuelle = timezone.now().isocalendar()[1]  # Numéro de la semaine dans l'année
+        form = RevisionForm(initial={'semaine': semaine_actuelle})
+    
+    context = {
+        'form': form,
+        'eleve': eleve,
+        'titre_page': "Ajouter une révision"
+    }
+    return render(request, 'ecole_app/carnet/formulaire.html', context)
+
+@login_required
+def ajouter_repetition(request, eleve_id=None):
+    """Ajouter une répétition"""
+    # Vérifier les permissions d'accès
+    eleve, has_access = check_eleve_access(request, eleve_id)
+    if not has_access:
+        messages.error(request, "Vous n'avez pas accès au carnet de cet élève.")
+        return redirect('dashboard')
+    
+    carnet, created = CarnetPedagogique.objects.get_or_create(eleve=eleve)
+    
+    if request.method == 'POST':
+        form = RepetitionForm(request.POST)
+        if form.is_valid():
+            # Vérifier si une répétition existe déjà pour cette sourate/page
+            sourate = form.cleaned_data['sourate']
+            page = form.cleaned_data['page']
+            nombre = form.cleaned_data['nombre_repetitions']
+            
+            repetition, created = Repetition.objects.get_or_create(
+                carnet=carnet,
+                sourate=sourate,
+                page=page,
+                defaults={'nombre_repetitions': nombre}
+            )
+            
+            if not created:
+                # Si la répétition existait déjà, ajouter le nombre
+                repetition.nombre_repetitions += nombre
+                repetition.save()
+            
+            messages.success(request, "Répétition ajoutée avec succès.")
+            return redirect('carnet_pedagogique', eleve_id=eleve.id)
+    else:
+        form = RepetitionForm()
+    
+    context = {
+        'form': form,
+        'eleve': eleve,
+        'titre_page': "Ajouter une répétition"
+    }
+    return render(request, 'ecole_app/carnet/formulaire.html', context)
+
+@login_required
+@require_http_methods(["POST"])
+def evaluation_competences_batch(request):
+    """Enregistrer plusieurs évaluations de compétences en lot via AJAX"""
+    try:
+        data = json.loads(request.body)
+        competences_data = data.get('competences', [])
+        date_annotation = data.get('date_annotation')
+        
+        if not competences_data:
+            return JsonResponse({'success': False, 'error': 'Aucune compétence fournie'})
+        
+        # Vérifier l'accès à l'élève
+        eleve_id = competences_data[0].get('eleve_id')
+        if not eleve_id:
+            return JsonResponse({'success': False, 'error': 'ID élève manquant'})
+            
+        eleve, has_access = check_eleve_access(request, eleve_id)
+        if not has_access:
+            return JsonResponse({'success': False, 'error': 'Accès non autorisé'})
+        
+        # Traiter chaque compétence
+        evaluations_created = 0
+        for comp_data in competences_data:
+            competence_id = comp_data.get('competence_id')
+            statut = comp_data.get('statut')
+            
+            if not competence_id or not statut:
+                continue
+                
+            try:
+                # Chercher la compétence
+                competence = CompetenceLivre.objects.get(id=competence_id)
+                
+                # Convertir la date si elle est fournie sous forme de string
+                if date_annotation and isinstance(date_annotation, str):
+                    from datetime import datetime
+                    try:
+                        date_eval = datetime.strptime(date_annotation, '%Y-%m-%d').date()
+                    except ValueError:
+                        date_eval = timezone.now().date()
+                else:
+                    date_eval = date_annotation if date_annotation else timezone.now().date()
+                
+                # Créer ou mettre à jour l'évaluation
+                evaluation, created = EvaluationCompetence.objects.update_or_create(
+                    eleve=eleve,
+                    competence=competence,
+                    defaults={
+                        'statut': statut,
+                        'date_evaluation': date_eval
+                    }
+                )
+                evaluations_created += 1
+                
+            except CompetenceLivre.DoesNotExist:
+                continue
+        
+        return JsonResponse({
+            'success': True, 
+            'message': f'{evaluations_created} évaluations enregistrées avec succès'
+        })
+        
+    except json.JSONDecodeError as e:
+        return JsonResponse({'success': False, 'error': f'Données JSON invalides: {str(e)}'})
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        return JsonResponse({'success': False, 'error': f'Erreur serveur: {str(e)}', 'details': error_details})

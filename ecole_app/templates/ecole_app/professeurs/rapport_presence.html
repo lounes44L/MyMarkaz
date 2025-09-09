@@ -1,0 +1,204 @@
+{% extends 'ecole_app/professeurs/base_professeur.html' %}
+{% load static %}
+
+{% block title %}Rapport de présence des professeurs{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Rapport de présence des professeurs</h1>
+        <a href="{% url 'gestion_presence_professeur' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour à la gestion
+        </a>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Filtres</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="professeur" class="form-label">Professeur</label>
+                    <select name="professeur" id="professeur" class="form-control">
+                        <option value="">Tous les professeurs</option>
+                        {% for prof in professeurs %}
+                            <option value="{{ prof.id }}" {% if selected_professeur.id == prof.id %}selected{% endif %}>
+                                {{ prof.nom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="date_debut" class="form-label">Date de début</label>
+                    <input type="date" class="form-control" id="date_debut" name="date_debut" value="{{ date_debut|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="date_fin" class="form-label">Date de fin</label>
+                    <input type="date" class="form-control" id="date_fin" name="date_fin" value="{{ date_fin|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">Filtrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total présences</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Présents</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.presents }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Absents</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.absents }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-times fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Taux de présence -->
+    <div class="row">
+        <div class="col-xl-12 col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Taux de présence</h6>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-success progress-width-dynamic" role="progressbar" 
+                             data-value="{{ stats.taux_presence|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100" 
+                             title="Taux de présence: {{ stats.taux_presence|floatformat:0 }}%" 
+                             data-width="{{ stats.taux_presence }}">
+                            {{ stats.taux_presence }}%
+                        </div>
+                    </div>
+                    <small class="text-muted">Taux de présence sur la période sélectionnée</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des présences -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                Liste des présences
+                {% if selected_professeur %}
+                    pour {{ selected_professeur.nom }}
+                {% endif %}
+                du {{ date_debut|date:"d/m/Y" }} au {{ date_fin|date:"d/m/Y" }}
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Créneau</th>
+                            <th>Professeur</th>
+                            <th>Statut</th>
+<th>Commentaire</th>
+<th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for presence in presences %}
+                        <tr>
+                            <td>{{ presence.date|date:"d/m/Y" }}</td>
+                            <td>{{ presence.creneau.nom }} ({{ presence.creneau.get_jour_display }} {{ presence.creneau.heure_debut|time:"H:i" }}-{{ presence.creneau.heure_fin|time:"H:i" }})</td>
+                            <td>{{ presence.professeur.nom }}</td>
+                            <td>
+    {% if presence.present %}
+        <span class="badge bg-success">Présent</span>
+    {% else %}
+        <span class="badge bg-danger">Absent</span>
+    {% endif %}
+</td>
+<td>{{ presence.commentaire|default:"-" }}</td>
+<td>
+    <a href="{% url 'modifier_presence_professeur' presence.id %}" class="btn btn-sm btn-primary mr-1" title="Modifier cette présence">
+        <i class="fas fa-edit"></i>
+    </a>
+    <form method="post" action="{% url 'supprimer_presence_professeur' presence.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cette présence ?');">
+            <i class="fas fa-trash"></i>
+        </button>
+    </form>
+</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">Aucune présence enregistrée pour cette période</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            },
+            "order": [[0, "desc"], [1, "asc"]]
+        });
+        
+        // Initialiser les barres de progression dynamiques
+        $('.progress-width-dynamic').each(function() {
+            var width = $(this).data('width');
+            $(this).css('width', width + '%');
+        });
+    });
+</script>
+{% endblock %}

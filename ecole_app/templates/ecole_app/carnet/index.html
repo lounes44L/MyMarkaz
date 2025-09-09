@@ -1,0 +1,1371 @@
+{% extends "ecole_app/base.html" %}
+{% load static %}
+{% load carnet_tags %}
+<link rel="stylesheet" href="{% static 'ecole_app/css/carnet.css' %}">
+
+{% block title %}Carnet Pédagogique - {{ eleve.nom }} {{ eleve.prenom }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Sélecteur Mois/Année -->
+    <form method="get" class="mb-3 d-flex align-items-center" id="moisForm">
+        <label for="mois" class="me-2 mb-0">Mois</label>
+        <select name="mois" id="mois" class="form-select me-2 mois-select" aria-label="Sélectionner le mois">
+            <option value="1" {% if mois == 1 %}selected{% endif %}>Janvier</option>
+<option value="2" {% if mois == 2 %}selected{% endif %}>Février</option>
+<option value="3" {% if mois == 3 %}selected{% endif %}>Mars</option>
+<option value="4" {% if mois == 4 %}selected{% endif %}>Avril</option>
+<option value="5" {% if mois == 5 %}selected{% endif %}>Mai</option>
+<option value="6" {% if mois == 6 %}selected{% endif %}>Juin</option>
+<option value="7" {% if mois == 7 %}selected{% endif %}>Juillet</option>
+<option value="8" {% if mois == 8 %}selected{% endif %}>Août</option>
+<option value="9" {% if mois == 9 %}selected{% endif %}>Septembre</option>
+<option value="10" {% if mois == 10 %}selected{% endif %}>Octobre</option>
+<option value="11" {% if mois == 11 %}selected{% endif %}>Novembre</option>
+<option value="12" {% if mois == 12 %}selected{% endif %}>Décembre</option>
+        </select>
+        <label for="annee" class="me-2 mb-0">Année</label>
+        <input type="number" name="annee" id="annee" value="{{ annee }}" class="form-control me-2 annee-input" min="2000" max="2100" aria-label="Sélectionner l'année">
+        <button type="button" id="updateCarnetBtn" class="btn btn-outline-primary">Afficher</button>
+    </form>
+    <!-- En-tête -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="fas fa-book me-2"></i> Carnet Pédagogique
+            <small class="text-muted">{{ eleve.nom }} {{ eleve.prenom }}</small>
+        </h1>
+        
+        {% if request.user.is_staff or request.user.professeur or request.user.eleve == eleve %}
+        <div class="d-flex">
+
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="addActionDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-plus me-1"></i> Ajouter
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="addActionDropdown">
+                    <li><a class="dropdown-item" href="{% url 'ajouter_ecoute' eleve.id %}">
+                        <i class="fas fa-headphones me-1"></i> Écoute avant mémorisation
+                    </a></li>
+                    <li><a class="dropdown-item" href="{% url 'ajouter_memorisation' eleve.id %}">
+                        <i class="fas fa-brain me-1"></i> Mémorisation
+                    </a></li>
+                    <li><a class="dropdown-item" href="{% url 'ajouter_revision' eleve.id %}">
+                        <i class="fas fa-sync me-1"></i> Révision
+                    </a></li>
+                    <li><a class="dropdown-item" href="{% url 'ajouter_repetition' eleve.id %}">
+                        <i class="fas fa-redo me-1"></i> Répétition (Tikrar)
+                    </a></li>
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Mémorisations</h5>
+                    <h2>{{ memorisations.count }}</h2>
+                    <p class="small mb-0">Séances enregistrées ce mois-ci</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Répétitions</h5>
+                    <h2>{{ repetitions.count }}</h2>
+                    <p class="small mb-0">Pages avec répétitions</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Système d'onglets -->
+    <ul class="nav nav-tabs" id="carnetTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="ecoutes-tab" data-bs-toggle="tab" data-bs-target="#ecoutes" type="button" role="tab" aria-controls="ecoutes" aria-selected="true">
+                <i class="fas fa-headphones me-1"></i> Écoute avant mémorisation
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="memorisations-tab" data-bs-toggle="tab" data-bs-target="#memorisations" type="button" role="tab" aria-controls="memorisations" aria-selected="false">
+                <i class="fas fa-brain me-1"></i> Mémorisations
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="revisions-tab" data-bs-toggle="tab" data-bs-target="#revisions" type="button" role="tab" aria-controls="revisions" aria-selected="false">
+                <i class="fas fa-sync me-1"></i> Révisions
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="repetitions-tab" data-bs-toggle="tab" data-bs-target="#repetitions" type="button" role="tab" aria-controls="repetitions" aria-selected="false">
+                <i class="fas fa-redo me-1"></i> Répétitions (Tikrar)
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="livre-tab" data-bs-toggle="tab" data-bs-target="#livre" type="button" role="tab" aria-controls="livre" aria-selected="false">
+                <i class="fas fa-book me-1"></i> Livre
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content pt-3" id="carnetTabsContent">
+        <!-- Onglet Écoute avant mémorisation -->
+        <div class="tab-pane fade show active" id="ecoutes" role="tabpanel" aria-labelledby="ecoutes-tab">
+            {% if ecoutes %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Pages</th>
+                                <th>Sourate</th>
+                                <th>Enseignant</th>
+                                <th>Remarques</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ecoute in ecoutes %}
+                            <tr>
+                                <td>{{ ecoute.date|date:"d/m/Y" }}</td>
+                                <td>{{ ecoute.debut_page }}-{{ ecoute.fin_page }}</td>
+                                <td>{{ ecoute|get_sourate_for_memo }}</td>
+                                <td>{{ ecoute.enseignant.nom|default:"-" }}</td>
+                                <td>{{ ecoute.remarques|default:"-"|truncatechars:50 }}</td>
+                                <td>
+                                    <a href="{% url 'modifier_ecoute' ecoute.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'supprimer_ecoute' ecoute.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette écoute ?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucune séance d'écoute avant mémorisation enregistrée pour le moment.
+                    <a href="{% url 'ajouter_ecoute' eleve.id %}" class="alert-link">Ajouter une séance</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Onglet Mémorisations -->
+        <div class="tab-pane fade" id="memorisations" role="tabpanel" aria-labelledby="memorisations-tab">
+            {% if memorisations %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Source</th>
+                                <th>Sourate</th>
+                                <th>Page</th>
+                                <th>Commentaire</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for memo in memorisations %}
+                            <tr>
+                                <td>{{ memo.date|date:"d/m/Y" }}</td>
+                                <td>{{ memo.enseignant }}</td>
+                                <td>{{ memo|get_sourate_for_memo }}</td>
+                                <td>{{ memo.debut_page }} à {{ memo.fin_page }}</td>
+                                <td>{{ memo.remarques|default:"-" }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'modifier_memorisation' memo.id %}" class="btn btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'supprimer_memorisation' memo.id %}" class="btn btn-outline-danger" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucune mémorisation enregistrée pour le moment.
+                    <a href="{% url 'ajouter_memorisation' eleve.id %}" class="alert-link">Ajouter une mémorisation</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Onglet Révisions -->
+        <div class="tab-pane fade" id="revisions" role="tabpanel" aria-labelledby="revisions-tab">
+            {% if revisions %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Nombre de Hizb</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for revision in revisions %}
+                            <tr>
+                                <td>{{ revision.date|date:"d/m/Y" }}</td>
+                                <td>{{ revision.nombre_hizb }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'modifier_revision' revision.id %}" class="btn btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'supprimer_revision' revision.id %}" class="btn btn-outline-danger" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucune révision enregistrée pour le moment.
+                    <a href="{% url 'ajouter_revision' eleve.id %}" class="alert-link">Ajouter une révision</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Onglet Répétitions -->
+        <div class="tab-pane fade" id="repetitions" role="tabpanel" aria-labelledby="repetitions-tab">
+            {% if repetitions %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Sourate</th>
+                                <th>Page</th>
+                                <th>Nombre de répétitions</th>
+                                <th>Dernière date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for repetition in repetitions %}
+                            <tr>
+                                <td>{{ repetition.sourate }}</td>
+                                <td>{{ repetition.page }}</td>
+                                <td class="d-flex align-items-center">
+                                    <div class="btn-group btn-group-sm me-2" role="group" aria-label="Ajuster répétitions">
+                                        <button type="button" class="btn btn-outline-secondary decrement-btn" data-repetition-id="{{ repetition.id }}" title="Diminuer">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary increment-btn" data-repetition-id="{{ repetition.id }}" title="Augmenter">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <span class="repetition-count" data-repetition-id="{{ repetition.id }}">{{ repetition.nombre_repetitions }}</span>
+                                </td>
+                                <td>{{ repetition.derniere_date|date:"d/m/Y" }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'modifier_repetition' repetition.id %}" class="btn btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'supprimer_repetition' repetition.id %}" class="btn btn-outline-danger" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucune répétition enregistrée pour le moment.
+                    <a href="{% url 'ajouter_repetition' eleve.id %}" class="alert-link">Ajouter une répétition</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Onglet Livre -->
+        <div class="tab-pane fade" id="livre" role="tabpanel" aria-labelledby="livre-tab">
+            {% if competences_par_lecon %}
+                <div class="row">
+                    <div class="col-12">
+                        <h4 class="mb-3 text-center text-danger fw-bold">
+                            Bilan de progression
+                        </h4>
+                        
+                        <div class="card mt-3">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">Bilan de progression - Leçon 1 et 2</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead class="table-success">
+                                            <tr>
+                                                <th class="w-60">Objectifs</th>
+                                                <th class="text-center">Acquis</th>
+                                                <th class="text-center">Non Acquis</th>
+                                                <th class="text-center">En cours</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Capacité à reconnaître et lire les lettres fortes ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_1_1" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="1_1" data-tableau="1" title="Acquis - Reconnaître et lire les lettres fortes" aria-label="Acquis - Reconnaître et lire les lettres fortes" {% if competences_status.1_1 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_1_1" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="1_1" data-tableau="1" title="Non Acquis - Reconnaître et lire les lettres fortes" aria-label="Non Acquis - Reconnaître et lire les lettres fortes" {% if competences_status.1_1 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_1_1" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="1_1" data-tableau="1" title="En cours - Reconnaître et lire les lettres fortes" aria-label="En cours - Reconnaître et lire les lettres fortes" {% if competences_status.1_1 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à identifier la position des lettres dans un mot ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_1_2" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="1_2" data-tableau="1" title="Acquis - Identifier la position des lettres dans un mot" aria-label="Acquis - Identifier la position des lettres dans un mot" {% if competences_status.1_2 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_1_2" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="1_2" data-tableau="1" title="Non Acquis - Identifier la position des lettres dans un mot" aria-label="Non Acquis - Identifier la position des lettres dans un mot" {% if competences_status.1_2 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_1_2" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="1_2" data-tableau="1" title="En cours - Identifier la position des lettres dans un mot" aria-label="En cours - Identifier la position des lettres dans un mot" {% if competences_status.1_2 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à identifier et lire les lettres qui nécessitent de tirer le bout de la langue ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_1_3" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="1_3" data-tableau="1" title="Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" aria-label="Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" {% if competences_status.1_3 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_1_3" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="1_3" data-tableau="1" title="Non Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" aria-label="Non Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" {% if competences_status.1_3 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_1_3" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="1_3" data-tableau="1" title="En cours - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" aria-label="En cours - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" {% if competences_status.1_3 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à lire les lettres mises dans le désordre ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_1_4" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="1_4" data-tableau="1" title="Acquis - Lire les lettres mises dans le désordre" aria-label="Acquis - Lire les lettres mises dans le désordre" {% if competences_status.1_4 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_1_4" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="1_4" data-tableau="1" title="Non Acquis - Lire les lettres mises dans le désordre" aria-label="Non Acquis - Lire les lettres mises dans le désordre" {% if competences_status.1_4 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_1_4" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="1_4" data-tableau="1" title="En cours - Lire les lettres mises dans le désordre" aria-label="En cours - Lire les lettres mises dans le désordre" {% if competences_status.1_4 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Compétences générales en prononciation.</td>
+                                                <td class="text-center"><input type="radio" name="bilan_1_5" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="1_5" data-tableau="1" title="Acquis - Compétences générales en prononciation" aria-label="Acquis - Compétences générales en prononciation" {% if competences_status.1_5 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_1_5" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="1_5" data-tableau="1" title="Non Acquis - Compétences générales en prononciation" aria-label="Non Acquis - Compétences générales en prononciation" {% if competences_status.1_5 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_1_5" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="1_5" data-tableau="1" title="En cours - Compétences générales en prononciation" aria-label="En cours - Compétences générales en prononciation" {% if competences_status.1_5 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <label for="date_annotation_1" class="form-label">Date d'annotation :</label>
+                                            <input type="date" id="date_annotation_1" name="date_annotation_1" class="form-control date-annotation" data-tableau="1" value="{% if dates_annotation.1 %}{{ dates_annotation.1|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}">
+                                        </div>
+                                    </div>
+                                </div>
+                                    
+                            </div>
+                        </div>
+                        
+                        <!-- Deuxième tableau: Bilan de progression - Leçon 3 à 6 -->
+                        <div class="card mt-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">Bilan de progression - Leçon 3 à 6</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead class="table-success">
+                                            <tr>
+                                                <th class="w-60">Objectifs</th>
+                                                <th class="text-center">Acquis</th>
+                                                <th class="text-center">Non Acquis</th>
+                                                <th class="text-center">En cours</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Capacité à reconnaître et lire les lettres fortes ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_1" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_1" data-tableau="2" title="Acquis - Reconnaître et lire les lettres fortes" aria-label="Acquis - Reconnaître et lire les lettres fortes" {% if competences_status.3_1 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_1" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_1" data-tableau="2" title="Non Acquis - Reconnaître et lire les lettres fortes" aria-label="Non Acquis - Reconnaître et lire les lettres fortes" {% if competences_status.3_1 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_1" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_1" data-tableau="2" title="En cours - Reconnaître et lire les lettres fortes" aria-label="En cours - Reconnaître et lire les lettres fortes" {% if competences_status.3_1 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à identifier la position des lettres dans un mot ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_2" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_2" data-tableau="2" title="Acquis - Identifier la position des lettres dans un mot" aria-label="Acquis - Identifier la position des lettres dans un mot" {% if competences_status.3_2 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_2" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_2" data-tableau="2" title="Non Acquis - Identifier la position des lettres dans un mot" aria-label="Non Acquis - Identifier la position des lettres dans un mot" {% if competences_status.3_2 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_2" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_2" data-tableau="2" title="En cours - Identifier la position des lettres dans un mot" aria-label="En cours - Identifier la position des lettres dans un mot" {% if competences_status.3_2 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à identifier et lire les lettres qui nécessitent de tirer le bout de la langue ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_3" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_3" data-tableau="2" title="Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" aria-label="Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" {% if competences_status.3_3 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_3" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_3" data-tableau="2" title="Non Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" aria-label="Non Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" {% if competences_status.3_3 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_3" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_3" data-tableau="2" title="En cours - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" aria-label="En cours - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" {% if competences_status.3_3 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à lire les lettres mises dans le désordre ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_4" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_4" data-tableau="2" title="Acquis - Lire les lettres mises dans le désordre" aria-label="Acquis - Lire les lettres mises dans le désordre" {% if competences_status.3_4 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_4" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_4" data-tableau="2" title="Non Acquis - Lire les lettres mises dans le désordre" aria-label="Non Acquis - Lire les lettres mises dans le désordre" {% if competences_status.3_4 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_4" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_4" data-tableau="2" title="En cours - Lire les lettres mises dans le désordre" aria-label="En cours - Lire les lettres mises dans le désordre" {% if competences_status.3_4 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Compétences générales en prononciation ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_5" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_5" data-tableau="2" title="Acquis - Compétences générales en prononciation" aria-label="Acquis - Compétences générales en prononciation" {% if competences_status.3_5 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_5" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_5" data-tableau="2" title="Non Acquis - Compétences générales en prononciation" aria-label="Non Acquis - Compétences générales en prononciation" {% if competences_status.3_5 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_5" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_5" data-tableau="2" title="En cours - Compétences générales en prononciation" aria-label="En cours - Compétences générales en prononciation" {% if competences_status.3_5 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à lire fluidement les mots des exercices 1 à 5 ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_6" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_6" data-tableau="2" title="Acquis - Lire fluidement les mots des exercices 1 à 5" aria-label="Acquis - Lire fluidement les mots des exercices 1 à 5" {% if competences_status.3_6 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_6" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_6" data-tableau="2" title="Non Acquis - Lire fluidement les mots des exercices 1 à 5" aria-label="Non Acquis - Lire fluidement les mots des exercices 1 à 5" {% if competences_status.3_6 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_6" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_6" data-tableau="2" title="En cours - Lire fluidement les mots des exercices 1 à 5" aria-label="En cours - Lire fluidement les mots des exercices 1 à 5" {% if competences_status.3_6 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à bien prononcer les 3 voyelles courtes.</td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_7" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_7" data-tableau="2" title="Acquis - Bien prononcer les 3 voyelles courtes" aria-label="Acquis - Bien prononcer les 3 voyelles courtes" {% if competences_status.3_7 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_7" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_7" data-tableau="2" title="Non Acquis - Bien prononcer les 3 voyelles courtes" aria-label="Non Acquis - Bien prononcer les 3 voyelles courtes" {% if competences_status.3_7 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_3_7" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="3_7" data-tableau="2" title="En cours - Bien prononcer les 3 voyelles courtes" aria-label="En cours - Bien prononcer les 3 voyelles courtes" {% if competences_status.3_7 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <label for="date_annotation_2" class="form-label">Date d'annotation :</label>
+                                            <input type="date" id="date_annotation_2" name="date_annotation_2" class="form-control date-annotation" data-tableau="2" value="{% if dates_annotation.3 %}{{ dates_annotation.3|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+<!-- Troisième tableau: Bilan de progression - Leçon 7 -->
+                        <div class="card mt-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">Bilan de progression - Leçon 7</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead class="table-success">
+                                            <tr>
+                                                <th class="w-60">Objectifs</th>
+                                                <th class="text-center">Acquis</th>
+                                                <th class="text-center">Non Acquis</th>
+                                                <th class="text-center">En cours</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Capacité à reconnaître et lire les lettres qui sortent avec l'air ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_1" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_1" data-tableau="3" title="Acquis - Reconnaître et lire les lettres qui sortent avec l'air" aria-label="Acquis - Reconnaître et lire les lettres qui sortent avec l'air" {% if competences_status.7_1 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_1" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_1" data-tableau="3" title="Non Acquis - Reconnaître et lire les lettres qui sortent avec l'air" aria-label="Non Acquis - Reconnaître et lire les lettres qui sortent avec l'air" {% if competences_status.7_1 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_1" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_1" data-tableau="3" title="En cours - Reconnaître et lire les lettres qui sortent avec l'air" aria-label="En cours - Reconnaître et lire les lettres qui sortent avec l'air" {% if competences_status.7_1 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à reconnaître et lire les lettres qui sont appelées القَلْقَلَة ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_2" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_2" data-tableau="3" title="Acquis - Reconnaître et lire les lettres qui sont appelées القَلْقَلَة" aria-label="Acquis - Reconnaître et lire les lettres qui sont appelées القَلْقَلَة" {% if competences_status.7_2 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_2" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_2" data-tableau="3" title="Non Acquis - Reconnaître et lire les lettres qui sont appelées القَلْقَلَة" aria-label="Non Acquis - Reconnaître et lire les lettres qui sont appelées القَلْقَلَة" {% if competences_status.7_2 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_2" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_2" data-tableau="3" title="En cours - Reconnaître et lire les lettres qui sont appelées القَلْقَلَة" aria-label="En cours - Reconnaître et lire les lettres qui sont appelées القَلْقَلَة" {% if competences_status.7_2 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à reconnaître et lire les lettres qui sont appelées اللِّينِيَّة ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_3" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_3" data-tableau="3" title="Acquis - Reconnaître et lire les lettres qui sont appelées اللِّينِيَّة" aria-label="Acquis - Reconnaître et lire les lettres qui sont appelées اللِّينِيَّة" {% if competences_status.7_3 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_3" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_3" data-tableau="3" title="Non Acquis - Reconnaître et lire les lettres qui sont appelées اللِّينِيَّة" aria-label="Non Acquis - Reconnaître et lire les lettres qui sont appelées اللِّينِيَّة" {% if competences_status.7_3 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_3" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_3" data-tableau="3" title="En cours - Reconnaître et lire les lettres qui sont appelées اللِّينِيَّة" aria-label="En cours - Reconnaître et lire les lettres qui sont appelées اللِّينِيَّة" {% if competences_status.7_3 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à reconnaître et lire les lettres fortes ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_4" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_4" data-tableau="3" title="Acquis - Reconnaître et lire les lettres fortes" aria-label="Acquis - Reconnaître et lire les lettres fortes" {% if competences_status.7_4 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_4" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_4" data-tableau="3" title="Non Acquis - Reconnaître et lire les lettres fortes" aria-label="Non Acquis - Reconnaître et lire les lettres fortes" {% if competences_status.7_4 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_4" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_4" data-tableau="3" title="En cours - Reconnaître et lire les lettres fortes" aria-label="En cours - Reconnaître et lire les lettres fortes" {% if competences_status.7_4 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Compétences générales en prononciation ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_5" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_5" data-tableau="3" title="Acquis - Compétences générales en prononciation" aria-label="Acquis - Compétences générales en prononciation" {% if competences_status.7_5 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_5" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_5" data-tableau="3" title="Non Acquis - Compétences générales en prononciation" aria-label="Non Acquis - Compétences générales en prononciation" {% if competences_status.7_5 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_5" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_5" data-tableau="3" title="En cours - Compétences générales en prononciation" aria-label="En cours - Compétences générales en prononciation" {% if competences_status.7_5 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à lire fluidement les mots des exercices 6 et 7 ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_6" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_6" data-tableau="3" title="Acquis - Lire fluidement les mots des exercices 6 et 7" aria-label="Acquis - Lire fluidement les mots des exercices 6 et 7" {% if competences_status.7_6 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_6" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_6" data-tableau="3" title="Non Acquis - Lire fluidement les mots des exercices 6 et 7" aria-label="Non Acquis - Lire fluidement les mots des exercices 6 et 7" {% if competences_status.7_6 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_6" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_6" data-tableau="3" title="En cours - Lire fluidement les mots des exercices 6 et 7" aria-label="En cours - Lire fluidement les mots des exercices 6 et 7" {% if competences_status.7_6 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à identifier et lire les lettres qui nécessitent de tirer le bout de la langue.</td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_7" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_7" data-tableau="3" title="Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" aria-label="Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" {% if competences_status.7_7 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_7" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_7" data-tableau="3" title="Non Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" aria-label="Non Acquis - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" {% if competences_status.7_7 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_7_7" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="7_7" data-tableau="3" title="En cours - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" aria-label="En cours - Identifier et lire les lettres qui nécessitent de tirer le bout de la langue" {% if competences_status.7_7 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <label for="date_annotation_3" class="form-label">Date d'annotation :</label>
+                                            <input type="date" id="date_annotation_3" name="date_annotation_3" class="form-control date-annotation" data-tableau="3" value="{% if dates_annotation.7 %}{{ dates_annotation.7|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quatrième tableau: Bilan de progression - Leçon 8 -->
+                        <div class="card mt-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">Bilan de progression - Leçon 8</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead class="table-success">
+                                            <tr>
+                                                <th class="w-60">Objectifs</th>
+                                                <th class="text-center">Acquis</th>
+                                                <th class="text-center">Non Acquis</th>
+                                                <th class="text-center">En cours</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Capacité à reconnaître les lettres de prolongement ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_1" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_1" data-tableau="4" title="Acquis - Reconnaître les lettres de prolongement" aria-label="Acquis - Reconnaître les lettres de prolongement" {% if competences_status.8_1 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_1" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_1" data-tableau="4" title="Non Acquis - Reconnaître les lettres de prolongement" aria-label="Non Acquis - Reconnaître les lettres de prolongement" {% if competences_status.8_1 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_1" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_1" data-tableau="4" title="En cours - Reconnaître les lettres de prolongement" aria-label="En cours - Reconnaître les lettres de prolongement" {% if competences_status.8_1 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à distinguer les voyelles courtes des voyelles longues ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_2" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_2" data-tableau="4" title="Acquis - Distinguer les voyelles courtes des voyelles longues" aria-label="Acquis - Distinguer les voyelles courtes des voyelles longues" {% if competences_status.8_2 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_2" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_2" data-tableau="4" title="Non Acquis - Distinguer les voyelles courtes des voyelles longues" aria-label="Non Acquis - Distinguer les voyelles courtes des voyelles longues" {% if competences_status.8_2 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_2" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_2" data-tableau="4" title="En cours - Distinguer les voyelles courtes des voyelles longues" aria-label="En cours - Distinguer les voyelles courtes des voyelles longues" {% if competences_status.8_2 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à distinguer les lettres de line des lettres de prolongement ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_3" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_3" data-tableau="4" title="Acquis - Distinguer les lettres de line des lettres de prolongement" aria-label="Acquis - Distinguer les lettres de line des lettres de prolongement" {% if competences_status.8_3 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_3" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_3" data-tableau="4" title="Non Acquis - Distinguer les lettres de line des lettres de prolongement" aria-label="Non Acquis - Distinguer les lettres de line des lettres de prolongement" {% if competences_status.8_3 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_3" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_3" data-tableau="4" title="En cours - Distinguer les lettres de line des lettres de prolongement" aria-label="En cours - Distinguer les lettres de line des lettres de prolongement" {% if competences_status.8_3 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Compétences générales en prononciation ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_4" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_4" data-tableau="4" title="Acquis - Compétences générales en prononciation" aria-label="Acquis - Compétences générales en prononciation" {% if competences_status.8_4 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_4" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_4" data-tableau="4" title="Non Acquis - Compétences générales en prononciation" aria-label="Non Acquis - Compétences générales en prononciation" {% if competences_status.8_4 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_4" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_4" data-tableau="4" title="En cours - Compétences générales en prononciation" aria-label="En cours - Compétences générales en prononciation" {% if competences_status.8_4 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à lire fluidement le texte, les exemples et l'exercice 8.</td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_5" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_5" data-tableau="4" title="Acquis - Lire fluidement le texte, les exemples et l'exercice 8" aria-label="Acquis - Lire fluidement le texte, les exemples et l'exercice 8" {% if competences_status.8_5 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_5" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_5" data-tableau="4" title="Non Acquis - Lire fluidement le texte, les exemples et l'exercice 8" aria-label="Non Acquis - Lire fluidement le texte, les exemples et l'exercice 8" {% if competences_status.8_5 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_8_5" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="8_5" data-tableau="4" title="En cours - Lire fluidement le texte, les exemples et l'exercice 8" aria-label="En cours - Lire fluidement le texte, les exemples et l'exercice 8" {% if competences_status.8_5 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <label for="date_annotation_4" class="form-label">Date d'annotation :</label>
+                                            <input type="date" id="date_annotation_4" name="date_annotation_4" class="form-control date-annotation" data-tableau="4" value="{% if dates_annotation.8 %}{{ dates_annotation.8|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Cinquième tableau: Bilan de progression - Leçon 9 -->
+                        <div class="card mt-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">Bilan de progression - Leçon 9</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead class="table-success">
+                                            <tr>
+                                                <th class="w-60">Objectifs</th>
+                                                <th class="text-center">Acquis</th>
+                                                <th class="text-center">Non Acquis</th>
+                                                <th class="text-center">En cours</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Capacité à identifier les différents types de doubles voyelles ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_9_1" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="9_1" data-tableau="5" title="Acquis - Identifier les différents types de doubles voyelles" aria-label="Acquis - Identifier les différents types de doubles voyelles" {% if competences_status.9_1 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_9_1" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="9_1" data-tableau="5" title="Non Acquis - Identifier les différents types de doubles voyelles" aria-label="Non Acquis - Identifier les différents types de doubles voyelles" {% if competences_status.9_1 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_9_1" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="9_1" data-tableau="5" title="En cours - Identifier les différents types de doubles voyelles" aria-label="En cours - Identifier les différents types de doubles voyelles" {% if competences_status.9_1 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à maîtriser l'arrêt sur les doubles voyelles ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_9_2" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="9_2" data-tableau="5" title="Acquis - Maîtriser l'arrêt sur les doubles voyelles" aria-label="Acquis - Maîtriser l'arrêt sur les doubles voyelles" {% if competences_status.9_2 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_9_2" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="9_2" data-tableau="5" title="Non Acquis - Maîtriser l'arrêt sur les doubles voyelles" aria-label="Non Acquis - Maîtriser l'arrêt sur les doubles voyelles" {% if competences_status.9_2 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_9_2" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="9_2" data-tableau="5" title="En cours - Maîtriser l'arrêt sur les doubles voyelles" aria-label="En cours - Maîtriser l'arrêt sur les doubles voyelles" {% if competences_status.9_2 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Compétences générales en prononciation ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_9_3" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="9_3" data-tableau="5" title="Acquis - Compétences générales en prononciation" aria-label="Acquis - Compétences générales en prononciation" {% if competences_status.9_3 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_9_3" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="9_3" data-tableau="5" title="Non Acquis - Compétences générales en prononciation" aria-label="Non Acquis - Compétences générales en prononciation" {% if competences_status.9_3 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_9_3" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="9_3" data-tableau="5" title="En cours - Compétences générales en prononciation" aria-label="En cours - Compétences générales en prononciation" {% if competences_status.9_3 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à lire fluidement le texte, les exemples et l'exercice 9.</td>
+                                                <td class="text-center"><input type="radio" name="bilan_9_4" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="9_4" data-tableau="5" title="Acquis - Lire fluidement le texte, les exemples et l'exercice 9" aria-label="Acquis - Lire fluidement le texte, les exemples et l'exercice 9" {% if competences_status.9_4 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_9_4" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="9_4" data-tableau="5" title="Non Acquis - Lire fluidement le texte, les exemples et l'exercice 9" aria-label="Non Acquis - Lire fluidement le texte, les exemples et l'exercice 9" {% if competences_status.9_4 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_9_4" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="9_4" data-tableau="5" title="En cours - Lire fluidement le texte, les exemples et l'exercice 9" aria-label="En cours - Lire fluidement le texte, les exemples et l'exercice 9" {% if competences_status.9_4 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à distinguer la particularité des doubles voyelles fathatayn par rapport aux autres doubles voyelles.</td>
+                                                <td class="text-center"><input type="radio" name="bilan_9_5" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="9_5" data-tableau="5" title="Acquis - Distinguer la particularité des doubles voyelles fathatayn" aria-label="Acquis - Distinguer la particularité des doubles voyelles fathatayn" {% if competences_status.9_5 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_9_5" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="9_5" data-tableau="5" title="Non Acquis - Distinguer la particularité des doubles voyelles fathatayn" aria-label="Non Acquis - Distinguer la particularité des doubles voyelles fathatayn" {% if competences_status.9_5 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_9_5" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="9_5" data-tableau="5" title="En cours - Distinguer la particularité des doubles voyelles fathatayn" aria-label="En cours - Distinguer la particularité des doubles voyelles fathatayn" {% if competences_status.9_5 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <label for="date_annotation_5" class="form-label">Date d'annotation :</label>
+                                            <input type="date" id="date_annotation_5" name="date_annotation_5" class="form-control date-annotation" data-tableau="5" value="{% if dates_annotation.9 %}{{ dates_annotation.9|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Sixième tableau: Bilan de progression - Règles de base -->
+                        <div class="card mt-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">Bilan de progression - Règles de base</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead class="table-success">
+                                            <tr>
+                                                <th class="w-60">Objectifs</th>
+                                                <th class="text-center">Acquis</th>
+                                                <th class="text-center">Non Acquis</th>
+                                                <th class="text-center">En cours</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Capacité à appliquer la nasalisation (الْغُنَّة) sur le noun ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_1" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_1" data-tableau="6" title="Acquis - Appliquer la nasalisation sur le noun" aria-label="Acquis - Appliquer la nasalisation sur le noun" {% if competences_status.regles_1 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_1" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_1" data-tableau="6" title="Non Acquis - Appliquer la nasalisation sur le noun" aria-label="Non Acquis - Appliquer la nasalisation sur le noun" {% if competences_status.regles_1 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_1" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_1" data-tableau="6" title="En cours - Appliquer la nasalisation sur le noun" aria-label="En cours - Appliquer la nasalisation sur le noun" {% if competences_status.regles_1 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Maîtrise des différentes déclinaisons de ن ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_2" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_2" data-tableau="6" title="Acquis - Maîtriser les différentes déclinaisons de ن" aria-label="Acquis - Maîtriser les différentes déclinaisons de ن" {% if competences_status.regles_2 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_2" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_2" data-tableau="6" title="Non Acquis - Maîtriser les différentes déclinaisons de ن" aria-label="Non Acquis - Maîtriser les différentes déclinaisons de ن" {% if competences_status.regles_2 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_2" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_2" data-tableau="6" title="En cours - Maîtriser les différentes déclinaisons de ن" aria-label="En cours - Maîtriser les différentes déclinaisons de ن" {% if competences_status.regles_2 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Capacité à distinguer les différents types de prolongement plus de 2 temps ;</td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_3" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_3" data-tableau="6" title="Acquis - Distinguer les différents types de prolongement plus de 2 temps" aria-label="Acquis - Distinguer les différents types de prolongement plus de 2 temps" {% if competences_status.regles_3 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_3" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_3" data-tableau="6" title="Non Acquis - Distinguer les différents types de prolongement plus de 2 temps" aria-label="Non Acquis - Distinguer les différents types de prolongement plus de 2 temps" {% if competences_status.regles_3 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_3" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_3" data-tableau="6" title="En cours - Distinguer les différents types de prolongement plus de 2 temps" aria-label="En cours - Distinguer les différents types de prolongement plus de 2 temps" {% if competences_status.regles_3 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Maîtrise les types de الْقَلْقَلَة.</td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_4" value="acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_4" data-tableau="6" title="Acquis - Maîtriser les types de الْقَلْقَلَة" aria-label="Acquis - Maîtriser les types de الْقَلْقَلَة" {% if competences_status.regles_4 == 'acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_4" value="non_acquis" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_4" data-tableau="6" title="Non Acquis - Maîtriser les types de الْقَلْقَلَة" aria-label="Non Acquis - Maîtriser les types de الْقَلْقَلَة" {% if competences_status.regles_4 == 'non_acquis' %}checked{% endif %}></td>
+                                                <td class="text-center"><input type="radio" name="bilan_regles_4" value="en_cours" class="form-check-input competence-check" data-eleve="{{ eleve.id }}" data-competence="regles_4" data-tableau="6" title="En cours - Maîtriser les types de الْقَلْقَلَة" aria-label="En cours - Maîtriser les types de الْقَلْقَلَة" {% if competences_status.regles_4 == 'en_cours' %}checked{% endif %}></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <label for="date_annotation_6" class="form-label">Date d'annotation :</label>
+                                            <input type="date" id="date_annotation_6" name="date_annotation_6" class="form-control date-annotation" data-tableau="6" value="{% if dates_annotation.regles %}{{ dates_annotation.regles|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+                <!-- Les compétences sont maintenant uniquement dans l'onglet "livre" -->
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucune compétence n'a été définie pour les leçons 1 et 2.
+                    Veuillez exécuter la commande <code>python manage.py init_competences_livre</code> pour initialiser les compétences.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialisation de l'application
+    document.addEventListener('DOMContentLoaded', function() {
+        // Activer les onglets Bootstrap
+        const triggerTabList = [].slice.call(document.querySelectorAll('#carnetTabs button'));
+        triggerTabList.forEach(function(triggerEl) {
+            const tabTrigger = new bootstrap.Tab(triggerEl);
+            triggerEl.addEventListener('click', function(event) {
+                event.preventDefault();
+                tabTrigger.show();
+            });
+        });
+        
+        // Récupérer l'ID de l'élève depuis l'URL
+        const urlParts = window.location.pathname.split('/');
+        const eleveId = urlParts[urlParts.indexOf('carnet') + 1];
+        
+        // Valeurs initiales pour le mois et l'année
+        const moisInitial = parseInt(document.getElementById('mois').value);
+        const anneeInitiale = parseInt(document.getElementById('annee').value);
+        
+        // Gestion du changement de mois/année avec AJAX
+        function updateCarnetData() {
+            const mois = document.getElementById('mois').value;
+            const annee = document.getElementById('annee').value;
+            
+            // Afficher un indicateur de chargement
+            document.querySelectorAll('.card-body h2').forEach(function(el) {
+                el.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Chargement...</span></div>';
+            });
+            
+            // Faire la requête AJAX
+            fetch(`/api/carnet/${eleveId}/data/?mois=${mois}&annee=${annee}`)
+                .then(response => {
+                    if (!response.ok) {
+                        console.error(`Erreur HTTP: ${response.status}`);
+                        // Rétablir les statistiques par défaut au lieu de lancer une erreur
+                        updateStatistics({
+                            memorisations_count: 0,
+                            total_pages_memo: 0,
+                            revisions_count: 0,
+                            repetitions_count: 0
+                        });
+                        // Vider les tableaux
+                        document.querySelectorAll('.table-responsive tbody').forEach(tbody => {
+                            tbody.innerHTML = '<tr><td colspan="10" class="text-center">Aucune donnée disponible pour cette période</td></tr>';
+                        });
+                        return Promise.reject('Erreur lors de la récupération des données');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                        // Rétablir les statistiques par défaut au lieu de lancer une erreur
+                        updateStatistics({
+                            memorisations_count: 0,
+                            total_pages_memo: 0,
+                            revisions_count: 0,
+                            repetitions_count: 0
+                        });
+                        // Vider les tableaux
+                        document.querySelectorAll('.table-responsive tbody').forEach(tbody => {
+                            tbody.innerHTML = '<tr><td colspan="10" class="text-center">Aucune donnée disponible pour cette période</td></tr>';
+                        });
+                        return Promise.reject(data.error);
+                    }
+                    
+                    // Mettre à jour les statistiques
+                    updateStatistics(data.stats);
+                    
+                    // Mettre à jour les tableaux
+                    updateTables(data);
+                    
+                    // Mettre à jour l'URL pour permettre le partage/bookmark
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('mois', mois);
+                    url.searchParams.set('annee', annee);
+                    window.history.replaceState({}, '', url);
+                    
+                    // Afficher un message de succès si on change de mois
+                    if (mois != moisInitial || annee != anneeInitiale) {
+                        // Message de succès optionnel - désactivé pour éviter trop d'alertes
+                        // alert('Données du carnet mises à jour avec succès');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la mise à jour des données:', error);
+                    
+                    // Ne pas restaurer les valeurs précédentes pour conserver la sélection de l'utilisateur
+                    
+                    // Rétablir les statistiques par défaut sans afficher d'alerte
+                    document.querySelectorAll('.card-body h2').forEach(function(el) {
+                        el.textContent = '0';
+                    });
+                    
+                    // Message supprimé - pas d'affichage d'alerte
+                });
+        }
+        
+        // Mettre à jour les statistiques
+        function updateStatistics(stats) {
+            document.querySelector('.card.bg-primary h2').textContent = stats.memorisations_count;
+            document.querySelector('.card.bg-success h2').textContent = stats.total_pages_memo;
+            document.querySelector('.card.bg-info h2').textContent = stats.revisions_count;
+            document.querySelector('.card.bg-warning h2').textContent = stats.repetitions_count;
+        }
+        
+        // Mettre à jour les tableaux
+        function updateTables(data) {
+            // Mettre à jour le tableau des écoutes
+            updateEcoutesTable(data.ecoutes);
+            
+            // Mettre à jour le tableau des mémorisations
+            updateMemorisationsTable(data.memorisations);
+            
+            // Mettre à jour le tableau des révisions
+            updateRevisionsTable(data.revisions);
+            
+            // Mettre à jour le tableau des répétitions
+            updateRepetitionsTable(data.repetitions);
+        }
+        
+        // Mettre à jour le tableau des écoutes
+        function updateEcoutesTable(ecoutes) {
+            const tableContainer = document.querySelector('#ecoutes .table-responsive');
+            if (!tableContainer) return;
+            
+            if (ecoutes.length === 0) {
+                tableContainer.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Aucune écoute avant mémorisation enregistrée pour cette période.</div>';
+                return;
+            }
+            
+            // S'assurer que le tableau existe
+            if (!tableContainer.querySelector('table')) {
+                tableContainer.innerHTML = `
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Sourate</th>
+                                <th>Versets</th>
+                                <th>Enseignant</th>
+                                <th>Commentaire</th>
+                                {% if request.user.is_staff or request.user.professeur %}
+                                <th>Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                `;
+            }
+            
+            const tableBody = tableContainer.querySelector('tbody');
+            let html = '';
+            ecoutes.forEach(ecoute => {
+                html += `
+                <tr>
+                    <td>${formatDate(ecoute.date)}</td>
+                    <td>${ecoute.debut_page || '-'}-${ecoute.fin_page || '-'}</td>
+                    <td>${ecoute.enseignant || '-'}</td>
+                    <td>${ecoute.remarques || '-'}</td>
+                    {% if request.user.is_staff or request.user.professeur %}
+                    <td>
+                        <a href="/carnet-pedagogique/ecoute/${ecoute.id}/modifier/" class="btn btn-sm btn-outline-primary" title="Modifier">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="/carnet-pedagogique/ecoute/${ecoute.id}/supprimer/" class="btn btn-sm btn-outline-danger" title="Supprimer" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette écoute ?')">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                    {% endif %}
+                </tr>
+                `;
+            });
+            
+            tableBody.innerHTML = html;
+        }
+        
+        // Mettre à jour le tableau des mémorisations
+        function updateMemorisationsTable(memorisations) {
+            const tableContainer = document.querySelector('#memorisations .table-responsive');
+            if (!tableContainer) return;
+            
+            if (memorisations.length === 0) {
+                tableContainer.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Aucune mémorisation enregistrée pour cette période.</div>';
+                return;
+            }
+            
+            // S'assurer que le tableau existe
+            if (!tableContainer.querySelector('table')) {
+                tableContainer.innerHTML = `
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Sourate</th>
+                                <th>Pages</th>
+                                <th>Enseignant</th>
+                                <th>Commentaire</th>
+                                {% if request.user.is_staff or request.user.professeur %}
+                                <th>Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                `;
+            }
+            
+            const tableBody = tableContainer.querySelector('tbody');
+            let html = '';
+            memorisations.forEach(memo => {
+                html += `
+                <tr>
+                    <td>${memo.date}</td>
+                    <td>${memo.sourate}</td>
+                    <td>${memo.debut_page} à ${memo.fin_page}</td>
+                    <td>${memo.enseignant}</td>
+                    <td>${memo.commentaire || '-'}</td>
+                    {% if request.user.is_staff or request.user.professeur %}
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'modifier_memorisation' 0 %}`.replace('0', memo.id) + `" class="btn btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'supprimer_memorisation' 0 %}`.replace('0', memo.id) + `" class="btn btn-outline-danger">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                    {% endif %}
+                </tr>`;
+            });
+            
+            tableBody.innerHTML = html;
+        }
+        
+        // Mettre à jour le tableau des révisions
+        function updateRevisionsTable(revisions) {
+            const tableContainer = document.querySelector('#revisions .table-responsive');
+            if (!tableContainer) return;
+            
+            if (revisions.length === 0) {
+                tableContainer.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Aucune révision enregistrée pour cette période.</div>';
+                return;
+            }
+            
+            // S'assurer que le tableau existe
+            if (!tableContainer.querySelector('table')) {
+                tableContainer.innerHTML = `
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Semaine</th>
+                                <th>Sourate</th>
+                                <th>Pages</th>
+                                <th>Enseignant</th>
+                                <th>Commentaire</th>
+                                {% if request.user.is_staff or request.user.professeur %}
+                                <th>Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                `;
+            }
+            
+            const tableBody = tableContainer.querySelector('tbody');
+            let html = '';
+            revisions.forEach(revision => {
+                html += `
+                <tr>
+                    <td>${revision.date}</td>
+                    <td>${revision.semaine}</td>
+                    <td>${revision.sourate}</td>
+                    <td>${revision.debut_page} à ${revision.fin_page}</td>
+                    <td>${revision.enseignant}</td>
+                    <td>${revision.commentaire || '-'}</td>
+                    {% if request.user.is_staff or request.user.professeur %}
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'modifier_revision' 0 %}`.replace('0', revision.id) + `" class="btn btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'supprimer_revision' 0 %}`.replace('0', revision.id) + `" class="btn btn-outline-danger">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                    {% endif %}
+                </tr>`;
+            });
+            
+            tableBody.innerHTML = html;
+        }
+        
+        // Mettre à jour le tableau des répétitions
+        function updateRepetitionsTable(repetitions) {
+            const tableContainer = document.querySelector('#repetitions .table-responsive');
+            if (!tableContainer) return;
+            
+            if (repetitions.length === 0) {
+                tableContainer.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Aucune répétition enregistrée pour cette période.</div>';
+                return;
+            }
+            
+            // S'assurer que le tableau existe
+            if (!tableContainer.querySelector('table')) {
+                tableContainer.innerHTML = `
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Sourate</th>
+                                <th>Page</th>
+                                <th>Nombre de répétitions</th>
+                                {% if request.user.is_staff or request.user.professeur %}
+                                <th>Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                `;
+            }
+            
+            const tableBody = tableContainer.querySelector('tbody');
+            let html = '';
+            repetitions.forEach(repetition => {
+                html += `
+                <tr>
+                    <td>${repetition.derniere_date}</td>
+                    <td>${repetition.sourate}</td>
+                    <td>${repetition.page}</td>
+                    <td>${repetition.nombre_repetitions}</td>
+                    {% if request.user.is_staff or request.user.professeur %}
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'modifier_repetition' 0 %}`.replace('0', repetition.id) + `" class="btn btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'supprimer_repetition' 0 %}`.replace('0', repetition.id) + `" class="btn btn-outline-danger">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                    {% endif %}
+                </tr>`;
+            });
+            
+            tableBody.innerHTML = html;
+        }
+        
+        // Événements pour les changements de mois/année
+        document.getElementById('mois').addEventListener('change', function() {
+            // Ne pas déclencher automatiquement pour éviter les erreurs
+            // updateCarnetData() sera appelé par le bouton
+        });
+        
+        document.getElementById('annee').addEventListener('change', function() {
+            // Ne pas déclencher automatiquement pour éviter les erreurs
+            // updateCarnetData() sera appelé par le bouton
+        });
+        
+        document.getElementById('updateCarnetBtn').addEventListener('click', function() {
+            updateCarnetData();
+        });
+        
+        // Utiliser les valeurs du mois et de l'année actuelles du serveur Django
+        // Ces valeurs sont déjà définies par Django lors du rendu initial de la page
+        const moisServeur = parseInt("{{ mois_actuel|default:mois }}");
+        const anneeServeur = parseInt("{{ annee_actuelle|default:annee }}");
+        
+        // Ajouter un bouton pour revenir au mois courant après le bouton Afficher
+        const updateBtn = document.getElementById('updateCarnetBtn');
+        const moisCourantBtn = document.createElement('button');
+        moisCourantBtn.type = 'button';
+        moisCourantBtn.className = 'btn btn-outline-secondary ms-2';
+        moisCourantBtn.innerHTML = '<i class="fas fa-calendar-day me-1"></i> Mois courant';
+        moisCourantBtn.addEventListener('click', function() {
+            // Utiliser window.location.href pour naviguer directement vers l'URL sans paramètres
+            // Cela va recharger la page avec les valeurs par défaut du mois et de l'année
+            const baseUrl = window.location.href.split('?')[0];
+            window.location.href = baseUrl;
+        });
+        updateBtn.parentNode.insertBefore(moisCourantBtn, updateBtn.nextSibling);
+
+        // Gestion des évaluations de compétences via AJAX
+        // Gestionnaire pour le bouton d'enregistrement de la progression
+        const saveButton = document.getElementById('save-all-competences');
+        if (saveButton) {
+            saveButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Récupérer toutes les compétences sélectionnées
+                    const competencesData = [];
+                    document.querySelectorAll('.competence-check:checked').forEach(function(checkbox) {
+                        competencesData.push({
+                            eleve_id: checkbox.getAttribute('data-eleve'),
+                            competence_id: checkbox.getAttribute('data-competence'),
+                            statut: checkbox.value
+                        });
+                    });
+                    
+                    // Si aucune compétence n'est sélectionnée, afficher un message
+                    if (competencesData.length === 0) {
+                        alert('Aucune compétence n\'est sélectionnée. Veuillez sélectionner au moins une compétence.');
+                        return;
+                    }
+                    
+                    // Récupérer la date d'annotation
+                    const dateAnnotation = document.getElementById('date_annotation_12')?.value || new Date().toISOString().split('T')[0];
+                    
+                    // Afficher un indicateur de chargement
+                    saveButton.disabled = true;
+                    saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enregistrement...';
+                    
+                    // Envoyer la requête AJAX pour enregistrer toutes les compétences
+                    fetch('/eleves/evaluation-competences-batch/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({
+                            competences: competencesData,
+                            date_annotation: dateAnnotation
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur HTTP: ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // Afficher un message de succès
+                            alert('Progression enregistrée avec succès!');
+                        } else {
+                            alert('Erreur lors de l\'enregistrement: ' + (data.error || 'Erreur inconnue'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        alert('Une erreur s\'est produite lors de l\'enregistrement.');
+                    })
+                    .finally(() => {
+                        // Rétablir le bouton
+                        saveButton.disabled = false;
+                        saveButton.innerHTML = '<i class="fas fa-save me-2"></i>Enregistrer toutes les compétences';
+                    });
+            });
+        }
+
+        // Gestionnaire pour la sauvegarde automatique des compétences
+        function saveCompetenceAjax(eleveId, staticCompetenceId, statut, tableauId) {
+            // Conversion statique -> vrai ID
+            const competenceId = window.competencesIdMapping[staticCompetenceId] || staticCompetenceId;
+            const dateAnnotation = document.querySelector(`.date-annotation[data-tableau="${tableauId}"]`)?.value || new Date().toISOString().split('T')[0];
+            const row = document.querySelector(`.competence-check[data-competence="${staticCompetenceId}"][data-tableau="${tableauId}"]`)?.closest('tr');
+            if (row) row.style.backgroundColor = '#fff3cd';
+            fetch('/eleves/evaluation-competences-batch/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    competences: [{
+                        eleve_id: eleveId,
+                        competence_id: competenceId,
+                        statut: statut
+                    }],
+                    date_annotation: dateAnnotation
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && row) {
+                    row.style.backgroundColor = '#d4edda';
+                    setTimeout(() => { row.style.backgroundColor = ''; }, 1500);
+                } else if (row) {
+                    row.style.backgroundColor = '#f8d7da';
+                    setTimeout(() => { row.style.backgroundColor = ''; }, 3000);
+                }
+            })
+            .catch(() => {
+                if (row) {
+                    row.style.backgroundColor = '#f8d7da';
+                    setTimeout(() => { row.style.backgroundColor = ''; }, 3000);
+                }
+            });
+        }
+
+        // Fonction pour supprimer une évaluation de compétence
+        function deleteCompetenceAjax(eleveId, staticCompetenceId, tableauId) {
+            const competenceId = window.competencesIdMapping[staticCompetenceId] || staticCompetenceId;
+            const row = document.querySelector(`.competence-check[data-competence="${staticCompetenceId}"][data-tableau="${tableauId}"]`)?.closest('tr');
+            if (row) row.style.backgroundColor = '#fff3cd';
+            
+            fetch(`/eleves/evaluation-competence/${competenceId}/delete/`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && row) {
+                    row.style.backgroundColor = '#d4edda';
+                    setTimeout(() => { row.style.backgroundColor = ''; }, 1500);
+                } else if (row) {
+                    row.style.backgroundColor = '#f8d7da';
+                    setTimeout(() => { row.style.backgroundColor = ''; }, 3000);
+                }
+            })
+            .catch(() => {
+                if (row) {
+                    row.style.backgroundColor = '#f8d7da';
+                    setTimeout(() => { row.style.backgroundColor = ''; }, 3000);
+                }
+            });
+        }
+
+        // Sauvegarde auto sur radio avec possibilité de décocher
+        document.querySelectorAll('.competence-check').forEach(function(radio) {
+            radio.addEventListener('click', function(e) {
+                const wasChecked = this.dataset.wasChecked === 'true';
+                
+                // Si le radio était déjà coché, le décocher
+                if (wasChecked) {
+                    e.preventDefault();
+                    this.checked = false;
+                    this.dataset.wasChecked = 'false';
+                    // Décocher tous les radios du même groupe
+                    const groupName = this.getAttribute('name');
+                    document.querySelectorAll(`input[name="${groupName}"]`).forEach(function(r) {
+                        r.checked = false;
+                        r.dataset.wasChecked = 'false';
+                    });
+                    // Supprimer l'évaluation
+                    const staticCompetenceId = this.getAttribute('data-competence');
+                    const eleveId = this.getAttribute('data-eleve');
+                    const tableauId = this.getAttribute('data-tableau');
+                    deleteCompetenceAjax(eleveId, staticCompetenceId, tableauId);
+                } else {
+                    // Laisser le comportement normal se produire, puis marquer comme coché
+                    setTimeout(() => {
+                        // Décocher tous les autres radios du même groupe
+                        const groupName = this.getAttribute('name');
+                        document.querySelectorAll(`input[name="${groupName}"]`).forEach(function(r) {
+                            if (r !== this) {
+                                r.dataset.wasChecked = 'false';
+                            }
+                        }.bind(this));
+                        // Marquer celui-ci comme coché
+                        this.dataset.wasChecked = 'true';
+                        // Sauvegarder normalement
+                        const staticCompetenceId = this.getAttribute('data-competence');
+                        const eleveId = this.getAttribute('data-eleve');
+                        const statut = this.value;
+                        const tableauId = this.getAttribute('data-tableau');
+                        saveCompetenceAjax(eleveId, staticCompetenceId, statut, tableauId);
+                    }, 0);
+                }
+            });
+            
+            // Initialiser l'état wasChecked
+            if (radio.checked) {
+                radio.dataset.wasChecked = 'true';
+            } else {
+                radio.dataset.wasChecked = 'false';
+            }
+        });
+        // Sauvegarde auto sur changement de date d'annotation
+        document.querySelectorAll('.date-annotation').forEach(function(dateInput) {
+            dateInput.addEventListener('change', function() {
+                const tableauId = this.getAttribute('data-tableau');
+                // Pour chaque compétence du tableau, sauvegarder la date
+                document.querySelectorAll(`.competence-check[data-tableau="${tableauId}"]:checked`).forEach(function(radio) {
+                    const staticCompetenceId = radio.getAttribute('data-competence');
+                    const eleveId = radio.getAttribute('data-eleve');
+                    const statut = radio.value;
+                    saveCompetenceAjax(eleveId, staticCompetenceId, statut, tableauId);
+                });
+            });
+        });
+    
+    // Fonction pour récupérer le token CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Fonction pour formater les dates
+    function formatDate(dateString) {
+        if (!dateString) return '-';
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString('fr-FR', options);
+    }
+        // Gérer les boutons d'incrément/décrément des répétitions
+        document.querySelectorAll('.increment-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const repetitionId = this.getAttribute('data-repetition-id');
+                updateRepetitionCount(repetitionId, 'increment');
+            });
+        });
+        document.querySelectorAll('.decrement-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const repetitionId = this.getAttribute('data-repetition-id');
+                updateRepetitionCount(repetitionId, 'decrement');
+            });
+        });
+    
+    function updateRepetitionCount(repetitionId, action) {
+        const url = action === 'increment' 
+            ? `/api/repetition/${repetitionId}/increment/` 
+            : `/api/repetition/${repetitionId}/decrement/`;
+        
+        // Afficher un indicateur de chargement
+        const countElement = document.querySelector(`.repetition-count[data-repetition-id="${repetitionId}"]`);
+        const originalText = countElement.textContent;
+        countElement.textContent = '...';
+        
+        // Envoyer la requête AJAX
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erreur lors de la mise à jour');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Mettre à jour l'affichage
+            countElement.textContent = data.nombre_repetitions;
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            countElement.textContent = originalText;
+            alert('Une erreur est survenue lors de la mise à jour.');
+        });
+    }
+    });
+</script>
+
+<!-- Styles moved to carnet.css -->
+{% endblock %}

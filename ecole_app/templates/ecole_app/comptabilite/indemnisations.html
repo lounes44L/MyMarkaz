@@ -1,0 +1,227 @@
+{% extends 'ecole_app/base_admin.html' %}
+{% load static %}
+
+{% block title %}Gestion des indemnisations{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Gestion des indemnisations</h1>
+        <div>
+            <button type="button" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addIndemnisationModal">
+                <i class="fas fa-plus fa-sm text-white-50"></i> Ajouter une indemnisation
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Filtres</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="annee" class="form-label">Année scolaire</label>
+                    <select name="annee" id="annee" class="form-control">
+                        <option value="">Toutes les années</option>
+                        {% for annee in annees %}
+                            <option value="{{ annee.id }}" {% if annee_active.id == annee.id %}selected{% endif %}>
+                                {{ annee.nom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="professeur" class="form-label">Professeur</label>
+                    <select name="professeur" id="professeur" class="form-control">
+                        <option value="">Tous les professeurs</option>
+                        {% for prof in professeurs %}
+                            <option value="{{ prof.id }}" {% if professeur_selectionne.id == prof.id %}selected{% endif %}>
+                                {{ prof.nom }} {{ prof.prenom|default:"" }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary mb-3">Filtrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total des indemnisations</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_indemnisations }} €</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-euro-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Résumé mensuel des indemnisations -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Résumé mensuel des indemnisations</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Mois</th>
+                            <th>Montant total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in indemnisations_par_mois %}
+                        <tr>
+                            <td>{{ item.mois|date:"F Y"|capfirst }}</td>
+                            <td>{{ item.total }} €</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="text-center">Aucune donnée disponible</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Liste des indemnisations -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Liste des indemnisations</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Professeur</th>
+                            <th>Montant</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for indemnisation in indemnisations %}
+                        <tr>
+                            <td>{{ indemnisation.date|date:"d/m/Y" }}</td>
+                            <td>{{ indemnisation.professeur }}</td>
+                            <td>{{ indemnisation.montant }} €</td>
+                            <td>{{ indemnisation.description|truncatechars:50 }}</td>
+                            <td>
+                                <a href="#" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#detailIndemnisationModal{{ indemnisation.id }}" title="Voir les détails de l'indemnisation">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'supprimer_indemnisation' indemnisation.id %}" class="btn btn-danger btn-sm" title="Supprimer cette indemnisation">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        
+                        <!-- Modal détail indemnisation -->
+                        <div class="modal fade" id="detailIndemnisationModal{{ indemnisation.id }}" tabindex="-1" aria-labelledby="detailIndemnisationModalLabel{{ indemnisation.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="detailIndemnisationModalLabel{{ indemnisation.id }}">Détail de l'indemnisation</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p><strong>Professeur:</strong> {{ indemnisation.professeur }}</p>
+                                        <p><strong>Montant:</strong> {{ indemnisation.montant }} €</p>
+                                        <p><strong>Date:</strong> {{ indemnisation.date|date:"d/m/Y" }}</p>
+                                        <p><strong>Description:</strong> {{ indemnisation.description }}</p>
+                                        <p><strong>Année scolaire:</strong> {{ indemnisation.annee_scolaire|default:"Non spécifiée" }}</p>
+                                        <p><strong>Date de création:</strong> {{ indemnisation.date_creation|date:"d/m/Y H:i" }}</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">Aucune indemnisation enregistrée</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ajouter Indemnisation -->
+<div class="modal fade" id="addIndemnisationModal" tabindex="-1" aria-labelledby="addIndemnisationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addIndemnisationModalLabel">Ajouter une indemnisation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="categorie" value="indemnisation">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="{{ form.professeur.id_for_label }}" class="form-label">Professeur</label>
+                        {{ form.professeur }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.montant.id_for_label }}" class="form-label">Montant (€)</label>
+                        {{ form.montant }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.date.id_for_label }}" class="form-label">Date</label>
+                        {{ form.date }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                        {{ form.description }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.annee_scolaire.id_for_label }}" class="form-label">Année scolaire</label>
+                        {{ form.annee_scolaire }}
+                        <small class="form-text text-muted">Laissez vide pour utiliser l'année scolaire active</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            },
+            "order": [[0, "desc"]]
+        });
+    });
+</script>
+{% endblock %}

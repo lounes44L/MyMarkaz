@@ -1,0 +1,44 @@
+{% extends 'ecole_app/base_admin.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-6 col-md-8 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Paramètres financiers</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="{{ form.montant_defaut_eleve.id_for_label }}">Montant par défaut pour les nouveaux élèves (€)</label>
+                            {{ form.montant_defaut_eleve }}
+                            {% if form.montant_defaut_eleve.errors %}
+                            <div class="invalid-feedback d-block">{{ form.montant_defaut_eleve.errors }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">Ce montant sera automatiquement appliqué lors de la création d'un nouvel élève.</small>
+                        </div>
+                        
+                        <div class="form-group form-check">
+                            {{ form.mettre_a_jour_eleves }}
+                            <label class="form-check-label" for="{{ form.mettre_a_jour_eleves.id_for_label }}">
+                                {{ form.mettre_a_jour_eleves.label }}
+                            </label>
+                            <small class="form-text text-muted">{{ form.mettre_a_jour_eleves.help_text }}</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "ecole_app/base.html" %}
+{% load static %}
+
+{% block title %}Ajouter une mémorisation - {{ eleve.nom }} {{ eleve.prenom }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-brain me-2"></i>
+                        Ajouter une mémorisation pour {{ eleve.nom }} {{ eleve.prenom }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.date.id_for_label }}" class="form-label">Date</label>
+                            {{ form.date }}
+                            {% if form.date.errors %}
+                            <div class="text-danger">{{ form.date.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.sourate_select.id_for_label }}" class="form-label">Sourate</label>
+                            {{ form.sourate_select }}
+                            <small class="form-text text-muted">Sélectionnez d'abord la sourate pour afficher les pages disponibles</small>
+                            {% if form.sourate_select.errors %}
+                            <div class="text-danger">{{ form.sourate_select.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="debut-page-select-memorisation" class="form-label">Page de début</label>
+                                    <select name="debut_page" id="debut-page-select-memorisation" class="form-control" disabled aria-label="Page de début">
+                                        <option value="">Sélectionnez d'abord une sourate</option>
+                                    </select>
+                                    {% if form.debut_page.errors %}
+                                    <div class="text-danger">{{ form.debut_page.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="fin-page-select-memorisation" class="form-label">Page de fin</label>
+                                    <select name="fin_page" id="fin-page-select-memorisation" class="form-control" disabled aria-label="Page de fin">
+                                        <option value="">Sélectionnez d'abord une sourate</option>
+                                    </select>
+                                    {% if form.fin_page.errors %}
+                                    <div class="text-danger">{{ form.fin_page.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.enseignant.id_for_label }}" class="form-label">Enseignant</label>
+                            {{ form.enseignant }}
+                            {% if form.enseignant.errors %}
+                            <div class="text-danger">{{ form.enseignant.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.remarques.id_for_label }}" class="form-label">Remarques</label>
+                            {{ form.remarques }}
+                            <small class="form-text text-muted">Facultatif</small>
+                            {% if form.remarques.errors %}
+                            <div class="text-danger">{{ form.remarques.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'carnet_pedagogique' eleve.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Retour
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Enregistrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/sourate-pages.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM fully loaded for memorisation form');
+        
+        // Configuration pour la mémorisation
+        setupSouratePageSelection(
+            'id_sourate_select',
+            'debut-page-select-memorisation',
+            'fin-page-select-memorisation'
+        );
+    });
+</script>
+{% endblock %}

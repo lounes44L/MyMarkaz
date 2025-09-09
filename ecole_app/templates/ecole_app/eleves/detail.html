@@ -1,0 +1,266 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Détail de l'élève - {{ eleve.nom }} {{ eleve.prenom }} - Gestion Markaz{% endblock %}
+
+{% block page_title %}Détail de l'élève : {{ eleve.nom }} {{ eleve.prenom }}{% endblock %}
+
+{% block content %}
+<!-- Navigation tabs supprimés -->
+<div class="row">
+    <!-- Informations de l'élève -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Informations personnelles</h5>
+<hr>
+<strong>Classes :</strong>
+{% if eleve.classes.all %}
+    {% for classe in eleve.classes.all %}
+        <span class="badge bg-primary me-1">{{ classe.nom }}</span>
+    {% empty %}
+        <span class="text-muted">Aucune classe</span>
+    {% endfor %}
+{% endif %}
+
+            </div>
+            <div class="card-body">
+                <div class="info-display">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Nom</label>
+                            <p class="form-control-plaintext">{{ eleve.nom }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Prénom</label>
+                            <p class="form-control-plaintext">{{ eleve.prenom }}</p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Date de naissance</label>
+                            <p class="form-control-plaintext">{{ eleve.date_naissance|date:"d/m/Y" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Téléphone</label>
+                            <p class="form-control-plaintext">{{ eleve.telephone }}</p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Téléphone secondaire</label>
+                            <p class="form-control-plaintext">{{ eleve.telephone_secondaire|default:"-" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Prénom du père</label>
+                            <p class="form-control-plaintext">{{ eleve.prenom_pere|default:"-" }}</p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Prénom de la mère</label>
+                            <p class="form-control-plaintext">{{ eleve.prenom_mere|default:"-" }}</p>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Email</label>
+                        <p class="form-control-plaintext">{{ eleve.email }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Adresse</label>
+                        <p class="form-control-plaintext">{{ eleve.adresse }}</p>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Année scolaire</label>
+                            <p class="form-control-plaintext">{{ eleve.annee_scolaire }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Montant total à payer</label>
+                            <p class="form-control-plaintext">{{ eleve.montant_total|floatformat:2 }} €</p>
+                            <small class="form-text text-muted">Montant total de l'inscription (défaut: 200€)</small>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'liste_eleves' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Retour
+                        </a>
+                        <div>
+                            <a href="{% url 'modifier_eleve' eleve.id %}" class="btn btn-primary">
+                                <i class="fas fa-edit me-1"></i> Modifier
+                            </a>
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="fas fa-trash me-1"></i> Supprimer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations de paiement -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Résumé des paiements</h5>
+            </div>
+            <div class="card-body">
+                <!-- Montant total à payer -->
+                <div class="form-group mb-4">
+                    <label class="form-label fw-bold">Montant total à payer</label>
+                    <p class="form-control-plaintext">{{ eleve.montant_total|floatformat:2 }} €</p>
+                    <small class="form-text text-muted">Montant total de l'inscription (défaut: 200€)</small>
+                </div>
+                
+                <!-- Résumé des paiements -->
+                <div class="card bg-light mb-3">
+                    <div class="card-body p-3">
+                        <div class="row">
+                            <div class="col">
+                                <h6 class="mb-0">Montant payé :</h6>
+                            </div>
+                            <div class="col-auto">
+                                <span class="text-success font-weight-bold">{{ eleve.montant_paye|floatformat:2 }} €</span>
+                            </div>
+                        </div>
+                        <hr class="my-2">
+                        <div class="row">
+                            <div class="col">
+                                <h6 class="mb-0">Montant restant :</h6>
+                            </div>
+                            <div class="col-auto">
+                                <span class="text-danger font-weight-bold">{{ eleve.montant_restant|floatformat:2 }} €</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Informations de connexion -->
+                <h6 class="mb-3">Informations de connexion</h6>
+                {% if user_info %}
+                <div class="card bg-light mb-3">
+                    <div class="card-body p-3">
+                        <div class="row mb-2">
+                            <div class="col">
+                                <h6 class="mb-0">Identifiant :</h6>
+                            </div>
+                            <div class="col-auto">
+                                <span class="font-weight-bold">{{ user_info.username }}</span>
+                            </div>
+                        </div>
+                        {% if user_info.mot_de_passe_en_clair %}
+                        <div class="row mb-2">
+                            <div class="col">
+                                <h6 class="mb-0">Mot de passe initial :</h6>
+                            </div>
+                            <div class="col-auto">
+                                <span class="font-weight-bold text-success">{{ user_info.mot_de_passe_en_clair }}</span>
+                            </div>
+                        </div>
+                        <div class="alert alert-info mb-2 p-2">
+                            <small><i class="fas fa-info-circle me-1"></i> Ce mot de passe restera visible tant qu'il n'a pas été modifié.</small>
+                        </div>
+                        {% endif %}
+                        <hr class="my-2">
+                        
+                        <div class="row">
+                            <div class="col">
+                                <button type="button" class="btn btn-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#emailCredentialsModal">
+                                    <i class="fas fa-envelope me-1"></i> Envoyer par email
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Aucun compte utilisateur associé à cet élève.
+                </div>
+                {% endif %}
+
+                <!-- Liste des derniers paiements -->
+                <h6 class="mb-2">Derniers paiements</h6>
+                {% if paiements %}
+                <div class="list-group small">
+                    {% for paiement in paiements|slice:":3" %}
+                    <div class="list-group-item list-group-item-action p-2">
+                        <div class="d-flex w-100 justify-content-between">
+                            <span>{{ paiement.montant }} € ({{ paiement.get_methode_display }})</span>
+                            <small>{{ paiement.date|date:"d/m/Y" }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if paiements.count > 3 %}
+                <div class="text-center mt-2">
+                    <small class="text-muted">+ {{ paiements.count|add:"-3" }} autres paiements</small>
+                </div>
+                {% endif %}
+                {% else %}
+                <p class="text-center text-muted small">Aucun paiement enregistré</p>
+                {% endif %}
+                <div class="mt-3">
+                    <a href="{% url 'liste_paiements' %}" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="fas fa-plus-circle me-1"></i> Ajouter un paiement
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Êtes-vous sûr de vouloir supprimer l'élève <strong>{{ eleve.nom }} {{ eleve.prenom }}</strong> ?
+                <p class="text-danger mt-2">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    Cette action est irréversible et supprimera également tous les paiements associés.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="{% url 'supprimer_eleve' eleve.id %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Supprimer</button>
+</form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour l'envoi d'identifiants par email -->
+<div class="modal fade" id="emailCredentialsModal" tabindex="-1" aria-labelledby="emailCredentialsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="emailCredentialsModalLabel">Envoyer les identifiants par email</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'envoyer_identifiants_eleve' eleve.id %}">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="email_recipient" class="form-label">Adresse email destinataire</label>
+                        <input type="email" class="form-control" id="email_recipient" name="email" value="{{ eleve.email|default:'' }}" required>
+                        <div class="form-text">Un nouveau mot de passe sera généré et envoyé avec l'identifiant à cette adresse email.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-1"></i> Envoyer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,237 @@
+{% extends 'ecole_app/base_admin.html' %}
+{% load static %}
+
+{% block title %}Gestion des Composantes{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-school me-2"></i>Gestion des Composantes</h2>
+        <div>
+            <a href="{% url 'selection_composante' %}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-left me-2"></i>Retour à la sélection
+            </a>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreerComposante">
+                <i class="fas fa-plus me-2"></i>Nouvelle Composante
+            </button>
+        </div>
+    </div>
+
+    {% if composantes %}
+        <div class="row">
+            {% for composante in composantes %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 {% if not composante.active %}border-warning{% endif %}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title">{{ composante.nom }}</h5>
+                            {% if not composante.active %}
+                                <span class="badge bg-warning">Inactive</span>
+                            {% else %}
+                                <span class="badge bg-success">Active</span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if composante.description %}
+                            <p class="card-text text-muted">{{ composante.description }}</p>
+                        {% endif %}
+                        
+                        <div class="row text-center mb-3">
+                            <div class="col-4">
+                                <div class="text-primary">
+                                    <i class="fas fa-users fa-2x"></i>
+                                    <div class="mt-1">
+                                        <strong>{{ composante.eleves.count }}</strong>
+                                        <small class="d-block text-muted">Élèves</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-success">
+                                    <i class="fas fa-chalkboard-teacher fa-2x"></i>
+                                    <div class="mt-1">
+                                        <strong>{{ composante.professeurs.count }}</strong>
+                                        <small class="d-block text-muted">Professeurs</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-info">
+                                    <i class="fas fa-door-open fa-2x"></i>
+                                    <div class="mt-1">
+                                        <strong>{{ composante.classes.count }}</strong>
+                                        <small class="d-block text-muted">Classes</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <small class="text-muted">Créée le {{ composante.date_creation|date:"d/m/Y" }}</small>
+                    </div>
+                    
+                    <div class="card-footer bg-transparent">
+                        <div class="btn-group w-100" role="group">
+                            <a href="{% url 'statistiques_composante' composante.id %}" class="btn btn-outline-info btn-sm" title="Voir les statistiques de {{ composante.nom }}" aria-label="Voir les statistiques de {{ composante.nom }}">
+                                <i class="fas fa-chart-bar"></i><span class="visually-hidden">Statistiques</span>
+                            </a>
+                            <a href="{% url 'modifier_composante' composante.id %}" class="btn btn-outline-primary btn-sm" title="Modifier {{ composante.nom }}" aria-label="Modifier {{ composante.nom }}">
+                                <i class="fas fa-edit"></i><span class="visually-hidden">Modifier</span>
+                            </a>
+                            <button type="button" class="btn btn-outline-danger btn-sm" 
+                                data-id="{{ composante.id }}" 
+                                data-nom="{{ composante.nom }}" 
+                                data-eleves="{{ composante.eleves.count }}" 
+                                data-profs="{{ composante.professeurs.count }}" 
+                                data-classes="{{ composante.classes.count }}" 
+                                onclick="confirmerSuppression(this.dataset.id, this.dataset.nom, parseInt(this.dataset.eleves), parseInt(this.dataset.profs), parseInt(this.dataset.classes))" 
+                                title="Supprimer {{ composante.nom }}" aria-label="Supprimer {{ composante.nom }}">
+                                <i class="fas fa-trash"></i><span class="visually-hidden">Supprimer</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-school fa-3x text-muted mb-3"></i>
+            <h4>Aucune composante</h4>
+            <p class="text-muted">Créez votre première composante pour commencer.</p>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreerComposante">
+                <i class="fas fa-plus me-2"></i>Créer une composante
+            </button>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Modal Créer Composante -->
+<div class="modal fade" id="modalCreerComposante" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'creer_composante' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Nouvelle Composante</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="nom" class="form-label">Nom de la composante *</label>
+                        <input type="text" class="form-control" id="nom" name="nom" required 
+                               placeholder="Ex: École Enfants, École Adultes...">
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                                  placeholder="Description optionnelle de la composante"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Créer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmation Suppression -->
+<div class="modal fade" id="modalSuppression" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer la composante <strong id="nom-suppression"></strong> ?</p>
+                <div id="warning-donnees" class="alert alert-warning d-none">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Attention :</strong> Cette composante contient des données qui seront également supprimées :
+                    <ul class="mb-0 mt-2">
+                        <li id="nb-eleves"></li>
+                        <li id="nb-professeurs"></li>
+                        <li id="nb-classes"></li>
+                    </ul>
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" id="force_delete" name="force_delete">
+                        <label class="form-check-label" for="force_delete">
+                            <strong>Je comprends que toutes les données associées seront définitivement supprimées</strong>
+                        </label>
+                    </div>
+                </div>
+                <p class="text-danger"><strong>Cette action est irréversible !</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" id="form-suppression" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" id="force_delete_hidden" name="force_delete">
+                    <button type="submit" id="btn-supprimer" class="btn btn-danger" disabled>Supprimer définitivement</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Fonction pour confirmer la suppression d'une composante
+function confirmerSuppression(id, nom, nbEleves, nbProfesseurs, nbClasses) {
+    // Mettre à jour le nom dans la modal
+    const nomElement = document.getElementById('nom-suppression');
+    if (nomElement) {
+        nomElement.textContent = nom;
+    }
+    
+    // Configurer l'action du formulaire de suppression
+    const formElement = document.getElementById('form-suppression');
+    if (formElement) {
+        formElement.action = `/composante/supprimer/${id}/`;
+    }
+    
+    // Afficher ou masquer l'avertissement selon les données associées
+    const warningDiv = document.getElementById('warning-donnees');
+    const btnSupprimer = document.getElementById('btn-supprimer');
+    const checkboxForceDelete = document.getElementById('force_delete');
+    const hiddenForceDelete = document.getElementById('force_delete_hidden');
+    
+    if (warningDiv) {
+        if (nbEleves > 0 || nbProfesseurs > 0 || nbClasses > 0) {
+            // Mettre à jour les compteurs
+            const elevesElement = document.getElementById('nb-eleves');
+            const profsElement = document.getElementById('nb-professeurs');
+            const classesElement = document.getElementById('nb-classes');
+            
+            if (elevesElement) elevesElement.textContent = `${nbEleves} élève(s)`;
+            if (profsElement) profsElement.textContent = `${nbProfesseurs} professeur(s)`;
+            if (classesElement) classesElement.textContent = `${nbClasses} classe(s)`;
+            
+            warningDiv.classList.remove('d-none');
+            
+            // Désactiver le bouton de suppression par défaut
+            if (btnSupprimer) btnSupprimer.disabled = true;
+            
+            // Gérer l'état du bouton en fonction de la case à cocher
+            if (checkboxForceDelete) {
+                checkboxForceDelete.checked = false;
+                checkboxForceDelete.addEventListener('change', function() {
+                    if (btnSupprimer) btnSupprimer.disabled = !this.checked;
+                    if (hiddenForceDelete) hiddenForceDelete.value = this.checked ? 'on' : '';
+                });
+            }
+        } else {
+            warningDiv.classList.add('d-none');
+            // Activer le bouton de suppression si pas de données associées
+            if (btnSupprimer) btnSupprimer.disabled = false;
+        }
+    }
+    
+    // Afficher la modal de confirmation
+    const modalElement = document.getElementById('modalSuppression');
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    }
+}</script>
+{% endblock %}

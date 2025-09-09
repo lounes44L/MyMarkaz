@@ -1,0 +1,50 @@
+{% extends 'ecole_app/base.html' %}
+{% load static %}
+
+{% block title %}Ajouter un document{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>Ajouter un document au module "{{ module.titre }}"</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="titre">Titre du document <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="titre" name="titre" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="ordre">Ordre d'affichage</label>
+                                    <input type="number" class="form-control" id="ordre" name="ordre" value="0" min="0">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="fichier">Fichier PDF <span class="text-danger">*</span></label>
+                            <input type="file" class="form-control" id="fichier" name="fichier" accept=".pdf" required>
+                            <small class="form-text text-muted">Seuls les fichiers PDF sont acceptés.</small>
+                        </div>
+                        <div class="d-flex justify-content-end mt-4">
+                            <a href="{% url 'detail_module' module.id %}" class="btn btn-light me-2">Annuler</a>
+                            <button type="submit" class="btn btn-primary">Ajouter le document</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

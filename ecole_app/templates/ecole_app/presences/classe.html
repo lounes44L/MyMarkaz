@@ -1,0 +1,253 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Présences de la classe {{ classe.nom }} | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Gestion des présences - {{ classe.nom }}</h1>
+        <div>
+            <a href="{% if request.user.is_staff or request.user.is_superuser %}{% url 'liste_classes' %}{% else %}{% url 'dashboard_professeur' %}{% endif %}" class="btn btn-secondary btn-sm" title="Retour" aria-label="Retour">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> Retour
+            </a>
+        </div>
+    </div>
+
+    <!-- Messages d'information -->
+    {% if messages %}
+    <div class="row mb-4">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Informations sur la classe -->
+    <div class="row mb-4">
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Classe</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ classe.nom }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-school fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Professeur</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ classe.professeur.nom }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chalkboard-teacher fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Nombre d'élèves</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ eleves.count }} / {{ classe.capacite }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire de présence -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Saisir les présences</h6>
+                    <button type="button" class="btn btn-info btn-sm" id="toggleAll" title="Sélectionner/désélectionner tous" aria-label="Sélectionner/désélectionner tous">
+                        <i class="fas fa-check-double" aria-hidden="true"></i> Tout sélectionner
+                    </button>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="{{ form.date.id_for_label }}">Date</label>
+                                {{ form.date }}
+                                {% if form.date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.date.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="{{ form.commentaire.id_for_label }}">Commentaire général</label>
+                                {{ form.commentaire }}
+                                {% if form.commentaire.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.commentaire.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive mt-4">
+                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Élève</th>
+                                        <th>Présent</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for eleve in eleves %}
+                                    <tr>
+                                        <td>{{ eleve.prenom }} {{ eleve.nom }}</td>
+                                        <td class="text-center">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input presence-checkbox" id="present_{{ eleve.id }}" name="present_{{ eleve.id }}" title="Présence de {{ eleve.prenom }} {{ eleve.nom }}" checked>
+                                                <label class="custom-control-label" for="present_{{ eleve.id }}"></label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="2" class="text-center">Aucun élève dans cette classe.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="form-group text-center mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save" aria-hidden="true"></i> Enregistrer les présences
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historique des présences de la classe -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Historique des présences</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="historiqueTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Élève</th>
+                                    <th>Statut</th>
+                                    <th>Commentaire</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for presence in historique %}
+                                <tr>
+                                    <td>{{ presence.date|date:"d/m/Y" }}</td>
+                                    <td>{{ presence.eleve.prenom }} {{ presence.eleve.nom }}</td>
+                                    <td>
+                                        {% if presence.present %}
+                                            <span class="badge badge-success">Présent</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">Absent</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ presence.commentaire|default:"-" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">Aucun historique de présence pour cette classe.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialisation du datepicker
+        $('#{{ form.date.id_for_label }}').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            language: 'fr',
+            todayHighlight: true
+        });
+        
+        // Gestion du bouton "Tout sélectionner/désélectionner"
+        var allChecked = true; // Par défaut, toutes les cases sont cochées
+        
+        $('#toggleAll').click(function() {
+            $('.presence-checkbox').prop('checked', !allChecked);
+            allChecked = !allChecked;
+            
+            // Changer le texte du bouton
+            if (allChecked) {
+                $(this).html('<i class="fas fa-check-double" aria-hidden="true"></i> Tout sélectionner');
+            } else {
+                $(this).html('<i class="fas fa-times" aria-hidden="true"></i> Tout désélectionner');
+            }
+        });
+        
+        // Initialisation de la table d'historique
+        $('#historiqueTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            },
+            "order": [[0, "desc"]]
+        });
+    });
+</script>
+{% endblock %}

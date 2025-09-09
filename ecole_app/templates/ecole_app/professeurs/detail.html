@@ -1,0 +1,260 @@
+{% extends 'ecole_app/professeurs/base_professeur.html' %}
+
+{% block title %}Détail du professeur - {{ professeur.nom }} - Gestion Markaz{% endblock %}
+
+{% block page_title %}Détail du professeur : {{ professeur.nom }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Informations du professeur -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Informations du professeur</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label for="{{ form.nom_complet.id_for_label }}" class="form-label">Nom complet</label>
+                            {{ form.nom_complet }}
+                            {% if form.nom_complet.errors %}
+                            <div class="invalid-feedback d-block">{{ form.nom_complet.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'liste_professeurs' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Retour
+                        </a>
+                        <div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Enregistrer
+                            </button>
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="fas fa-trash me-1"></i> Supprimer
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations supplémentaires -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Informations supplémentaires</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Date d'ajout
+                        <span class="badge bg-secondary">{{ professeur.date_creation|date:"d/m/Y" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Nombre de classes
+                        <span class="badge bg-primary">{{ classes.count }}</span>
+                    </li>
+
+                </ul>
+                
+                <!-- Informations de connexion -->
+                <div class="mt-3 mb-1">
+                    <h6 class="mb-3">Informations de connexion</h6>
+                    {% if user_info %}
+                    <div class="card bg-light mb-3">
+                        <div class="card-body p-3">
+                            <div class="row mb-2">
+                                <div class="col">
+                                    <h6 class="mb-0">Identifiant :</h6>
+                                </div>
+                                <div class="col-auto">
+                                    <span class="font-weight-bold">{{ user_info.username }}</span>
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            <div class="row">
+                                <div class="col">
+                                    <button type="button" class="btn btn-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#emailCredentialsModal">
+                                        <i class="fas fa-envelope me-1"></i> Envoyer par email
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Aucun compte utilisateur associé à ce professeur.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Classes du professeur -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Classes assignées</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+
+                        <th>Capacité</th>
+                        <th>Élèves</th>
+                        <th>Taux d'occupation</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for classe in classes %}
+                    <tr>
+                        <td>{{ classe.nom }}</td>
+                        <td>{{ classe.capacite }}</td>
+                        <td>{{ classe.get_total_eleves }}</td>
+                        <td>
+                            <div class="progress progress-custom-height">
+                                {% with taux=classe.taux_occupation %}
+                                {% if taux > 85 %}
+                                    <div class="progress-bar bg-danger progress-width-dynamic" role="progressbar" 
+                                         data-width="{{ taux }}" data-value="{{ taux|floatformat:0 }}" 
+                                         aria-valuemin="0" aria-valuemax="100" 
+                                         title="Taux d'occupation: {{ taux|floatformat:0 }}%">{{ taux|floatformat:0 }}%</div>
+                                {% elif taux > 60 %}
+                                    <div class="progress-bar bg-warning progress-width-dynamic" role="progressbar" 
+                                         data-width="{{ taux }}" data-value="{{ taux|floatformat:0 }}" 
+                                         aria-valuemin="0" aria-valuemax="100" 
+                                         title="Taux d'occupation: {{ taux|floatformat:0 }}%">{{ taux|floatformat:0 }}%</div>
+                                {% else %}
+                                    <div class="progress-bar bg-success progress-width-dynamic" role="progressbar" 
+                                         data-width="{{ taux }}" data-value="{{ taux|floatformat:0 }}" 
+                                         aria-valuemin="0" aria-valuemax="100" 
+                                         title="Taux d'occupation: {{ taux|floatformat:0 }}%">{{ taux|floatformat:0 }}%</div>
+                                {% endif %}
+                                {% endwith %}
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{% url 'detail_classe' classe.id %}" class="btn btn-sm btn-outline-primary" title="Voir les détails de la classe {{ classe.nom }}">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">Aucune classe assignée à ce professeur</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-3">
+            <a href="{% url 'liste_classes' %}" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-plus-circle me-1"></i> Ajouter une classe
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer le professeur <strong>{{ professeur.nom }}</strong> ?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Attention : Les classes associées à ce professeur seront conservées mais n'auront plus de professeur assigné.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="{% url 'supprimer_professeur' professeur.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations de connexion -->
+{% if user_info %}
+<div class="card bg-light mb-4">
+    <div class="card-body p-3">
+        <h6 class="mb-3">Informations de connexion</h6>
+        <div class="row mb-2">
+            <div class="col">
+                <h6 class="mb-0">Identifiant :</h6>
+            </div>
+            <div class="col-auto">
+                <span class="font-weight-bold">{{ user_info.username }}</span>
+            </div>
+        </div>
+        {% if user_info.mot_de_passe_en_clair %}
+        <div class="row mb-2">
+            <div class="col">
+                <h6 class="mb-0">Mot de passe initial :</h6>
+            </div>
+            <div class="col-auto">
+                <span class="font-weight-bold text-success">{{ user_info.mot_de_passe_en_clair }}</span>
+            </div>
+        </div>
+        <div class="alert alert-info mb-2 p-2">
+            <small><i class="fas fa-info-circle me-1"></i> Ce mot de passe restera visible tant qu'il n'a pas été modifié par l'utilisateur.</small>
+        </div>
+        {% endif %}
+        <hr class="my-2">
+        <div class="row">
+            <div class="col">
+                <button type="button" class="btn btn-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#emailCredentialsModal">
+                    <i class="fas fa-envelope me-1"></i> Envoyer par email
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Modal pour l'envoi d'identifiants par email -->
+<div class="modal fade" id="emailCredentialsModal" tabindex="-1" aria-labelledby="emailCredentialsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="emailCredentialsModalLabel">Envoyer les identifiants par email</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'envoyer_identifiants_professeur' professeur.id %}">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="email_recipient" class="form-label">Adresse email destinataire</label>
+                        <input type="email" class="form-control" id="email_recipient" name="email" value="{{ professeur.email|default:'' }}" required>
+                        <div class="form-text">Un nouveau mot de passe sera généré et envoyé avec l'identifiant à cette adresse email.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-1"></i> Envoyer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

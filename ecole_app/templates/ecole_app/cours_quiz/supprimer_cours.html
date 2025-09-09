@@ -1,0 +1,24 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Supprimer le Cours{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Supprimer le Cours</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Confirmer la suppression</h6>
+        </div>
+        <div class="card-body">
+            <p>Êtes-vous sûr de vouloir supprimer le cours "<strong>{{ cours.titre }}</strong>" ?</p>
+            <p>Cette action est irréversible.</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Oui, supprimer</button>
+                <a href="{% url 'liste_cours_professeur' %}" class="btn btn-secondary">Annuler</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+<!-- Cours partagés et Quiz -->
+<div class="row">
+    <!-- Cours partagés -->
+    <div class="col-xl-6 col-md-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Cours partagés</h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center py-4">
+                    <i class="fas fa-book fa-3x text-gray-300 mb-3"></i>
+                    <p class="text-muted">Accédez aux cours partagés par vos professeurs.</p>
+                    <a href="{% url 'liste_cours_eleve' %}" class="btn btn-primary">
+                        <i class="fas fa-book-reader" aria-hidden="true"></i> Voir les cours partagés
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quiz -->
+    <div class="col-xl-6 col-md-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Quiz</h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center py-4">
+                    <i class="fas fa-question-circle fa-3x text-gray-300 mb-3"></i>
+                    <p class="text-muted">Participez aux quiz créés par vos professeurs.</p>
+                    <a href="{% url 'liste_quiz_eleve' %}" class="btn btn-primary">
+                        <i class="fas fa-tasks" aria-hidden="true"></i> Voir les quiz disponibles
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

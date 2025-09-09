@@ -1,0 +1,110 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Résultats du Quiz{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Résultats: {{ tentative.quiz.titre }}</h1>
+        <div>
+            <a href="{% url 'telecharger_resultats_quiz_pdf' tentative.id %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mr-2">
+                <i class="fas fa-file-pdf fa-sm text-white-50"></i> Télécharger PDF
+            </a>
+            <a href="{% url 'liste_quiz_eleve' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour aux quiz
+            </a>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Les statistiques ont été supprimées -->
+
+    <!-- Détail des réponses -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Détail des réponses</h6>
+        </div>
+        <div class="card-body">
+            {% for resultat in resultats_detailles %}
+                <div class="card mb-4 {% if resultat.reponse.est_correcte %}border-success{% else %}border-danger{% endif %}">
+                    <div class="card-header bg-{% if resultat.reponse.est_correcte %}success{% else %}danger{% endif %} text-white">
+                        <h6 class="m-0">Question {{ forloop.counter }}</h6>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ resultat.question.texte }}</h5>
+                        <p class="card-text">
+                            <strong>Type de question:</strong> 
+                            {% if resultat.question.type == 'choix_unique' %}
+                                Choix unique
+                            {% elif resultat.question.type == 'choix_multiple' %}
+                                Choix multiple
+                            {% elif resultat.question.type == 'texte_court' %}
+                                Texte court
+                            {% elif resultat.question.type == 'vrai_faux' %}
+                                Vrai/Faux
+                            {% endif %}
+                        </p>
+                        
+                        <div class="mt-3">
+                            <strong>Votre réponse:</strong>
+                            {% if resultat.question.type == 'texte_court' %}
+                                <p>{{ resultat.reponse.texte_reponse }}</p>
+                            {% else %}
+                                <ul class="list-group mt-2">
+                                    {% for choix in resultat.choix_selectionnes %}
+                                        <li class="list-group-item {% if choix.est_correct %}list-group-item-success{% else %}list-group-item-danger{% endif %}">
+                                            {{ choix.texte }}
+                                            {% if choix.est_correct %}
+                                                <span class="badge badge-success text-white float-right"><i class="fas fa-check"></i></span>
+                                            {% else %}
+                                                <span class="badge badge-danger text-white float-right"><i class="fas fa-times"></i></span>
+                                            {% endif %}
+                                        </li>
+                                    {% empty %}
+                                        <li class="list-group-item list-group-item-warning">Aucune réponse sélectionnée</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                        
+                        {% if not resultat.reponse.est_correcte %}
+                            <div class="mt-3">
+                                <strong>Réponse(s) correcte(s):</strong>
+                                <ul class="list-group mt-2">
+                                    {% for choix in resultat.choix_corrects %}
+                                        <li class="list-group-item list-group-item-success">
+                                            {{ choix.texte }}
+                                            <span class="badge badge-success text-white float-right"><i class="fas fa-check"></i></span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="mt-3">
+                            <strong>Points:</strong> 
+                            {% if resultat.reponse.est_correcte %}
+                                <span class="text-success">{{ resultat.question.points }} / {{ resultat.question.points }}</span>
+                            {% else %}
+                                <span class="text-danger">0 / {{ resultat.question.points }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

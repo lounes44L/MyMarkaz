@@ -1,0 +1,127 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Carnet pédagogique - {{ eleve.nom }} {{ eleve.prenom }} - Gestion Markaz{% endblock %}
+
+{% block page_title %}Carnet pédagogique : {{ eleve.nom }} {{ eleve.prenom }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Bilan de progression</h5>
+                <a href="{% url 'detail_eleve' eleve.id %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Retour au profil
+                </a>
+            </div>
+            <div class="card-body">
+                {% if competences_par_lecon %}
+                    {% for lecon, competences in competences_par_lecon.items %}
+                        <h4 class="text-center text-danger mb-3">Bilan de progression - Leçon {{ lecon }}</h4>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-success">
+                                    <tr>
+                                        <th class="text-center objectives-table description-column">Objectifs</th>
+                                        <th class="text-center">Acquis</th>
+                                        <th class="text-center">Non Acquis</th>
+                                        <th class="text-center">En cours</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in competences %}
+                                        <tr>
+                                            <td>{{ item.competence.description }}</td>
+                                            <td class="text-center">
+                                                <div class="form-check d-flex justify-content-center">
+                                                    <input class="form-check-input competence-check" 
+                                                           type="radio" 
+                                                           name="competence_{{ item.competence.id }}" 
+                                                           value="acquis" 
+                                                           data-eleve="{{ eleve.id }}" 
+                                                           data-competence="{{ item.competence.id }}"
+                                                           title="Compétence acquise"
+                                                           aria-label="Compétence acquise"
+                                                           {% if item.evaluation and item.evaluation.statut == 'acquis' %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check d-flex justify-content-center">
+                                                    <input class="form-check-input competence-check" 
+                                                           type="radio" 
+                                                           name="competence_{{ item.competence.id }}" 
+                                                           value="non_acquis" 
+                                                           data-eleve="{{ eleve.id }}" 
+                                                           data-competence="{{ item.competence.id }}"
+                                                           title="Compétence non acquise"
+                                                           aria-label="Compétence non acquise"
+                                                           {% if item.evaluation and item.evaluation.statut == 'non_acquis' %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check d-flex justify-content-center">
+                                                    <input class="form-check-input competence-check" 
+                                                           type="radio" 
+                                                           name="competence_{{ item.competence.id }}" 
+                                                           value="en_cours" 
+                                                           data-eleve="{{ eleve.id }}" 
+                                                           data-competence="{{ item.competence.id }}"
+                                                           title="Compétence en cours d'acquisition"
+                                                           aria-label="Compétence en cours d'acquisition"
+                                                           {% if item.evaluation and item.evaluation.statut == 'en_cours' %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% if not forloop.last %}<hr class="my-4">{% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info">
+                        Aucune compétence n'a été définie pour les leçons 1 et 2.
+                        Veuillez exécuter la commande <code>python manage.py init_competences_livre</code> pour initialiser les compétences.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Gestion des clics sur les cases à cocher des compétences
+        $('.competence-check').change(function() {
+            const eleveId = $(this).data('eleve');
+            const competenceId = $(this).data('competence');
+            const statut = $(this).val();
+            
+            // Envoyer la requête AJAX pour mettre à jour l'évaluation
+            $.ajax({
+                url: '{% url "evaluer_competence" %}',
+                type: 'POST',
+                data: {
+                    'eleve_id': eleveId,
+                    'competence_id': competenceId,
+                    'statut': statut,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Afficher un message de succès
+                        toastr.success('Évaluation mise à jour avec succès');
+                    } else {
+                        toastr.error('Erreur lors de la mise à jour de l\'évaluation');
+                    }
+                },
+                error: function() {
+                    toastr.error('Erreur lors de la communication avec le serveur');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

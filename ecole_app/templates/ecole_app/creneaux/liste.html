@@ -1,0 +1,178 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Liste des créneaux - Gestion Markaz{% endblock %}
+
+{% block page_title %}Liste des créneaux{% endblock %}
+
+{% block content %}
+<!-- Formulaire d'ajout -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Ajouter un créneau</h5>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.nom.id_for_label }}" class="form-label">Nom</label>
+                    {{ form.nom }}
+                    {% if form.nom.errors %}
+                    <div class="invalid-feedback d-block">{{ form.nom.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.jour.id_for_label }}" class="form-label">Jour</label>
+                    {{ form.jour }}
+                    {% if form.jour.errors %}
+                    <div class="invalid-feedback d-block">{{ form.jour.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label for="{{ form.heure_debut.id_for_label }}" class="form-label">Heure début</label>
+                    {{ form.heure_debut }}
+                    {% if form.heure_debut.errors %}
+                    <div class="invalid-feedback d-block">{{ form.heure_debut.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label for="{{ form.heure_fin.id_for_label }}" class="form-label">Heure fin</label>
+                    {{ form.heure_fin }}
+                    {% if form.heure_fin.errors %}
+                    <div class="invalid-feedback d-block">{{ form.heure_fin.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-1 mb-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100" title="Ajouter un nouveau créneau" aria-label="Ajouter un nouveau créneau">
+                        <i class="fas fa-plus-circle" aria-hidden="true"></i>
+                        <span class="visually-hidden">Ajouter</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Liste des créneaux -->
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="card-title mb-0">Créneaux ({{ creneaux|length }})</h5>
+            </div>
+            <div class="col-auto">
+                <div class="input-group">
+                    <input type="text" id="searchCreneaux" class="form-control" placeholder="Rechercher...">
+                    <button class="btn btn-outline-secondary" type="button" title="Rechercher" aria-label="Rechercher dans les créneaux">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        <span class="visually-hidden">Rechercher</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="tableCreneaux">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Jour</th>
+                        <th>Heure</th>
+                        <th>Classes</th>
+                        <th>Élèves</th>
+                        
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for creneau in creneaux %}
+                    <tr>
+                        <td>{{ creneau.nom }}</td>
+                        <td>{{ creneau.get_jour_display }}</td>
+                        <td>{{ creneau.heure_debut|time:"H:i" }} - {{ creneau.heure_fin|time:"H:i" }}</td>
+                        <td>{{ creneau.classes.count }}</td>
+                        <td>{{ creneau.nb_eleves }}</td>
+                        
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-danger" title="Supprimer" 
+                                        data-bs-toggle="modal" data-bs-target="#deleteCreneauModal" 
+                                        data-id="{{ creneau.id }}" 
+                                        data-name="{{ creneau.nom }}" aria-label="Supprimer le créneau {{ creneau.nom }}">
+                                    <i class="fas fa-trash" aria-hidden="true"></i>
+                                    <span class="visually-hidden">Supprimer</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">Aucun créneau enregistré</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteCreneauModal" tabindex="-1" aria-labelledby="deleteCreneauModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteCreneauModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer le créneau <strong id="deleteName"></strong> ?</p>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Attention : Les classes, élèves et professeurs associés à ce créneau n'auront plus de créneau assigné.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="deleteForm" method="post" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Recherche dans le tableau
+    document.getElementById('searchCreneaux').addEventListener('keyup', function() {
+        const searchValue = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#tableCreneaux tbody tr');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchValue) ? '' : 'none';
+        });
+    });
+    
+    // Configuration du modal de suppression
+    const deleteModal = document.getElementById('deleteCreneauModal');
+    if (deleteModal) {
+        deleteModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const id = button.getAttribute('data-id');
+            const name = button.getAttribute('data-name');
+            
+            document.getElementById('deleteName').textContent = name;
+            document.getElementById('deleteForm').action = `/creneaux/${id}/supprimer/`;
+        });
+    }
+    
+    // Autofocus sur le champ nom
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('{{ form.nom.id_for_label }}').focus();
+    });
+</script>
+{% endblock %}

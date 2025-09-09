@@ -1,0 +1,342 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Présences de {{ eleve.prenom }} {{ eleve.nom }} | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Présences de {{ eleve.prenom }} {{ eleve.nom }}</h1>
+        <div>
+            {% if user.is_staff or user.is_superuser %}
+            <a href="{% url 'liste_presences_eleves' %}" class="btn btn-secondary btn-sm" title="Retour à la liste" aria-label="Retour à la liste">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> Retour
+            </a>
+            {% elif user.professeur %}
+            <a href="{% url 'presences_classe' eleve.classe.id %}" class="btn btn-secondary btn-sm" title="Retour à la classe" aria-label="Retour à la classe">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> Retour à la classe
+            </a>
+            {% elif user.eleve %}
+            <a href="{% url 'dashboard_eleve' %}" class="btn btn-secondary btn-sm" title="Retour au tableau de bord" aria-label="Retour au tableau de bord">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> Retour
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Messages d'information -->
+    {% if messages %}
+    <div class="row mb-4">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Informations sur l'élève et statistiques -->
+    <div class="row mb-4">
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Élève</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ eleve.prenom }} {{ eleve.nom }}</div>
+                            {% if eleve.email %}
+                            <div class="mt-2 text-gray-600 small">
+                                <i class="fas fa-envelope" aria-hidden="true"></i> {{ eleve.email }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Classes</div>
+                            {% if classes %}
+                                {% for classe in classes %}
+                                <div class="mb-2">
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ classe.nom }}</div>
+                                    {% if classe.professeur %}
+                                    <div class="mt-1 text-gray-600 small">
+                                        <i class="fas fa-chalkboard-teacher" aria-hidden="true"></i> Prof: {{ classe.professeur.nom }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if not forloop.last %}<hr class="my-2">{% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">Aucune classe</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-school fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Assiduité</div>
+                            <div class="row no-gutters align-items-center">
+                                <div class="col-auto">
+                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ taux_presence|floatformat:1 }}%</div>
+                                </div>
+                                <div class="col">
+                                    <div class="progress progress-sm mr-2">
+                                        <div class="progress-bar bg-info progress-width-{{ taux_presence|floatformat:0|default:0 }}" role="progressbar" data-value="{{ taux_presence|floatformat:0|default:0 }}" aria-valuemin="0" aria-valuemax="100" title="Taux de présence: {{ taux_presence|floatformat:1 }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-gray-600 small">
+                                <span class="text-success">{{ total_presences }} présence(s)</span> / 
+                                <span class="text-danger">{{ total_absences }} absence(s)</span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableau des présences -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Historique des présences</h6>
+                    <div class="d-flex align-items-center">
+                        {% if classes.count > 1 %}
+                        <div class="mr-3">
+                            <form method="get" id="classeFilterForm">
+                                <select name="classe" class="form-control form-control-sm" onchange="this.form.submit()" aria-label="Filtrer par classe" title="Filtrer par classe">
+                                    <option value="">Toutes les classes</option>
+                                    {% for classe in classes %}
+                                    <option value="{{ classe.id }}" {% if classe_selectionnee.id == classe.id %}selected{% endif %}>{{ classe.nom }}</option>
+                                    {% endfor %}
+                                </select>
+                            </form>
+                        </div>
+                        {% endif %}
+                        {% if annee_active %}
+                        <div class="text-xs text-muted">
+                            Année scolaire: {{ annee_active.nom }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Classe</th>
+                                    <th>Statut</th>
+                                    <th>Commentaire</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for presence in presences %}
+                                <tr>
+                                    <td>{{ presence.date|date:"d/m/Y" }}</td>
+                                    <td>{{ presence.classe.nom }}</td>
+                                    <td>
+                                        {% if presence.present %}
+                                            <span class="badge bg-success text-white">Présent</span>
+                                        {% else %}
+                                            <span class="badge bg-danger text-white">Absent</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ presence.commentaire|default:"-" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">Aucune présence enregistrée pour cet élève.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphique des présences (optionnel) -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Évolution des présences</h6>
+                </div>
+                <div class="card-body">
+                    {% if presences and presences.count > 0 %}
+                    <div class="chart-area">
+                        <canvas id="presenceChart"></canvas>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-line fa-3x text-gray-300 mb-3"></i>
+                        <p class="text-gray-500 mb-0">Aucune donnée de présence disponible pour afficher le graphique.</p>
+                        <p class="text-gray-500">Les données apparaîtront ici une fois que des présences seront enregistrées.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            },
+            "order": [[0, "desc"]]
+        });
+        
+        {% if presences and presences.count > 0 %}
+        // Données pour le graphique
+        var ctx = document.getElementById('presenceChart');
+        if (ctx) {
+            var myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [
+                        {% for presence in presences %}
+                            "{{ presence.date|date:'d/m/Y' }}",
+                        {% endfor %}
+                    ],
+                    datasets: [{
+                        label: 'Présences',
+                        data: [
+                            {% for presence in presences %}
+                                {{ presence.present|yesno:"1,0" }},
+                            {% endfor %}
+                        ],
+                        backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                        borderColor: 'rgba(78, 115, 223, 1)',
+                        pointRadius: 3,
+                        pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                        pointBorderColor: 'rgba(78, 115, 223, 1)',
+                        pointHoverRadius: 3,
+                        pointHoverBackgroundColor: 'rgba(78, 115, 223, 1)',
+                        pointHoverBorderColor: 'rgba(78, 115, 223, 1)',
+                        pointHitRadius: 10,
+                        pointBorderWidth: 2,
+                        lineTension: 0.3
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            left: 10,
+                            right: 25,
+                            top: 25,
+                            bottom: 0
+                        }
+                    },
+                    scales: {
+                        xAxes: [{
+                            time: {
+                                unit: 'date'
+                            },
+                            gridLines: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                maxTicksLimit: 7
+                            }
+                        }],
+                        yAxes: [{
+                            ticks: {
+                                maxTicksLimit: 5,
+                                padding: 10,
+                                callback: function(value, index, values) {
+                                    return value == 1 ? 'Présent' : 'Absent';
+                                }
+                            },
+                            gridLines: {
+                                color: "rgb(234, 236, 244)",
+                                zeroLineColor: "rgb(234, 236, 244)",
+                                drawBorder: false,
+                                borderDash: [2],
+                                zeroLineBorderDash: [2]
+                            }
+                        }],
+                    },
+                    legend: {
+                        display: false
+                    },
+                    tooltips: {
+                        backgroundColor: "rgb(255,255,255)",
+                        bodyFontColor: "#858796",
+                        titleMarginBottom: 10,
+                        titleFontColor: '#6e707e',
+                        titleFontSize: 14,
+                        borderColor: '#dddfeb',
+                        borderWidth: 1,
+                        xPadding: 15,
+                        yPadding: 15,
+                        displayColors: false,
+                        intersect: false,
+                        mode: 'index',
+                        caretPadding: 10,
+                        callbacks: {
+                            label: function(tooltipItem, chart) {
+                                var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
+                                return datasetLabel + ': ' + (tooltipItem.yLabel == 1 ? 'Présent' : 'Absent');
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        {% endif %}
+    });
+    
+    // Définir correctement les attributs ARIA pour les barres de progression
+    document.addEventListener('DOMContentLoaded', function() {
+        const progressBars = document.querySelectorAll('.progress-bar[data-value]');
+        progressBars.forEach(function(bar) {
+            const value = bar.getAttribute('data-value');
+            if (value) {
+                bar.setAttribute('aria-valuenow', value);
+            } else {
+                bar.setAttribute('aria-valuenow', '0');
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,353 @@
+{% extends 'ecole_app/base.html' %}
+{% load static %}
+
+{% block title %}Éditer le quiz {{ quiz.titre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .question-card {
+        border-left: 4px solid #5e72e4;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+    .question-card:hover {
+        box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+    }
+    .choix-item {
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 8px;
+        background-color: #f8f9fa;
+    }
+    .choix-correct {
+        border-left: 4px solid #2dce89;
+    }
+    .choix-incorrect {
+        border-left: 4px solid #f5f5f5;
+    }
+    .add-question-form {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">{{ quiz.titre }}</h5>
+                        <p class="text-sm mb-0">
+                            Module: <a href="{% url 'detail_module' quiz.module.id %}">{{ quiz.module.titre }}</a>
+                            {% if quiz.publie %}
+                            <span class="badge bg-gradient-success ms-2">Publié</span>
+                            {% else %}
+                            <span class="badge bg-gradient-secondary ms-2">Brouillon</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        <button id="btn-add-question" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus me-2"></i>Ajouter une question
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Formulaire d'ajout de question -->
+                    <div id="add-question-form" class="add-question-form mb-4">
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Nouvelle question</h6>
+                            </div>
+                            <div class="card-body">
+                                <form id="question-form">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="form-group">
+                                                <label for="texte">Texte de la question <span class="text-danger">*</span></label>
+                                                <textarea class="form-control" id="texte" name="texte" rows="2" required></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="type">Type de question <span class="text-danger">*</span></label>
+                                                <select class="form-control" id="type" name="type" required>
+                                                    {% for type_code, type_label in types_questions %}
+                                                    <option value="{{ type_code }}">{{ type_label }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="points">Points</label>
+                                                <input type="number" class="form-control" id="points" name="points" value="1" min="1">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="ordre">Ordre d'affichage</label>
+                                                <input type="number" class="form-control" id="ordre" name="ordre" value="0" min="0">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Choix pour les questions à choix -->
+                                    <div id="choix-container" class="mt-3">
+                                        <h6>Choix de réponses</h6>
+                                        <div id="choix-list">
+                                            <div class="choix-row row mb-2">
+                                                <div class="col-md-8">
+                                                    <input type="text" class="form-control choix-texte" placeholder="Texte du choix" required>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input choix-correct" type="checkbox">
+                                                        <label class="form-check-label">Réponse correcte</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <button type="button" class="btn btn-sm btn-outline-danger remove-choix">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button" id="add-choix" class="btn btn-sm btn-outline-primary mt-2">
+                                            <i class="fas fa-plus me-2"></i>Ajouter un choix
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-end mt-4">
+                                        <button type="button" id="cancel-question" class="btn btn-light me-2">Annuler</button>
+                                        <button type="submit" class="btn btn-primary">Ajouter la question</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Liste des questions -->
+                    <h6 class="text-uppercase text-body text-xs font-weight-bolder mb-3">Questions ({{ questions|length }})</h6>
+                    
+                    {% if questions %}
+                    <div id="questions-container">
+                        {% for question in questions %}
+                        <div class="card question-card" data-question-id="{{ question.id }}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">
+                                        <span class="badge bg-primary me-2">{{ question.get_type_display }}</span>
+                                        {{ question.texte }}
+                                    </h6>
+                                    <div>
+                                        <span class="badge bg-info me-2">{{ question.points }} point{% if question.points > 1 %}s{% endif %}</span>
+                                        <button class="btn btn-sm btn-outline-danger delete-question" data-question-id="{{ question.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                {% if question.type != 'texte_court' %}
+                                <div class="choix-list">
+                                    {% for choix in question.choix.all %}
+                                    <div class="choix-item {% if choix.est_correct %}choix-correct{% else %}choix-incorrect{% endif %}">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                {% if choix.est_correct %}
+                                                <i class="fas fa-check text-success me-2"></i>
+                                                {% else %}
+                                                <i class="fas fa-times text-muted me-2"></i>
+                                                {% endif %}
+                                                {{ choix.texte }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="alert alert-light">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Question à réponse libre. Les réponses des élèves devront être vérifiées manuellement.
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-question-circle fa-3x text-secondary mb-3"></i>
+                        <h5>Aucune question</h5>
+                        <p class="text-secondary">Ajoutez des questions à votre quiz.</p>
+                        <button id="btn-add-first-question" class="btn btn-primary mt-3">
+                            <i class="fas fa-plus me-2"></i>Ajouter une question
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Afficher/masquer le formulaire d'ajout de question
+        $('#btn-add-question, #btn-add-first-question').click(function() {
+            $('#add-question-form').slideDown();
+        });
+        
+        $('#cancel-question').click(function() {
+            $('#add-question-form').slideUp();
+            $('#question-form')[0].reset();
+        });
+        
+        // Gestion des types de questions
+        $('#type').change(function() {
+            const type = $(this).val();
+            if (type === 'texte_court') {
+                $('#choix-container').hide();
+            } else {
+                $('#choix-container').show();
+                
+                // Pour les questions vrai/faux, limiter à 2 choix
+                if (type === 'vrai_faux') {
+                    $('#choix-list').empty();
+                    addChoix('Vrai', true);
+                    addChoix('Faux', false);
+                    $('#add-choix').hide();
+                } else {
+                    if ($('#choix-list .choix-row').length === 0) {
+                        addChoix('', false);
+                        addChoix('', false);
+                    }
+                    $('#add-choix').show();
+                }
+            }
+        });
+        
+        // Ajouter un choix
+        $('#add-choix').click(function() {
+            addChoix('', false);
+        });
+        
+        // Supprimer un choix
+        $(document).on('click', '.remove-choix', function() {
+            if ($('#choix-list .choix-row').length > 1) {
+                $(this).closest('.choix-row').remove();
+            } else {
+                alert('Vous devez avoir au moins un choix.');
+            }
+        });
+        
+        // Soumettre le formulaire d'ajout de question
+        $('#question-form').submit(function(e) {
+            e.preventDefault();
+            
+            const texte = $('#texte').val();
+            const type = $('#type').val();
+            const points = $('#points').val();
+            const ordre = $('#ordre').val();
+            
+            // Récupérer les choix
+            const choix = [];
+            if (type !== 'texte_court') {
+                $('#choix-list .choix-row').each(function(index) {
+                    const texteChoix = $(this).find('.choix-texte').val();
+                    const estCorrect = $(this).find('.choix-correct').prop('checked');
+                    
+                    if (texteChoix) {
+                        choix.push({
+                            texte: texteChoix,
+                            est_correct: estCorrect,
+                            ordre: index
+                        });
+                    }
+                });
+                
+                // Vérifier qu'il y a au moins un choix
+                if (choix.length === 0) {
+                    alert('Vous devez ajouter au moins un choix.');
+                    return;
+                }
+                
+                // Vérifier qu'il y a au moins une réponse correcte pour les choix multiples
+                if (type === 'choix_multiple' && !choix.some(c => c.est_correct)) {
+                    alert('Vous devez marquer au moins un choix comme correct.');
+                    return;
+                }
+                
+                // Pour choix unique, vérifier qu'il y a exactement une réponse correcte
+                if (type === 'choix_unique') {
+                    const correctCount = choix.filter(c => c.est_correct).length;
+                    if (correctCount !== 1) {
+                        alert('Vous devez marquer exactement un choix comme correct.');
+                        return;
+                    }
+                }
+            }
+            
+            // Envoyer la requête AJAX
+            $.ajax({
+                url: '{% url "ajouter_question" quiz.id %}',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    texte: texte,
+                    type: type,
+                    points: points,
+                    ordre: ordre,
+                    choix: choix
+                }),
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Recharger la page pour afficher la nouvelle question
+                        location.reload();
+                    } else {
+                        alert('Erreur: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('Une erreur est survenue lors de l\'ajout de la question.');
+                }
+            });
+        });
+        
+        // Fonction pour ajouter un choix
+        function addChoix(texte, estCorrect) {
+            const choixRow = `
+                <div class="choix-row row mb-2">
+                    <div class="col-md-8">
+                        <input type="text" class="form-control choix-texte" placeholder="Texte du choix" value="${texte}" required>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input choix-correct" type="checkbox" ${estCorrect ? 'checked' : ''}>
+                            <label class="form-check-label">Réponse correcte</label>
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-choix">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            $('#choix-list').append(choixRow);
+        }
+        
+        // Initialiser le formulaire
+        $('#type').trigger('change');
+    });
+</script>
+{% endblock %}

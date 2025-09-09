@@ -1,0 +1,182 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}{{ titre }} | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">{{ titre }}</h6>
+                    <a href="{% url 'liste_presences_eleves' %}" class="btn btn-secondary btn-sm" title="Retour à la liste" aria-label="Retour à la liste">
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i> Retour
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="form-group">
+                            <label for="{{ form.eleve.id_for_label }}">Élève</label>
+                            {{ form.eleve }}
+                            {% if form.eleve.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.eleve.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.classe.id_for_label }}">Classe</label>
+                            {{ form.classe }}
+                            {% if form.classe.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.classe.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.date.id_for_label }}">Date</label>
+                            {{ form.date }}
+                            {% if form.date.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.date.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Statut de présence</label>
+                            <div class="form-check">
+                                <input type="radio" name="status" id="status_present" value="present" class="form-check-input" {% if form.instance.present %}checked{% endif %}>
+                                <label class="form-check-label" for="status_present">
+                                    Présent
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" name="status" id="status_absent_justifie" value="absent_justifie" class="form-check-input" {% if not form.instance.present and form.instance.justifie %}checked{% endif %}>
+                                <label class="form-check-label" for="status_absent_justifie">
+                                    Absent justifié
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" name="status" id="status_absent" value="absent" class="form-check-input" {% if not form.instance.present and not form.instance.justifie %}checked{% endif %}>
+                                <label class="form-check-label" for="status_absent">
+                                    Absent non justifié
+                                </label>
+                            </div>
+                            {% if form.present.errors or form.justifie.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.present.errors %}
+                                {{ error }}
+                                {% endfor %}
+                                {% for error in form.justifie.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <!-- Champs cachés pour stocker les valeurs réelles -->
+                            {{ form.present.as_hidden }}
+                            {{ form.justifie.as_hidden }}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.commentaire.id_for_label }}">Commentaire</label>
+                            {{ form.commentaire }}
+                            {% if form.commentaire.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.commentaire.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group text-center mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save" aria-hidden="true"></i> {{ submit_text|default:"Enregistrer" }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Lorsqu'un élève est sélectionné, mettre à jour la classe
+        $('#{{ form.eleve.id_for_label }}').change(function() {
+            var eleveId = $(this).val();
+            if (eleveId) {
+                // Appel AJAX pour récupérer la classe de l'élève
+                $.ajax({
+                    url: '{% url "get_eleve_classe" %}',
+                    data: {'eleve_id': eleveId},
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.classe_id) {
+                            $('#{{ form.classe.id_for_label }}').val(data.classe_id);
+                        }
+                    }
+                });
+            }
+        });
+        
+        // Initialisation du datepicker
+        $('#{{ form.date.id_for_label }}').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            language: 'fr',
+            todayHighlight: true
+        });
+        
+        // Gérer les boutons radio pour le statut de présence
+        $('input[name="status"]').change(function() {
+            var status = $(this).val();
+            
+            // Mettre à jour les champs cachés en fonction du statut sélectionné
+            if (status === 'present') {
+                $('#{{ form.present.id_for_label }}').prop('checked', true);
+                $('#{{ form.justifie.id_for_label }}').prop('checked', false);
+            } else if (status === 'absent_justifie') {
+                $('#{{ form.present.id_for_label }}').prop('checked', false);
+                $('#{{ form.justifie.id_for_label }}').prop('checked', true);
+            } else if (status === 'absent') {
+                $('#{{ form.present.id_for_label }}').prop('checked', false);
+                $('#{{ form.justifie.id_for_label }}').prop('checked', false);
+            }
+        });
+        
+        // S'assurer qu'une option est sélectionnée par défaut
+        if (!$('input[name="status"]:checked').length) {
+            if ($('#{{ form.present.id_for_label }}').prop('checked')) {
+                $('#status_present').prop('checked', true);
+            } else if ($('#{{ form.justifie.id_for_label }}').prop('checked')) {
+                $('#status_absent_justifie').prop('checked', true);
+            } else {
+                $('#status_absent').prop('checked', true);
+            }
+        }
+    });
+</script>
+{% endblock %}

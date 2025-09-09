@@ -1,0 +1,44 @@
+{% extends 'ecole_app/base.html' %}
+
+{% block title %}Supprimer Quiz{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Supprimer Quiz</h1>
+    </div>
+
+    <!-- Messages are now handled in the base template -->
+
+    <!-- Confirmation de suppression -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-danger">Confirmation de suppression</h6>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> Attention ! Cette action est irréversible.
+            </div>
+            <p>Êtes-vous sûr de vouloir supprimer le quiz <strong>"{{ quiz.titre }}"</strong> ?</p>
+            <p>Cette action supprimera également :</p>
+            <ul>
+                <li>Toutes les questions associées ({{ quiz.questions.count }})</li>
+                <li>Toutes les tentatives des élèves pour ce quiz</li>
+            </ul>
+            
+            <div class="mt-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <a href="{% url 'liste_quiz_professeur' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Annuler
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Confirmer la suppression
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

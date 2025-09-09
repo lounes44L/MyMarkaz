@@ -1,0 +1,104 @@
+{% extends 'ecole_app/base.html' %}
+{% load static %}
+
+{% block title %}Mes Quiz{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ecole_app/css/quiz.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Mes Quiz</h1>
+        <a href="{% url 'creer_quiz' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Créer un quiz
+        </a>
+    </div>
+
+    <!-- Messages are now handled in the base template -->
+
+    <!-- Liste des quiz -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Liste de vos quiz</h6>
+        </div>
+        <div class="card-body">
+            {% if quiz %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Titre</th>
+                                <th>Description</th>
+                                <th class="column-highlight">Classes</th>
+                                <th>Questions</th>
+                                <th class="column-highlight">Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for q in quiz %}
+                                <tr>
+                                    <td>{{ q.titre }}</td>
+                                    <td>{{ q.description|truncatechars:50 }}</td>
+                                    <td>
+                                        {% for classe in q.module.classes.all %}
+                                            <span class="badge badge-classe">{{ classe.nom }}</span>
+                                        {% empty %}
+                                            <span class="text-muted">Aucune classe</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>{{ q.questions.count }}</td>
+                                    <td>
+                                        {% if q.publie %}
+                                            <span class="badge badge-success badge-status-active">Actif</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary badge-status-inactive">Inactif</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'ajouter_questions' q.id %}" class="btn btn-info btn-sm">
+                                            <i class="fas fa-question"></i> Questions
+                                        </a>
+                                        <a href="{% url 'activer_quiz' q.id %}" class="btn btn-{% if q.publie %}warning{% else %}success{% endif %} btn-sm">
+                                            <i class="fas fa-{% if q.publie %}times{% else %}check{% endif %}"></i> 
+                                            {% if q.publie %}Désactiver{% else %}Activer{% endif %}
+                                        </a>
+                                        <a href="{% url 'resultats_quiz_classe' q.id %}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-chart-bar"></i> Résultats
+                                        </a>
+                                        <a href="{% url 'supprimer_quiz' q.id %}" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <p class="text-muted">Vous n'avez pas encore créé de quiz.</p>
+                    <a href="{% url 'creer_quiz' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Créer un quiz
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            }
+        });
+    });
+</script>
+{% endblock %}

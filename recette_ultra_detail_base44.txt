@@ -1,0 +1,206 @@
+# Documentation ultra détaillée pour refonte/migration sur base44.com
+
+---
+
+## 1. Schéma relationnel et modèles (avec exemples)
+
+### Utilisateur (User)
+- username, password, email, is_active, is_staff, is_superuser
+- Ex : `username: prof1, email: prof1@ecole.com, is_staff: True`
+
+### Professeur
+- user (OneToOne), nom, prénom, email
+- Ex : `nom: Dupont, prénom: Jean, email: prof1@ecole.com`
+
+### Élève
+- user (OneToOne), nom, prénom, email, téléphone, date_naissance, adresse, archive, montant_total, remarque
+- classe (ForeignKey), creneaux (ManyToMany), annee_scolaire (ForeignKey)
+- Ex : `nom: Heurel, prénom: Julie, classe: Lecture, creneaux: [Lundi 17h], montant_total: 200€`
+
+### Classe
+- nom, professeur (ForeignKey), composante (ForeignKey)
+- Ex : `nom: Lecture, professeur: Jean Dupont, composante: Markaz Paris`
+
+### AnneeScolaire
+- nom, date_debut, date_fin, active, composante
+- Ex : `nom: 2025-2026, active: True, composante: Markaz Paris`
+
+### Creneau
+- nom, horaire
+- Ex : `nom: Lundi 17h, horaire: 17:00-18:30`
+
+### Paiement
+- élève (ForeignKey), montant, date, annee_scolaire
+- Ex : `élève: Julie Heurel, montant: 100€, date: 2025-09-15`
+
+### PresenceEleve
+- élève (ForeignKey), date, present, justifie, commentaire, classe, creneau, composante, date_creation
+- Ex : `élève: Julie Heurel, date: 2025-09-18, present: False, justifie: True, commentaire: Maladie`
+
+### CarnetPedagogique
+- élève, professeur, date, type (écoute, mémorisation, répétition, révision), contenu (structuré)
+- Ex : `type: mémorisation, contenu: Sourate Al-Fatiha, versets 1-7, statut: acquis, remarque: Très bien récité`
+
+---
+
+## 2. Workflows détaillés (UX et navigation)
+
+### Connexion
+- Formulaire login.html (username + mot de passe)
+- Redirection automatique selon rôle : admin → gestion, prof → dashboard prof, élève → dashboard élève
+- Erreurs affichées en haut du formulaire ("Identifiant ou mot de passe incorrect")
+
+### Dashboard Élève
+- Header : Année scolaire, nom élève, classe, créneau
+- Cartes :
+    - Profil : infos, bouton "Changer de mot de passe", bouton "Voir mon profil"
+    - Classe : nom, professeur principal, liste camarades (optionnel)
+    - Créneau : nom, horaire
+    - Paiements : barre de progression (couleur dynamique), liste paiements (date, montant), montant restant
+    - Carnet pédagogique : liste entrées (type, date, contenu résumé), bouton détail
+    - Présences : tableau (date, classe, statut, commentaire), bouton "Voir mes présences"
+- Navigation : menu latéral ou topbar (Dashboard, Profil, Carnet, Paiements, Présences, Déconnexion)
+- Responsive : affichage mobile optimisé (cartes empilées)
+
+### Dashboard Professeur
+- Header : nom, classes assignées
+- Cartes :
+    - Classes : liste avec accès gestion présences, carnet pédagogique
+    - Statistiques : taux de présence, nombre d’absences
+    - Carnet pédagogique : accès direct à chaque élève
+- Navigation : menu dédié (Dashboard, Classes, Carnet, Déconnexion)
+
+### Dashboard Admin
+- Header : nom, accès gestion utilisateurs, classes, composantes, années scolaires
+- Tableaux : utilisateurs, classes, années, paiements
+- Actions : création/modification/suppression, activation année scolaire
+
+---
+
+## 3. Carnet pédagogique (structure, exemples, affichage)
+
+### Types d’entrées :
+- Écoute : sourate, page, remarque
+- Mémorisation : sourate, versets, statut (acquis/en cours/à revoir), remarque
+- Répétition : passages revus, remarque
+- Révision : sourate, page, remarque
+
+### Exemple d’entrée (JSON)
+```json
+{
+  "type": "mémorisation",
+  "date": "2025-09-20",
+  "sourate": "Al-Fatiha",
+  "versets": "1-7",
+  "statut": "acquis",
+  "remarque": "Très bien récité"
+}
+```
+
+### Affichage dans carnet/index.html
+- Chronologique, trié par date décroissante
+- Filtres par type/date
+- Bouton pour détail/édition (professeur)
+- Élève : lecture seule
+- Professeur : édition, suppression, ajout
+
+---
+
+## 4. Présences (workflow, affichage, stats)
+- Saisie : par classe (prof), par élève (admin)
+- Statut : présent/absent/justifié
+- Commentaire optionnel
+- Affichage élève : tableau historique, couleur selon statut
+- Affichage prof : classe entière, stats globales
+- Stats : taux de présence, ratio absences/présences, badge couleur
+- Exemple : "Présence du 2025-10-02 : Absent (non justifié)"
+
+---
+
+## 5. Paiements (workflow, affichage, calculs)
+- Saisie : admin/comptabilité
+- Champs : élève, montant, date, année scolaire
+- Affichage élève : liste paiements, barre progression (couleur dynamique), montant total/restant
+- Calcul automatique : total payé, reste à payer, pourcentage
+- Badge couleur : vert (>80%), orange (40-80%), rouge (<40%)
+- Exemple : "Paiement du 2025-09-15 : 100€ (reste 100€ à payer)"
+
+---
+
+## 6. Intégration Coran (structure JSON, navigation)
+- Fichier JSON : contient toutes les sourates, chaque sourate = nom arabe/français, nombre de versets, texte arabe
+- Exemple d’entrée :
+```json
+{
+  "numero": 1,
+  "nom_ar": "الفاتحة",
+  "nom_fr": "Al-Fatiha",
+  "versets": 7,
+  "texte": ["بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", ...]
+}
+```
+- Navigation : par sourate, par page
+- Affichage : texte arabe, traduction française, navigation fluide
+- CSS dédié pour typographie arabe
+
+---
+
+## 7. Templates (structure, exemples de blocs)
+### login.html
+```html
+<form method="post">
+  {% csrf_token %}
+  <input type="text" name="username" placeholder="Identifiant">
+  <input type="password" name="password" placeholder="Mot de passe">
+  <button type="submit">Connexion</button>
+</form>
+```
+
+### dashboard_eleve.html (extrait)
+```html
+<div class="card">
+  <div class="card-header">Mon profil</div>
+  <div class="card-body">
+    {{ eleve.nom }} {{ eleve.prenom }}<br>
+    {{ eleve.email }}<br>
+    ...
+    <a href="{% url 'profile' %}">Voir mon profil</a>
+  </div>
+</div>
+```
+
+### carnet/index.html (extrait)
+```html
+{% for entree in carnet %}
+  <div class="carnet-entry">
+    <span>{{ entree.date }}</span>
+    <span>{{ entree.type }}</span>
+    <span>{{ entree.sourate }}</span>
+    <span>{{ entree.remarque }}</span>
+  </div>
+{% endfor %}
+```
+
+---
+
+## 8. Permissions, erreurs, sécurité
+- Chaque vue vérifie le rôle de l’utilisateur (admin, prof, élève)
+- Middleware : sélection composante obligatoire sauf élève
+- CSRF sur tous les formulaires
+- Messages d’erreur explicites (accès refusé, champs requis, etc.)
+- Redirection automatique si non autorisé
+
+---
+
+## 9. Conseils migration base44.com (étapes détaillées)
+1. Créer tous les modèles et relations (OneToOne, ForeignKey, ManyToMany)
+2. Créer les templates principaux (login, dashboards, carnet, paiements, présences…)
+3. Recréer la logique de navigation et les menus
+4. Adapter la gestion des permissions à base44
+5. Tester chaque workflow (connexion, saisie carnet, paiement, présence…)
+6. Optimiser le responsive, déplacer le CSS inline
+7. Prévoir les exports/imports de données (JSON, CSV)
+
+---
+
+**Ce fichier contient : exemples concrets, extraits de templates, structures JSON, workflows, UX, gestion erreurs, sécurité, stats, et tous les conseils pour une migration réussie sur base44.com.**

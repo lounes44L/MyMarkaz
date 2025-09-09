@@ -1,0 +1,455 @@
+{% extends 'ecole_app/base.html' %}
+{% load static %}
+
+{% block title %}Rapport des présences élèves{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Rapport des présences élèves</h1>
+        <div>
+            <a href="{% url 'export_rapport_presence_excel' %}?{% if selected_eleve %}eleve={{ selected_eleve.id }}{% endif %}{% if selected_classe %}&classe={{ selected_classe.id }}{% endif %}&date_debut={{ date_debut|date:'Y-m-d' }}&date_fin={{ date_fin|date:'Y-m-d' }}" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm mr-2" target="_blank">
+                <i class="fas fa-file-excel fa-sm text-white-50"></i> Exporter en Excel
+            </a>
+            <a href="{% url 'gestion_presence_eleve' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-clipboard-list fa-sm text-white-50"></i> Gestion des présences
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Filtrer le rapport</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="eleve" class="form-label">Élève</label>
+                    <select name="eleve" id="eleve" class="form-control">
+                        <option value="">Tous les élèves</option>
+                        {% for eleve in eleves %}
+                            <option value="{{ eleve.id }}" {% if selected_eleve.id == eleve.id %}selected{% endif %}>
+                                {{ eleve.nom }} {{ eleve.prenom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="classe" class="form-label">Classe</label>
+                    <select name="classe" id="classe" class="form-control">
+                        <option value="">Toutes les classes</option>
+                        {% for classe in classes %}
+                            <option value="{{ classe.id }}" {% if selected_classe.id == classe.id %}selected{% endif %}>
+                                {{ classe.nom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="date_debut" class="form-label">Date début</label>
+                    <input type="date" class="form-control" id="date_debut" name="date_debut" value="{{ date_debut|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="date_fin" class="form-label">Date fin</label>
+                    <input type="date" class="form-control" id="date_fin" name="date_fin" value="{{ date_fin|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">Filtrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total enregistrements</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800 stats-total">{{ stats.total }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Présences</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800 stats-presents">{{ stats.presents }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Absences justifiées</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800 stats-justifies">{{ stats.absents_justifies }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Absences non justifiées</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800 stats-absents">{{ stats.absents }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-times fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Taux de présence -->
+    <div class="row">
+        <div class="col-xl-12 col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Taux de présence</h6>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-success stats-progress-bar" role="progressbar" data-width="{{ stats.taux_presence }}"
+                            aria-valuemin="0" aria-valuemax="100" title="Taux de présence"><span class="stats-pourcentage">{{ stats.taux_presence }}%</span></div>
+                    </div>
+                    <small><span class="stats-presents-text">{{ stats.presents }}</span> présences sur <span class="stats-total-text">{{ stats.total }}</span> enregistrements</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des présences -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                Détail des présences
+                {% if selected_eleve %}
+                    pour {{ selected_eleve.nom }} {{ selected_eleve.prenom }}
+                {% endif %}
+                {% if selected_classe and not selected_eleve %}
+                    pour la classe {{ selected_classe.nom }}
+                {% endif %}
+                du {{ date_debut|date:"d/m/Y" }} au {{ date_fin|date:"d/m/Y" }}
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Élève</th>
+                            <th>Classe</th>
+                            <th>Statut</th>
+                            <th>Commentaire</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for presence in presences %}
+                        <tr>
+                            <td>{{ presence.date|date:"d/m/Y" }}</td>
+                            <td>{{ presence.eleve.nom }} {{ presence.eleve.prenom }}</td>
+                            <td>
+                                {% if presence.classe %}
+                                    {{ presence.classe.nom }}
+                                {% else %}
+                                    {% for classe in presence.eleve.classes.all|slice:":1" %}
+                                        {{ classe.nom }}
+                                    {% empty %}
+                                        Non définie
+                                    {% endfor %}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if presence.present %}
+                                    <span class="badge bg-success text-white">Présent</span>
+                                {% elif presence.justifie %}
+                                    <span class="badge bg-warning text-dark">Absent justifié</span>
+                                {% else %}
+                                    <span class="badge bg-danger text-white">Absent non justifié</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ presence.commentaire|default:"-" }}</td>
+                            <td>
+                                {% if user.is_staff or user.is_superuser or user.professeur %}
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-primary" title="Modifier" data-bs-toggle="modal" data-bs-target="#editModal{{ presence.id }}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-info" title="Appeler" data-bs-toggle="modal" data-bs-target="#phoneModal{{ presence.eleve.id }}">
+                                        <i class="fas fa-phone"></i>
+                                    </button>
+                                    <a href="{% url 'supprimer_presence_eleve' presence.id %}" class="btn btn-sm btn-danger" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                                
+                                <!-- Modal pour modifier la présence -->
+                                <div class="modal fade" id="editModal{{ presence.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ presence.id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="editModalLabel{{ presence.id }}">Présence de {{ presence.eleve.nom }} {{ presence.eleve.prenom }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form method="post" class="presence-edit-form" data-presence-id="{{ presence.id }}">
+                                                {% csrf_token %}
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <p class="mb-2">État de présence:</p>
+                                                        <div class="form-check">
+                                                            <input type="radio" class="form-check-input" id="present{{ presence.id }}" name="status" value="present" {% if presence.present %}checked{% endif %}>
+                                                            <label class="form-check-label" for="present{{ presence.id }}">Présent</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input type="radio" class="form-check-input" id="absent_justifie{{ presence.id }}" name="status" value="absent_justifie" {% if not presence.present and presence.justifie %}checked{% endif %}>
+                                                            <label class="form-check-label" for="absent_justifie{{ presence.id }}">Absent justifié</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input type="radio" class="form-check-input" id="absent{{ presence.id }}" name="status" value="absent" {% if not presence.present and not presence.justifie %}checked{% endif %}>
+                                                            <label class="form-check-label" for="absent{{ presence.id }}">Absent non justifié</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="commentaire{{ presence.id }}" class="form-label">Commentaire</label>
+                                                        <textarea class="form-control" id="commentaire{{ presence.id }}" name="commentaire" rows="3">{{ presence.commentaire }}</textarea>
+                                                    </div>
+                                                    <div class="alert alert-success d-none" role="alert" id="success-message-{{ presence.id }}"></div>
+                                                    <div class="alert alert-danger d-none" role="alert" id="error-message-{{ presence.id }}"></div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                    <button type="submit" class="btn btn-success">Enregistrer</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Modal pour afficher les numéros de téléphone -->
+                                <div class="modal fade" id="phoneModal{{ presence.eleve.id }}" tabindex="-1" aria-labelledby="phoneModalLabel{{ presence.eleve.id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="phoneModalLabel{{ presence.eleve.id }}">Numéros de téléphone - {{ presence.eleve.nom }} {{ presence.eleve.prenom }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="list-group">
+                                                    {% if presence.eleve.telephone %}
+                                                    <a href="tel:{{ presence.eleve.telephone }}" class="list-group-item list-group-item-action">
+                                                        <i class="fas fa-phone me-2"></i> {{ presence.eleve.telephone }}
+                                                    </a>
+                                                    {% endif %}
+                                                    {% if presence.eleve.telephone_parent %}
+                                                    <a href="tel:{{ presence.eleve.telephone_parent }}" class="list-group-item list-group-item-action">
+                                                        <i class="fas fa-user-friends me-2"></i> {{ presence.eleve.telephone_parent }} (Parent)
+                                                    </a>
+                                                    {% endif %}
+                                                    {% if not presence.eleve.telephone and not presence.eleve.telephone_parent %}
+                                                    <div class="list-group-item text-center text-muted">
+                                                        <i class="fas fa-exclamation-circle me-2"></i> Aucun numéro de téléphone disponible
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">Aucune présence enregistrée pour cette période</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Fonction pour rafraîchir les statistiques
+    function refreshStats() {
+        // Récupérer les paramètres de filtre actuels
+        var eleve = $('#eleve').val();
+        var classe = $('#classe').val();
+        var dateDebut = $('#date_debut').val();
+        var dateFin = $('#date_fin').val();
+        
+        // Construire l'URL pour la requête AJAX
+        var url = '{% url "rapport_presence_eleve" %}?ajax=1';
+        if (eleve) url += '&eleve=' + eleve;
+        if (classe) url += '&classe=' + classe;
+        if (dateDebut) url += '&date_debut=' + dateDebut;
+        if (dateFin) url += '&date_fin=' + dateFin;
+        
+        // Effectuer la requête AJAX pour récupérer les statistiques mises à jour
+        $.ajax({
+            url: url,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                // Mettre à jour les statistiques
+                $('.stats-total').text(data.stats.total);
+                $('.stats-presents').text(data.stats.presents);
+                $('.stats-absents').text(data.stats.absents);
+                $('.stats-justifies').text(data.stats.absents_justifies);
+                $('.stats-total-text').text(data.stats.total);
+                $('.stats-presents-text').text(data.stats.presents);
+                
+                // Mettre à jour les pourcentages et la barre de progression
+                if (data.stats.taux_presence !== undefined) {
+                    var tauxPresence = data.stats.taux_presence;
+                    $('.stats-pourcentage').text(tauxPresence + '%');
+                    
+                    // Mettre à jour la largeur de la barre de progression
+                    $('.stats-progress-bar').css('width', tauxPresence + '%');
+                    $('.stats-progress-bar').attr('aria-valuenow', tauxPresence);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Erreur lors du rafraîchissement des statistiques:', error);
+            }
+        });
+    }
+    
+    $(document).ready(function() {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            },
+            "order": [[0, "desc"], [1, "asc"]]
+        });
+        
+        // Gestion des formulaires de modification de présence avec AJAX
+        $('.presence-edit-form').on('submit', function(e) {
+            e.preventDefault();
+            
+            var form = $(this);
+            var presenceId = form.data('presence-id');
+            var successMessage = $('#success-message-' + presenceId);
+            var errorMessage = $('#error-message-' + presenceId);
+            var status = $('input[name="status"]:checked', form).val();
+            var commentaire = $('#commentaire' + presenceId).val();
+            var modal = $('#editModal' + presenceId);
+            var statusCell = $('tr').find('td:contains("' + presenceId + '")').siblings().eq(3).find('span.badge');
+            
+            // Cacher les messages précédents
+            successMessage.addClass('d-none');
+            errorMessage.addClass('d-none');
+            
+            $.ajax({
+                type: 'POST',
+                url: '{% url "modifier_presence_eleve_ajax" %}',
+                data: {
+                    'presence_id': presenceId,
+                    'status': status,
+                    'commentaire': commentaire,
+                    'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]', form).val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Afficher le message de succès
+                        successMessage.text(response.message);
+                        successMessage.removeClass('d-none');
+                        
+                        // Mettre à jour le badge de statut dans le tableau
+                        var newStatusText = '';
+                        var newStatusClass = '';
+                        
+                        if (status === 'present') {
+                            newStatusText = 'Présent';
+                            newStatusClass = 'bg-success text-white';
+                        } else if (status === 'absent_justifie') {
+                            newStatusText = 'Absent justifié';
+                            newStatusClass = 'bg-warning text-dark';
+                        } else if (status === 'absent') {
+                            newStatusText = 'Absent non justifié';
+                            newStatusClass = 'bg-danger text-white';
+                        }
+                        
+                        // Trouver et mettre à jour le badge de statut dans le tableau
+                        var row = $('tr').has('button[data-bs-target="#editModal' + presenceId + '"]');
+                        var statusBadge = row.find('td:nth-child(4) span.badge');
+                        
+                        statusBadge.removeClass('bg-success bg-warning bg-danger text-white text-dark');
+                        statusBadge.addClass(newStatusClass);
+                        statusBadge.text(newStatusText);
+                        
+                        // Mettre à jour le commentaire dans le tableau
+                        var commentCell = row.find('td:nth-child(5)');
+                        if (commentaire) {
+                            commentCell.text(commentaire);
+                        } else {
+                            commentCell.text('-');
+                        }
+                        
+                        // Rafraîchir les statistiques
+                        refreshStats();
+                        
+                        // Fermer le modal après un court délai
+                        setTimeout(function() {
+                            var modalInstance = bootstrap.Modal.getInstance(modal);
+                            if (modalInstance) modalInstance.hide();
+                        }, 1500);
+                    } else {
+                        // Afficher le message d'erreur
+                        errorMessage.text(response.message || 'Une erreur est survenue.');
+                        errorMessage.removeClass('d-none');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    // Afficher un message d'erreur générique
+                    errorMessage.text('Une erreur est survenue lors de la communication avec le serveur.');
+                    errorMessage.removeClass('d-none');
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
