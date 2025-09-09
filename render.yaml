@@ -5,11 +5,17 @@ services:
     buildCommand: |
       chmod +x setup.sh
       ./setup.sh
-    startCommand: gunicorn Gestion_Markaz_Django.wsgi:application
+    startCommand: gunicorn Gestion_Markaz_Django.wsgi:application --chdir Gestion_Markaz_Django
     envVars:
       - key: PYTHONPATH
-        value: /opt/render/project/src
+        value: /opt/render/project/src/Gestion_Markaz_Django
       - key: PYTHONUNBUFFERED
         value: true
       - key: DJANGO_SETTINGS_MODULE
         value: Gestion_Markaz_Django.settings
+      - key: USE_CLOUDFLARE_D1
+        value: "true"  # Activer le support Cloudflare D1
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "false"
