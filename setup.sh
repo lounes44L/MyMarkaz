@@ -17,5 +17,11 @@ python manage.py collectstatic --noinput
 # Apply database migrations
 python manage.py migrate
 
+# Fix any missing migrations
+python ../fix_missing_migrations.py
+
+# Apply migrations again to ensure everything is up to date
+python manage.py migrate
+
 # Create superuser if needed (uncomment and set your credentials)
 # echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('admin', 'admin@example.com', 'password')" | python manage.py shell
